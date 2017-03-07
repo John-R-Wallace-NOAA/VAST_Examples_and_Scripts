@@ -1,4 +1,11 @@
 
+# VAST will often leave you in the subdirectory of the current run. Using HomeDir helps get you back where you started.
+# Only do this once per R session, after you are in the your main working directory:
+
+HomeDir <- getwd()
+
+# =============================================
+
 #Test run of single species spatial delta glmm
 #Test, canary data; implimentation, Lingcod groundfish survey data
 #M. Haltuch, Feb 2017
@@ -82,6 +89,7 @@ Options =  c("SD_site_density"=0, "SD_site_logdensity"=0, "Calculate_Range"=1, "
     'deep_border' = c(1280, 1280, 1280, 1280)
     ))
 
+setwd(HomeDir)  # Make sure that the working directory is back where it started
 
 #region that tells software which grid to use
 Region = "California_current"
@@ -138,7 +146,6 @@ TmbData = VAST::Data_Fn("Version"=Version, "FieldConfig"=FieldConfig, "Overdispe
 #                   "Method"=Spatial_List$Method, "Options"=Options )
 
 
-
 ################
 # Do the estimation
 ################
@@ -164,7 +171,8 @@ sink(paste0(DateFile, "Final_Convergence_Results.txt"))
 cat("\nnlminb() convergence (Zero indicates successful convergence):", Opt$convergence, "\n\nnlminb() message:", Opt$message, "\n\nnlminb() pdHess:", Opt$SD$pdHess, "\n\nAIC:", Opt$AIC, "\n\n")
 sink()
   
-
+setwd(HomeDir)
+     
 ################
 # Model output (some of the diagnostic plots are slow, so do the model ouptut first)
 ################ 
@@ -220,7 +228,7 @@ SpatialDeltaGLMM::plot_residuals(Lat_i=Data_Geostat[,'Lat'], Lon_i=Data_Geostat[
 
 # Model selection, see example code, just run one model for now
 
-
+setwd(HomeDir)
 
 
 
