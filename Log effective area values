@@ -1,4 +1,6 @@
 
+ # Opt has been created, the data is in Data_Geostat, and the strata limits are in strata.limts
+
 strata.limits
 
 # Log effective area by year and strata values (stacked)
