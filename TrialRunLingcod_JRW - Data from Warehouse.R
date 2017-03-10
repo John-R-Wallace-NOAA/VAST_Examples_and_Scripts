@@ -46,8 +46,8 @@ Data_Set <- JRWToolBox::WCGBTS_Combo_Catch_Wt(Species = "Ophiodon elongatus", Ye
 JRWToolBox::Table(Data_Set$Year, Data_Set$Pass)  
 
 
-# Versions you can use:
-list.files(R.home(file.path("library", "VAST", "executables"))) # List VAST versions
+# Versions of VAST you can use:
+list.files(R.home(file.path("library", "VAST", "executables")))
 # Version = "VAST_v2_2_0"
 # This gives the latest version available. (Up to v10_0_0 - then broken.)
 (Version <- substr(list.files(R.home(file.path("library", "VAST", "executables")))[length(list.files(R.home(file.path("library", "VAST", "executables"))))], 1, 11)) 
