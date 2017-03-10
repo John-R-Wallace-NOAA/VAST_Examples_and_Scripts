@@ -46,10 +46,11 @@ Data_Set <- JRWToolBox::WCGBTS_Combo_Catch_Wt(Species = "Ophiodon elongatus", Ye
 JRWToolBox::Table(Data_Set$Year, Data_Set$Pass)  
 
 
-# Version to use
+# Versions you can use:
 list.files(R.home(file.path("library", "VAST", "executables"))) # List VAST versions
 # Version = "VAST_v2_2_0"
-(Version <- substr(list.files(R.home(file.path("library", "VAST", "executables")))[length(list.files(R.home(file.path("library", "VAST", "executables"))))], 1, 11)) # Latest version up to v10_0_0 - then broken.
+# This gives the latest version available. (Up to v10_0_0 - then broken.)
+(Version <- substr(list.files(R.home(file.path("library", "VAST", "executables")))[length(list.files(R.home(file.path("library", "VAST", "executables"))))], 1, 11)) 
 
 #define the spatial resolution for the model, and whether to use a grid or mesh approximation
 #mesh is default recommendation, number of knots need to be specified
