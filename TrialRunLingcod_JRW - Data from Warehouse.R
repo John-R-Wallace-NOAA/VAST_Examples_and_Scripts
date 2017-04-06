@@ -74,7 +74,7 @@ Kmeans_Config = list( "randomseed"=1, "nstart"=100, "iter.max"=1e3 )
 # obs model - distribution for errors and which model to run (e.g. default is delta model with standard link functions)
 FieldConfig = c("Omega1"=1, "Epsilon1"=1, "Omega2"=1, "Epsilon2"=1)
 RhoConfig = c("Beta1"=0, "Beta2"=0, "Epsilon1"=0, "Epsilon2"=0)
-OverdispersionConfig = c("Vessel"=0, "VesselYear"=1)  # Use VesselYear = 1 if using WCBTS
+OverdispersionConfig = c(Delta1=1, Delta2=1) # Turn on vessel-year effects for both presence/absence and density if using WCGBTS
 ObsModel = c(2,0)
 
 #outputs calculated after model runs, essentially reports to create
