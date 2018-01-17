@@ -5,7 +5,7 @@
      
      if (!any(installed.packages()[, 1] %in% "Imap")) 
            devtools::install_github("John-R-Wallace/Imap")
-     JRWToolBox::lib(rgdal) #lib() will download from CRAN only when needed
+     JRWToolBox::lib(rgdal) # lib() will download from CRAN only when needed
 
      N.Years <- length(unique(Data_Geostat$Year))
      (UTM.Center.of.gravity <- 1000* renum(cbind(Opt$SD$value[grep("mean_Z", names(Opt$SD$value))][1:N.Years], Opt$SD$value[grep("mean_Z", names(Opt$SD$value))][(N.Years + 1):(2 * N.Years)])))
@@ -16,9 +16,9 @@
      
      # Center of gravity with all tow locations
      imap(longrange = c(-116, -126.5), latrange = c(32, 49), zoom = FALSE)
-     # imap() # Or do a custom zoom on the West Coast
+     # imap() # Do a custom zoom on the West Coast
      points(Data_Geostat[,c("Lon", "Lat")], pch=".")
      points(Coords, col = 'red', pch=16)
 
-     # With Contour lines (may take a bit to download, refer to the help for plotGIS for details)
+     # With Contour lines (may take a bit of time to download; refer to the help for plotGIS for details)
      Imap::plotGIS(Coords, longrange = c(min(Coords$coords.x1) - 1, max(Coords$coords.x1) + 0.1), latrange = c(min(Coords$coords.x2) - 1, max(Coords$coords.x2) + 1), cex.pt = 1, imap = F)
