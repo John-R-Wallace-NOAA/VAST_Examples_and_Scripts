@@ -1,7 +1,7 @@
      
      # Center of gravity converted back to Lat-Long 
      
-     # Opt has been created and the data is in Data_Geostat
+     # Opt has been created and the raw data is in Data_Geostat
      
      if (!any(installed.packages()[, 1] %in% "Imap")) 
            devtools::install_github("John-R-Wallace/Imap")
