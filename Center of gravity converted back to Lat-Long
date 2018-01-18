@@ -3,6 +3,8 @@
      
      # Opt has been created and the raw data is in Data_Geostat
      
+     if (!any(installed.packages()[, 1] %in% "JRWToolBox")) 
+           devtools::install_github("John-R-Wallace/R-ToolBox")
      if (!any(installed.packages()[, 1] %in% "Imap")) 
            devtools::install_github("John-R-Wallace/Imap")
      JRWToolBox::lib(rgdal) # lib() will download from CRAN only when needed
