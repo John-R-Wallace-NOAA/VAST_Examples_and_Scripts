@@ -1,25 +1,26 @@
 
+      # Function to convert from UTM to Lat/Long using geographic assumptions in VAST
 
       if (!any(installed.packages()[, 1] %in% "JRWToolBox")) 
            devtools::install_github("John-R-Wallace/R-ToolBox")
       if (!any(installed.packages()[, 1] %in% "Imap")) 
            devtools::install_github("John-R-Wallace/Imap")
       JRWToolBox::lib(sp) # lib() will download from CRAN only when needed
-      
-      # Function to convert from UTM to Lat/Long using geographic assumptions in VAST
-     
+          
       UTM.to.LatLong <- function(UTM, zone = "10T") {
-         lib(sp, require = FALSE)
-         sputm <- sp::SpatialPoints(UTM, proj4string=CRS(paste0("+proj=utm +zone=", zone, " +datum=WGS84")))
-         spgeo <- sp::spTransform(sputm, CRS("+proj=longlat +datum=WGS84"))
-         spgeo@coords
-      }  
+          lib(sp,  require = FALSE)
+          sputm <- sp::SpatialPoints(UTM, proj4string=CRS(paste0("+proj=utm +zone=", zone, " +datum=WGS84")))
+          spgeo <- sp::spTransform(sputm, CRS("+proj=longlat +datum=WGS84"))
+          OUT <- data.frame(spgeo@coords)
+		  names(OUT) <- c('Long', 'Lat')
+          OUT
+     }  
+      
+      # This function is in JRWToolBox
+      
 
 # Example: To get the lat/long locations of the vertices (knots) in VAST you have to first mulitply Spatial_List$loc_x by 1,000 
-      
-UTM.to.LatLong(1000 * Spatial_List$loc_x)
-
-
+ 
 Spatial_List$loc_x[1:10,]
        E_km     N_km
 1  368.8325 5023.652
@@ -34,8 +35,8 @@ Spatial_List$loc_x[1:10,]
 10 349.2983 4852.216
 
 
-UTM.to.LatLong(1000*Spatial_List$loc_x[1:10,]) # Column names left unchanged
-        E_km     N_km
+UTM.to.LatLong(1000 * Spatial_List$loc_x[1:10,])
+        Long      Lat
 1  -124.6746 45.35411
 2  -124.4871 40.80490
 3  -124.7441 45.87834
