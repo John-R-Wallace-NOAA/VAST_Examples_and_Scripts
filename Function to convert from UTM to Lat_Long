@@ -7,3 +7,35 @@
          spgeo <- spTransform(sputm, CRS("+proj=longlat +datum=WGS84"))
          spgeo@coords
       }  
+
+      # Example: To get the lat/long locations of the knots in VAST you have to first mulitply Spatial_List$loc_x by 1,000 
+      
+      UTM.to.LatLong(1000 * Spatial_List$loc_x)
+      
+      
+Spatial_List$loc_x[1:10,]
+       E_km     N_km
+1  368.8325 5023.652
+2  374.5611 4518.163
+3  364.6591 5082.010
+4  356.8080 4783.004
+5  352.9146 4926.658
+6  364.5543 4657.475
+7  366.8523 5029.990
+8  497.6781 4157.810
+9  444.6214 4258.225
+10 349.2983 4852.216
+
+
+UTM.to.LatLong(1000*Spatial_List$loc_x[1:10,]) # Column names left unchanged
+        E_km     N_km
+1  -124.6746 45.35411
+2  -124.4871 40.80490
+3  -124.7441 45.87834
+4  -124.7621 43.18624
+5  -124.8495 44.47826
+6  -124.6369 42.05767
+7  -124.7016 45.41075
+8  -123.0263 37.56732
+9  -123.6348 38.47063
+10 -124.8736 43.80766
