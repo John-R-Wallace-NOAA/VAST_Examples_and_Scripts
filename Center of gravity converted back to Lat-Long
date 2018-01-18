@@ -10,7 +10,8 @@
      JRWToolBox::lib(sp) # lib() will download from CRAN only when needed
 
      (N.Years <- length(unique(Data_Geostat$Year)))
-     (UTM.Center.of.gravity <- renum(cbind(Opt$SD$value[grep("mean_Z", names(Opt$SD$value))][1:N.Years], Opt$SD$value[grep("mean_Z", names(Opt$SD$value))][(N.Years + 1):(2 * N.Years)])))
+     (UTM.Center.of.gravity <- renum(cbind(Opt$SD$value[grep("mean_Z", names(Opt$SD$value))][1:N.Years], 
+                       Opt$SD$value[grep("mean_Z", names(Opt$SD$value))][(N.Years + 1):(2 * N.Years)])))
      (sputm <- sp::SpatialPoints(1000 * UTM.Center.of.gravity, proj4string=CRS("+proj=utm +zone=10T +datum=WGS84")))
      (spgeo <- sp::spTransform(sputm, CRS("+proj=longlat +datum=WGS84")))
      Coords <- data.frame(spgeo@coords)
@@ -19,13 +20,16 @@
      
      # Center of gravity with all tow locations
      imap(longrange = c(-116, -126.5), latrange = c(32, 49), zoom = FALSE)
-     # imap() # Do a custom zoom on the West Coast
-     points(Data_Geostat[,c("Lon", "Lat")], pch=".")
-     points(Coords, col = 'red', pch=16)
+     # imap() # Alternatively, do a custom zoom on the West Coast
+     points(Data_Geostat[,c("Lon", "Lat")], pch=".", cex = 1.5, col='cyan')) # Raw data locations
+     # Larger center of gravity points for later years
+     lines(Coords, col = Imap::col.alpha('red', 0.5), pch=16, cex = 3 * (1:N.Years)/nYears, type='o', lwd=1.5) 
 
      # With Contour lines (may take a bit of time to download; refer to the help for plotGIS for details)
-     Imap::plotGIS(Coords, longrange = c(min(Coords$coords.x1) - 1, max(Coords$coords.x1) + 0.1), latrange = c(min(Coords$coords.x2) - 1, max(Coords$coords.x2) + 1), cex.pt = 1, imap = F)
-     points(Data_Geostat[,c("Lon", "Lat")], pch=".")
-     points(Coords, col = 'red', pch=16)
+     Imap::plotGIS(Data_Geostat[,c("Lon", "Lat")], longrange = c(min(Coords$coords.x1) - 1.3, max(Coords$coords.x1) + 0.1), 
+	    latrange = c(min(Coords$coords.x2) - 1, max(Coords$coords.x2) + 1), cex.pt=0.8, col.pts='cyan', imap=F) 
+     lines(Coords, col = Imap::col.alpha('red', 0.5), pch=16, cex = 3 * (1:N.Years)/nYears, type='o', lwd=1.5) 
+	   
+
      
      
