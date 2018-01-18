@@ -2,13 +2,13 @@
       # Function to convert from UTM to Lat/Long using geographic assumptions in VAST
      
       UTM.to.LatLong <- function(UTM, zone = "10T") {
-         lib(rgdal)
+         lib(INLA)
          sputm <- SpatialPoints(UTM, proj4string=CRS(paste0("+proj=utm +zone=", zone, " +datum=WGS84")))
          spgeo <- spTransform(sputm, CRS("+proj=longlat +datum=WGS84"))
          spgeo@coords
       }  
 
-      # Example: To get the lat/long locations of the knots in VAST you have to first mulitply Spatial_List$loc_x by 1,000 
+      # Example: To get the lat/long locations of the vertices (knots) in VAST you have to first mulitply Spatial_List$loc_x by 1,000 
       
       UTM.to.LatLong(1000 * Spatial_List$loc_x)
       
@@ -39,3 +39,22 @@ UTM.to.LatLong(1000*Spatial_List$loc_x[1:10,]) # Column names left unchanged
 8  -123.0263 37.56732
 9  -123.6348 38.47063
 10 -124.8736 43.80766
+
+
+# West Coast (contiguous US) examples
+
+# Add triangulation mesh to lat/long figure of the entire coast
+Imap::imap(longrange = c(-128, -118), latrange = c(32,49.5), zoom = F) # For triangulation mesh
+SpatialIsoLL <- Spatial_List$MeshList$isotropic_mesh
+SpatialIsoLL$loc <- UTM.to.LatLong(1000*SpatialIsoLL$loc)
+plot(SpatialIsoLL, draw.vertices = T, add=T)
+
+
+# Add triangulation mesh to lat/long figure off the northern coast of Washington State
+Imap::plotGIS(long = c(-126, -124), lat = c(47.25, 48.5))
+SpatialIsoLL <- Spatial_List$MeshList$isotropic_mesh
+SpatialIsoLL$loc <- UTM.to.LatLong(1000*SpatialIsoLL$loc)
+plot(SpatialIsoLL, draw.vertices = T, lwd = 2, add=T) # Thicker lines (optimized for PNG)
+points(UTM.to.LatLong(1000*Spatial_List$loc_x), col = 'blue', pch = 19, cex=2)  # Add larger vertices (knots)
+
+
