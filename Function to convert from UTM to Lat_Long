@@ -48,7 +48,7 @@ UTM.to.LatLong(1000*Spatial_List$loc_x[1:10,]) # Column names left unchanged
 10 -124.8736 43.80766
 
 
-# West Coast (contiguous US) examples
+# West Coast (contiguous US) examples using 'Spatial_List' from VAST
 
 # Add triangulation mesh to lat/long figure of the entire coast
 Imap::imap(longrange = c(-128, -118), latrange = c(32,49.5), zoom = F) # For triangulation mesh
@@ -60,8 +60,6 @@ plot(spatialIsoLL, draw.vertices = T, add=T)
 # Add triangulation mesh to lat/long figure off the northern coast of Washington State using plotGIS()
 png("VAST_Mesh.png", width = 2048, height = 2048, bg = 'grey') 
 Imap::plotGIS(long = c(-126, -124), lat = c(47.25, 48.5))
-spatialIsoLL <- Spatial_List$MeshList$isotropic_mesh
-spatialIsoLL$loc <- UTM.to.LatLong(1000 * spatialIsoLL$loc)
 # Thicker lines and larger vertices (knots) (optimized for PNG output)
 plot(spatialIsoLL, draw.vertices = T, lwd = 2, add=T) 
 points(UTM.to.LatLong(1000 * Spatial_List$loc_x), col = 'blue', pch = 19, cex=2)
