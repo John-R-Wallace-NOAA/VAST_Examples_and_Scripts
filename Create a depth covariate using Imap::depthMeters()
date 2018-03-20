@@ -1,0 +1,17 @@
+
+    # The following code will convert the VAST UTM knot locations to lat/loing and then use Imap::depthMeters() to find the 
+    #       needed.
+
+    if (!any(installed.packages()[, 1] %in% "devtools")) 
+        install.packages("devtools")
+    if(!any(installed.packages()[, 1] %in% "JRWToolBox")) 
+        devtools::install_github("John-R-Wallace/JRWToolBox")
+        
+    lib(Imap)
+
+    knotsLatLong <- JRWToolBox::UTM.to.LatLong(1000 * Spatial_List$MeshList$loc_x)
+    knotsDepth <- Imap::depthMeters(knotsLatLong)
+    depthCovar <- SpatialDeltaGLMM::format_covariates(knotsLatLong$Lat, knotsLatLong$Long, rep(2015, nrow(knotsLatLong)), data.frame(Depth_m = knotsDepth), Extrapolation_List, Spatial_List)
+	
+    TmbData <- VAST::Data_Fn(..., X_xj = depthCovar, ... ) 			
+	
