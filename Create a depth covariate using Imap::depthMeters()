@@ -13,6 +13,10 @@
 
     knotsLatLong <- JRWToolBox::UTM.to.LatLong(1000 * Spatial_List$MeshList$loc_x)
     knotsDepth <- Imap::depthMeters(knotsLatLong)
+    hist(knotsDepth)
+    # Set positive elevation (negative depth) of any knots on an island to zero. 
+    #     This can happen using Region = 'Other' - and the result is not good!
+    knotsDepth[knotsDepth < 0] <- 0
     depthCovar <- array(rep(knotsDepth, times = length(Year_Set)), dim = c(n_x, length(Year_Set), 1))
     	
     TmbData <- VAST::Data_Fn(..., X_xj = depthCovar, ... ) 	
