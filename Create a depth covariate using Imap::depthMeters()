@@ -21,7 +21,7 @@
     	
     TmbData <- VAST::Data_Fn(..., X_xj = depthCovar, ... ) 	
     
-    # Example of the 3 dimensional array - depth estimate doesn't change by year, so it's the same for each year 
+    # Example of the 3 dimensional array - the depth estimate usually doesn't change by year, so it's the same for each year 
 	
    dim(depthCovar)  # Dimensions are: (# of knots, # of years, # of species)
    [1] 450  13   1
