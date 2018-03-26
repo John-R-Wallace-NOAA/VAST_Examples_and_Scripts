@@ -1,6 +1,10 @@
 
+    # This is based on Method = 'Mesh'
+
     # The following code will, for a single species, convert VAST UTM knot locations to lat/long,  
     #    use Imap::depthMeters() to find the needed depths, and create the 3-dimensional array needed by Data_Fn.
+    
+    
 
     if (!any(installed.packages()[, 1] %in% "devtools")) 
         install.packages("devtools")
@@ -15,8 +19,10 @@
     knotsDepth <- Imap::depthMeters(knotsLatLong)
     hist(knotsDepth)
     
-    # Set positive elevation (negative depth) of any knots on an island to zero (see below). 
-    #     This can happen at least with Region = 'Other' - and the result is not good !
+    # Set positive elevation (negative depth) of any knots on an island to zero [see the Issue:
+    #     VAST knot on an island in Southern California (in VAST_Exmaples_and_Scripts) for a figure.] 
+    #     This can happen at least with Region = 'Other' - and the result can be very large parmaters values and 
+    #     extreme anisotropy.
     # Imap::depthMeters() does not set all negative depths to zero for help in finding 'land tows' when using logbook data.
     
     knotsDepth[knotsDepth < 0] <- 0
@@ -43,5 +49,4 @@
 [450,]  140.00000  140.00000  140.00000  140.00000  140.00000  140.00000  
    
    
-   Figure of a knot on an island in Southern California:
-   
+    
