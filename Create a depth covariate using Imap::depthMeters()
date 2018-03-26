@@ -1,6 +1,6 @@
 
-    # The following code will, for a single species, convert VAST UTM knot locations to lat/long, use Imap::depthMeters()  
-    #       to find the needed depths, and create the 3-dimensional array needed by Data_Fn.
+    # The following code will, for a single species, convert VAST UTM knot locations to lat/long,  
+    #    use Imap::depthMeters() to find the needed depths, and create the 3-dimensional array needed by Data_Fn.
 
     if (!any(installed.packages()[, 1] %in% "devtools")) 
         install.packages("devtools")
@@ -14,20 +14,24 @@
     knotsLatLong <- JRWToolBox::UTM.to.LatLong(1000 * Spatial_List$MeshList$loc_x)
     knotsDepth <- Imap::depthMeters(knotsLatLong)
     hist(knotsDepth)
-    # Set positive elevation (negative depth) of any knots on an island to zero. 
-    #     This can happen using Region = 'Other' - and the result is not good!
+    
+    # Set positive elevation (negative depth) of any knots on an island to zero (see below). 
+    #     This can happen at least with Region = 'Other' - and the result is not good !
+    # Imap::depthMeters() does not set all negative depths to zero for help in finding 'land tows' when using logbook data.
+    
     knotsDepth[knotsDepth < 0] <- 0
     depthCovar <- array(rep(knotsDepth, times = length(Year_Set)), dim = c(n_x, length(Year_Set), 1))
     	
     TmbData <- VAST::Data_Fn(..., X_xj = depthCovar, ... ) 	
     
-    # Example of the 3 dimensional array - the depth estimate usually doesn't change by year, so it's the same for each year 
-	
-   dim(depthCovar)  # Dimensions are: (# of knots, # of years, # of species)
-   [1] 450  13   1
+    # Example of the 3 dimensional array - the depth estimates usually don't change by year, so they are the same for each year 
+    #  (A seafloor subduction earthquake or new depth estimates would be examples on how depth could change over time.)
+    
+    dim(depthCovar)  # Dimensions are: (# of knots, # of years, # of species)
+    [1] 450  13   1
    
-   depthCovar
-   , , 1
+    depthCovar
+    , , 1
 
              [,1]       [,2]       [,3]       [,4]       [,5]       [,6]  
   [1,]  371.99838  371.99838  371.99838  371.99838  371.99838  371.99838  ...
@@ -38,4 +42,6 @@
 [449,]   72.00000   72.00000   72.00000   72.00000   72.00000   72.00000  
 [450,]  140.00000  140.00000  140.00000  140.00000  140.00000  140.00000  
    
+   
+   Figure of a knot on an island in Southern California:
    
