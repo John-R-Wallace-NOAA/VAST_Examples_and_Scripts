@@ -2,7 +2,7 @@
     # This is based on Method = 'Mesh'
 
     # The following code will, for a single species, convert VAST UTM knot locations to lat/long,  
-    #    use Imap::depthMeters() to find the needed depths, and create the 3-dimensional array needed by Data_Fn.
+    #    use Imap::depthMeters() to find the needed depths, and create the 3-dimensional array needed by Data_Fn().
     
     
 
