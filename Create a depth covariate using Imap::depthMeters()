@@ -28,10 +28,10 @@
     knotsDepth[knotsDepth < 0] <- 0
     depthCovar <- array(rep(knotsDepth, times = length(Year_Set)), dim = c(n_x, length(Year_Set), 1))
     	
-    TmbData <- VAST::Data_Fn(..., X_xj = depthCovar, ... ) 	
+    TmbData <- VAST::Data_Fn(..., X_xtp = depthCovar, ... ) 	# X_xj is depreciated 
     
     
-    # Example of the 3 dimensional array - the depth estimates usually don't change by year, so they are the same for each year 
+    # Example of the 3 dimensional array - depth estimates usually don't change by year, so they are repeated for each year 
     #  (A seafloor subduction earthquake or new depth estimates would be examples on how depth could change over time.)
     
     dim(depthCovar)  # Dimensions are: (# of knots, # of years, # of species)
