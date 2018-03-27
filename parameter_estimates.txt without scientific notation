@@ -1,0 +1,15 @@
+
+...
+
+Opt = TMBhelper::Optimize(..., savedir = DateFile, ...)
+
+OptRnd <- Opt
+OptRnd$par <- JRWToolBox::r(Opt$par)
+OptRnd$diagnostics <- JRWToolBox::r(Opt$diagnostics)
+OptRnd$SD <- JRWToolBox::r(summary(Opt$SD, "fixed"))
+OptRnd$Maximum_gradient_component <- Opt$max_gradient
+OptRnd
+capture.output(OptRnd, file = file.path(DateFile, "parameter_estimates.txt"))
+
+...
+	
