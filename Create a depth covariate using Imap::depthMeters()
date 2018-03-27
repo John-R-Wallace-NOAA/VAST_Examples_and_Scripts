@@ -32,7 +32,7 @@
     
     
     # Example of the 3 dimensional array - depth estimates usually don't change by year, so they are repeated for each year 
-    #  (A seafloor subduction earthquake or new depth estimates would be examples on how depth could change over time.)
+    #  (A seafloor subduction earthquake would be an example on how depth could change over time.)
     
     dim(depthCovar)  # Dimensions are: (# of knots, # of years, # of covariates)
     [1] 450  13   1
