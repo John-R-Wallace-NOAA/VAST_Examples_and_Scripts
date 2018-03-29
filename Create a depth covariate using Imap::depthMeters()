@@ -21,7 +21,7 @@
     
     # Set positive elevation (negative depth) of any knots on an island to zero [see the Issue:
     #     VAST knot on an island in Southern California (in VAST_Exmaples_and_Scripts) for a figure.] 
-    #     This can happen at least with Region = 'Other' - and the result can be very large parmater values and 
+    #     This can happen at least with Region = 'Other' - and the result can be very large parameter values and 
     #     extreme anisotropy.
     # Imap::depthMeters() does not set all negative depths to zero for help in finding 'land tows' when using logbook data.
     
