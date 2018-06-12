@@ -220,3 +220,5 @@ SpatialDeltaGLMM::plot_residuals(Lat_i=Data_Geostat[,'Lat'], Lon_i=Data_Geostat[
 
 setwd(HomeDir)
 
+# Yearly Results Figures
+JRWToolBox::YearlyResultsFigures()
