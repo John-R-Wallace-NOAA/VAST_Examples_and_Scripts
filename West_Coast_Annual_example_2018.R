@@ -220,6 +220,8 @@ SpatialDeltaGLMM::plot_residuals(Lat_i=Data_Geostat[,'Lat'], Lon_i=Data_Geostat[
 
 setwd(HomeDir)
 
-# Yearly Results Figures
+# Yearly results figures
+  # 1. Yearly_dens.png: color changes are within year - not across years.
+  # 2. SpResults 6000 Rez.png: Yearly results (across years) in a single plot; hexagon shapes not circles are used. The biomass index is also included.
 JRWToolBox::YearlyResultsFigures()
 
