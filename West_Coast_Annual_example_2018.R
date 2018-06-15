@@ -13,6 +13,9 @@ HomeDir <- getwd()
 # Revised by James Thorson April 2017
 # Revised by J. Wallace Apr 2017
 
+ if (!any(installed.packages()[, 1] %in% "devtools")) 
+        install.packages("devtools")
+
 if (!any(installed.packages()[, 1] %in% "JRWToolBox"))
      devtools::install_github("John-R-Wallace/R-ToolBox")
 
