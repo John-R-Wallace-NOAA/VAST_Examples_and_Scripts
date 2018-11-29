@@ -242,7 +242,7 @@ setwd(HomeDir)
 
 # Yearly results figures
   # 1. Yearly_dens.png: color changes are within year - not across years.
-  # 2. SpResults <spShortName>.png: Yearly results (across years) in a single plot; hexagon shapes (not circles) are used. The biomass index is also included.
+  # 2. SpResults <spShortName>.png: Yearly results in a single plot; hexagon shapes (not circles) are used. The biomass index is also included.
 JRWToolBox::YearlyResultsFigures() # This function looks for 'spShortName' (defined above)
 
 
