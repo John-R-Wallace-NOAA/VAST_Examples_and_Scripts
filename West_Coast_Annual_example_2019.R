@@ -245,6 +245,6 @@ setwd(HomeDir)
   # 2. SpResults <spShortName>.png: Yearly results in a single plot; hexagon shapes (not circles) are used. The biomass index is also included.
 JRWToolBox::YearlyResultsFigures() # This function looks for 'spShortName' (defined above)
 
-# Save it all
+# Save it all in Image.RData
 save(list = names(.GlobalEnv), file = paste0(DateFile, "Image.RData"))
 
