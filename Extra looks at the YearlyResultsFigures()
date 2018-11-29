@@ -1,0 +1,45 @@
+
+# 2015
+rm(SP.Results.Dpth)
+SP.Results.Dpth <- YearlyResultsFigures(paste(spShortName, "2003-15"), Year_Set. = Year_Set[1:13], Years2Include. = Years2Include[1:13])
+YearlyResultsFigures(paste(spShortName, "2003-15"), , Year_Set. = Year_Set[1:13], Years2Include. = Years2Include[1:13], longitudeDelta = 3.5)
+
+
+# 2017
+rm(SP.Results.Dpth)
+SP.Results.Dpth <- YearlyResultsFigures(paste(spShortName, "2003-17"))
+# Spread out longitude slightly off
+YearlyResultsFigures(paste(spShortName, "2003-17"), longitudeDelta = 3.5)
+
+
+# Fake 2018 until we have real data
+Index.2018 <- Index$Table[1:15,]
+Index.2018 <- rbind(Index.2018, Index.2018[5,])
+Index.2018$Year[16] <- 2018
+(Index.2018 <- renum(Index.2018))
+  
+# Start with SP.Results.Dpth from 2003-17 
+SP.Results.Dpth$X2018 <- SP.Results.Dpth$X2007
+SP.Results.Dpth[1:4,]
+YearlyResultsFigures(paste(spShortName, "2003-18"), longitudeDelta = 2.6, Year_Set. = 2003:2018, Years2Include = 1:16, Index = Index.2018)
+
+
+
+# Try not to start at the beginning (2003) - fail
+rm(SP.Results.Dpth)
+YearlyResultsFigures(paste(spShortName, "2004-10"), Year_Set. = Year_Set[2:8], Years2Include. = Years2Include[2:8])
+
+rm(SP.Results.Dpth)
+YearlyResultsFigures(paste(spShortName, "2016-17"), Year_Set. = Year_Set[c(1,14:15)], Years2Include. = Years2Include[c(1,14:15)])
+
+
+
+
+
+
+
+
+
+
+
+
