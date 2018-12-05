@@ -224,7 +224,7 @@ pander::pandoc.table( Opt$diagnostics[,c('Param','Lower','MLE','Upper','final_gr
 Enc_prob <- FishStatsUtils::plot_encounter_diagnostic( Report=Report, Data_Geostat=Data_Geostat, DirName=DateFile)
 
 # QQ plot
-Q <- FishStatsUtils::plot_quantile_diagnostic( TmbData=TmbData, Report=Report, FileName_PP="Posterior_Predictive.jpg", FileName_Phist = "Posterior_Predictive-Histogram.jpg",
+Q <- FishStatsUtils::plot_quantile_diagnostic( TmbData=TmbData, Report=Report, DateFile = DateFile, FileName_PP="Posterior_Predictive.jpg", FileName_Phist = "Posterior_Predictive-Histogram.jpg",
                              FileName_QQ = "Q-Q_plot.jpg", FileName_Qhist = "Q-Q_hist.jpg")
 
 
