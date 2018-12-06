@@ -262,7 +262,7 @@ save(list = names(.GlobalEnv), file = paste0(DateFile, "Image.RData"))
 # Obj$gr()
 # FishStatsUtils::summary_nwfsc( obj=Obj, sdreport=Opt$SD)
 # FishStatsUtils::summary_nwfsc( obj=Obj, sdreport=Opt$SD, savedir = DateFile)
-# cbind(TMB::summary.sdreport(Opt$SD, "fixed"), Gradient = Obj$gr()) # Estimate, Std. Error, and Gradient for the fixed parameters
+# cbind(TMB::summary.sdreport(Opt$SD, "fixed"), Gradient = Obj$gr()) # cf. Opt$diagnostics or JRWToolBox::r(Opt$diagnostics, 9)
 
 
 # Note also that objects in the Objective function's (Obj) environment can be listed with:
