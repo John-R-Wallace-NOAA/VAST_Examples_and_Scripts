@@ -166,8 +166,10 @@ Obj = TmbList[["Obj"]]
 # Run optimizer with Newton steps to improve convergence
 Opt = TMBhelper::Optimize(obj = Obj, lower = TmbList[["Lower"]], upper = TmbList[["Upper"]], getsd = TRUE, newtonsteps = 2, savedir = DateFile, bias.correct = TRUE )
 
-# Create the report
+# Create the reports
 Report = Obj$report()
+FishStatsUtils::summary_nwfsc( obj=Obj, sdreport=Opt$SD, savedir = DateFile )
+
 
 # Save everything in object "Save" so that if you load it again, you can attach Save or not,
   # and know you haven't polluted your workspace
@@ -247,4 +249,27 @@ JRWToolBox::YearlyResultsFigures() # This function looks for 'spShortName' (defi
 
 # Save it all in Image.RData
 save(list = names(.GlobalEnv), file = paste0(DateFile, "Image.RData"))
+
+# Note that in a new R session, after reloading Image.Rdata:
+# base::load("Image.RData")
+# setwd(DateFile) # Optional
+
+# TMB's dll can also be reloaded with: 
+# dyn.load(paste0(DateFile, Version, ".dll")) # Look at all loaded dll's with getLoadedDLLs()
+
+# This allows calls such as these below to work again:
+# Obj$fn()
+# Obj$gr()
+# FishStatsUtils::summary_nwfsc( obj=Obj, sdreport=Opt$SD)
+# FishStatsUtils::summary_nwfsc( obj=Obj, sdreport=Opt$SD, savedir = DateFile)
+# cbind(TMB::summary.sdreport(Opt$SD, "fixed"), Gradient = Obj$gr()) # Estimate, Std. Error, and Gradient for the fixed parameters
+
+
+# Note also that objects in the Objective function's (Obj) environment can be listed with:
+# ls(Obj, env=Obj$env)
+
+# And looked at with:
+# get('hessian', env = Obj$env)
+# get('last.par', env = Obj$env)[-get('random', env = Obj$env)] # Same as TMB::summary.sdreport(Opt$SD, "fixed")
+# table(names(get('par', env = Obj$env)[get('random', env = Obj$env)])) # Same as table(row.names(TMB::summary.sdreport(Opt$SD, "random")))
 
