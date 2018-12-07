@@ -1,9 +1,3 @@
-# VAST will often leave you in the subdirectory of the current run. Using HomeDir helps get you back where you started.
-# Only do this once per R session, after you are in the your main working directory:
-
-HomeDir <- getwd()
-
-# =============================================
 
 # Test run of single species spatial delta glmm
 # Test, canary data; implementation, Lingcod groundfish survey data
@@ -12,7 +6,83 @@ HomeDir <- getwd()
 # Revised by J. Wallace Mar 2017
 # Revised by James Thorson April 2017
 # Revised by J. Wallace Apr 2017
-# Revised by J. Wallace Nov 2018
+# Revised by J. Wallace Dec 2018
+
+# =============================================
+
+# VAST will often leave you in the subdirectory of the current run. Using HomeDir helps get you back where you started.
+# Only do this once per R session, after you are in the your main working directory:
+
+HomeDir <- getwd()
+
+# =============================================
+
+
+summaryNWFSC <- function( obj = Obj, sdreport = Opt$SD, savedir=NULL ) {
+
+    # Based on James Thorson's summary_nwfsc(), circa 2017
+    # Revised by John Wallace Dec 2018
+
+    f = function(num,threshold=0.000001) ifelse(num<threshold,paste0("< ",threshold),num)
+    # Table of settings
+    TableA = data.frame( "Setting_name"=rep(NA,9), "Setting_used"=NA )
+    TableA[1,] = c("Number of knots", obj$env$data$n_x)
+    TableA[2,] = c("Maximum gradient", formatC(f(max(abs( obj$gr(TMB::summary.sdreport(sdreport,"fixed")[,'Estimate'])))),format="f",digits=6) )
+    TableA[3,] = c("Is hessian positive definite?", switch(as.character(sdreport$pdHess),"FALSE"="No","TRUE"="Yes") )
+    TableA[4,] = c("Was bias correction used?", ifelse("Est. (bias.correct)"%in%colnames(TMB::summary.sdreport(sdreport)),"Yes","No") )
+    TableA[5,] = c("Distribution for measurement errors", switch(as.character(obj$env$data$ObsModel[1]),"1"="Lognormal","2"="Gamma") )
+    TableA[6,] = c("Spatial effect for encounter probability", switch(as.character(obj$env$data$FieldConfig[1]),"-1"="No","1"="Yes") )
+    TableA[7,] = c("Spatio-temporal effect for encounter probability", switch(as.character(obj$env$data$FieldConfig[2]),"-1"="No","1"="Yes") )
+    TableA[8,] = c("Spatial effect for positive catch rate", switch(as.character(obj$env$data$FieldConfig[3]),"-1"="No","1"="Yes") )
+    TableA[9,] = c("Spatio-temporal effect for positive catch rate", switch(as.character(obj$env$data$FieldConfig[4]),"-1"="No","1"="Yes") )
+    
+    # Print number of parameters
+    # TableB = FishStatsUtils::list_parameters( obj, verbose = FALSE )
+    TableB = list_parameters( obj, verbose = FALSE )
+    
+    # Print table of MLE of fixed effects
+    TableC = JRWToolBox::renum(cbind(Param = Opt$diagnostics[, 1], TMB::summary.sdreport( Opt$SD, "fixed" ), Opt$diagnostics[, -1]))
+        
+    # Return
+    Return = list("TableA"=TableA, "TableB"=TableB, "TableC"=TableC)
+    if( !is.null(savedir)) for(i in 1:3) write.csv(Return[[i]], file=paste0(savedir,"/",names(Return)[i],".csv"), row.names = FALSE)
+    cat("\n")
+    Return
+}
+
+list_parameters <- function (Obj, verbose = TRUE) {
+
+    # From ThorsonUtilities, circa 2017
+    # If list.parameters() is moved to FishStatsUtils, this fucntion will be removed.
+
+
+    Return = list()
+    Table = data.frame()
+    if (length(Obj$env$random) > 0) {
+        Return[["Fixed_effects"]] = names(Obj$env$last.par[-Obj$env$random])
+        Return[["Random_effects"]] = names(Obj$env$last.par[Obj$env$random])
+        Table = data.frame(Coefficient_name = names(table(Return[["Fixed_effects"]])), 
+            Number_of_coefficients = as.numeric(table(Return[["Fixed_effects"]])), 
+            Type = "Fixed")
+        Table = rbind(Table, data.frame(Coefficient_name = names(table(Return[["Random_effects"]])), 
+            Number_of_coefficients = as.numeric(table(Return[["Random_effects"]])), 
+            Type = "Random"))
+    }
+    else {
+        Return[["Fixed_effects"]] = names(Obj$env$last.par)
+        Table = data.frame(Coefficient_name = names(table(Return[["Fixed_effects"]])), 
+            Number_of_coefficients = as.numeric(table(Return[["Fixed_effects"]])), 
+            Type = "Fixed")
+    }
+    if (verbose == TRUE) {
+        message("List of estimated fixed and random effects:")
+        print(Table)
+    }
+    return(invisible(Table))
+}
+
+
+# =============================================
 
 # 'spFormalName', is a common name that needs to work with the Data Warehouse, i.e. only proper names capitalized.
 # 'spLongName' and 'spShortName' can be whatever is desired, the long name goes in the directory name and
@@ -168,7 +238,7 @@ Opt = TMBhelper::Optimize(obj = Obj, lower = TmbList[["Lower"]], upper = TmbList
 
 # Create the reports
 Report = Obj$report()
-FishStatsUtils::summary_nwfsc( obj=Obj, sdreport=Opt$SD, savedir = DateFile )
+summaryNWFSC( savedir = DateFile )
 
 
 # Save everything in object "Save" so that if you load it again, you can attach Save or not,
@@ -250,6 +320,8 @@ JRWToolBox::YearlyResultsFigures() # This function looks for 'spShortName' (defi
 # Save it all in Image.RData
 save(list = names(.GlobalEnv), file = paste0(DateFile, "Image.RData"))
 
+# =============================================
+
 # Note that in a new R session, after reloading Image.Rdata:
 # base::load("Image.RData")
 # setwd(DateFile) # Optional
@@ -260,9 +332,9 @@ save(list = names(.GlobalEnv), file = paste0(DateFile, "Image.RData"))
 # This allows calls such as these below to work again:
 # Obj$fn()
 # Obj$gr()
-# FishStatsUtils::summary_nwfsc( obj=Obj, sdreport=Opt$SD)
-# FishStatsUtils::summary_nwfsc( obj=Obj, sdreport=Opt$SD, savedir = DateFile)
-# cbind(TMB::summary.sdreport(Opt$SD, "fixed"), Gradient = Obj$gr()) # cf. Opt$diagnostics or JRWToolBox::r(Opt$diagnostics, 9)
+# summaryNWFSC(obj = Obj, sdreport = Opt$SD)
+# summaryNWFSC(obj = Obj, sdreport = Opt$SD, savedir = DateFile)
+# cbind(TMB::summary.sdreport(Opt$SD, "fixed"), Gradient = Obj$gr())  # cf. Opt$diagnostics or JRWToolBox::r(Opt$diagnostics, 9)
 
 
 # Note also that objects in the Objective function's (Obj) environment can be listed with:
