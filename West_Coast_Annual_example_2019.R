@@ -322,26 +322,33 @@ save(list = names(.GlobalEnv), file = paste0(DateFile, "Image.RData"))
 
 # =============================================
 
-# Note that in a new R session, after reloading Image.Rdata:
-# base::load("Image.RData")
-# setwd(DateFile) # Optional
+if(FALSE) {
 
-# TMB's dll can also be reloaded with: 
-# dyn.load(paste0(DateFile, Version, ".dll")) # Look at all loaded dll's with getLoadedDLLs()
+     # Note that in a new R session, after reloading Image.Rdata:
+     base::load("Image.RData")
+     setwd(DateFile) 
+    
+     # More figures and tables can be created or updated when necessary, e.g.:
+     JRWToolBox::YearlyResultsFigures()
+    
+     # TMB's dll can also be reloaded with: 
+     dyn.load(paste0(DateFile, Version, ".dll")) # Look at all loaded dll's with getLoadedDLLs()
+    
+     # This allows calls such as these below to work again:
+     Obj$fn()
+     Obj$gr()
+     summaryNWFSC(obj = Obj, sdreport = Opt$SD)
+     summaryNWFSC(obj = Obj, sdreport = Opt$SD, savedir = DateFile)
+     cbind(TMB::summary.sdreport(Opt$SD, "fixed"), Gradient = Obj$gr())  # cf. Opt$diagnostics or JRWToolBox::r(Opt$diagnostics, 9)
+    
+    
+     # Note also that objects in the Objective Function's (Obj) environment can be listed with:
+     ls(Obj, env=Obj$env)
+    
+     # And looked at with:
+     get('hessian', env = Obj$env)
+     get('last.par', env = Obj$env)[-get('random', env = Obj$env)] # Same as TMB::summary.sdreport(Opt$SD, "fixed")
+     table(names(get('par', env = Obj$env)[get('random', env = Obj$env)])) # Same as table(row.names(TMB::summary.sdreport(Opt$SD, "random")))
 
-# This allows calls such as these below to work again:
-# Obj$fn()
-# Obj$gr()
-# summaryNWFSC(obj = Obj, sdreport = Opt$SD)
-# summaryNWFSC(obj = Obj, sdreport = Opt$SD, savedir = DateFile)
-# cbind(TMB::summary.sdreport(Opt$SD, "fixed"), Gradient = Obj$gr())  # cf. Opt$diagnostics or JRWToolBox::r(Opt$diagnostics, 9)
-
-
-# Note also that objects in the Objective function's (Obj) environment can be listed with:
-# ls(Obj, env=Obj$env)
-
-# And looked at with:
-# get('hessian', env = Obj$env)
-# get('last.par', env = Obj$env)[-get('random', env = Obj$env)] # Same as TMB::summary.sdreport(Opt$SD, "fixed")
-# table(names(get('par', env = Obj$env)[get('random', env = Obj$env)])) # Same as table(row.names(TMB::summary.sdreport(Opt$SD, "random")))
+}
 
