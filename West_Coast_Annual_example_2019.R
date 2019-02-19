@@ -253,6 +253,9 @@ all( eigen(Opt$SD$cov.fixed)$values > 0 )
 
 setwd(HomeDir)
 
+# Preliminary save to Image.RData, in case there are errors below
+save(list = names(.GlobalEnv), file = paste0(DateFile, "Image.RData"))
+
 ################
 # Model output (some of the diagnostic plots are slow, so do the model ouptut first)
 ################
