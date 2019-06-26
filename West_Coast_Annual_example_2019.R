@@ -110,6 +110,12 @@ spShortName <- 'LCOD'
 if (!any(installed.packages()[, 1] %in% "JRWToolBox"))
      devtools::install_github("John-R-Wallace/R-ToolBox")
 
+# ***** To get years added to the residual plot do this until pulled to Kelli's verion ***    
+JRWToolBox::lib("John-R-Wallace-NOAA/FishStatsUtils")
+
+# ***** Once Kelly accepts my fork, do this until pulled to Thorson's verion ***          
+# JRWToolBox::lib("kellijohnson-NOAA/FishStatsUtils")
+       
 if (!any(installed.packages()[, 1] %in% "VAST"))
     devtools::install_github("james-thorson/VAST")
     
@@ -307,10 +313,11 @@ Q <- FishStatsUtils::plot_quantile_diagnostic( TmbData=TmbData, Report=Report, D
 
 
 # Residuals
+
 FishStatsUtils::plot_residuals(Lat_i=Data_Geostat[,'Lat'], Lon_i=Data_Geostat[,'Lon'], TmbData=TmbData, Report=Report, Q=Q, savedir=DateFile, MappingDetails=MapDetails_List[["MappingDetails"]],
            PlotDF=MapDetails_List[["PlotDF"]], MapSizeRatio=MapDetails_List[["MapSizeRatio"]], Xlim=MapDetails_List[["Xlim"]], Ylim=MapDetails_List[["Ylim"]], FileName=DateFile,
            Year_Set=Year_Set, Years2Include=Years2Include, Rotate=MapDetails_List[["Rotate"]], Cex=MapDetails_List[["Cex"]], Legend=MapDetails_List[["Legend"]],
-           zone=MapDetails_List[["Zone"]], mar=c(0,0,2,0), oma=c(3.5,3.5,0,0), cex=1.8)
+           zone=MapDetails_List[["Zone"]], mar=c(0,0,2,0), oma=c(3.5,3.5,0,0), cex=1, maxpanel = 4)
 
 # Histogram of quantiles...should be a flat line for well behaved model; also can use the Q-Q plot
 
@@ -357,4 +364,5 @@ if(FALSE) {
      table(names(get('par', env = Obj$env)[get('random', env = Obj$env)])) # Same as table(row.names(TMB::summary.sdreport(Opt$SD, "random")))
 
 }
+
 
