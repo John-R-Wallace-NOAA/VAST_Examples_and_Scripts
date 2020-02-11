@@ -135,7 +135,7 @@ require(TMB)
 require(VAST)
 
 # Extract species data from the Warehouse
-Data_Set <- JRWToolBox::dataWareHouseTrawlCatch(spFormalName, yearRange = c(2005, 2019), project = 'WCGBTS.Combo')
+Data_Set <- JRWToolBox::dataWareHouseTrawlCatch(spFormalName, yearRange = c(2004, 2018), project = 'WCGBTS.Combo')
 
 # Look at the data by year and pass - showing 'NA's if any via JRWToolBox::Table function.
 JRWToolBox::Table(Data_Set$Year, Data_Set$Pass)
