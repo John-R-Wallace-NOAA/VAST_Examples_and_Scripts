@@ -1,7 +1,7 @@
 # Download with:
-# JRWToolBox::gitAFile("John-R-Wallace-NOAA/VAST_Examples_and_Scripts/master/West_Coast_Annual_example_2020.R", "script", File = "West_Coast_Annual_example_2019.R", show = FALSE)
+# JRWToolBox::gitAFile("John-R-Wallace-NOAA/VAST_Examples_and_Scripts/master/West_Coast_Annual_Exmpl_2020_V3X.R", "script", File = "West_Coast_Annual_example_2019.R", show = FALSE)
 # or edit with [using a properly configured gitEdit()]
-# JRWToolBox::gitEdit(West_Coast_Annual_example_2020, "John-R-Wallace-NOAA/VAST_Examples_and_Scripts/master/")
+# JRWToolBox::gitEdit(West_Coast_Annual_Exmpl_2020_V3X, "John-R-Wallace-NOAA/VAST_Examples_and_Scripts/master/")
 
 
 # Test run of single species spatial delta glmm
@@ -12,7 +12,7 @@
 # Revised by James Thorson April 2017
 # Revised by J. Wallace Apr 2017
 # Revised by J. Wallace Dec 2018
-# Revised by J. Wallace FEb 2020
+# Revised by J. Wallace FEb 2020; uses fine_scale = TRUE in VAST ver. 3X and JRWToolBox::YearlyResultsFigure_VAST3X(), following the upper level functions (wrappers) approach.
 
 # =============================================
 
@@ -248,12 +248,7 @@ MapDetails_List = FishStatsUtils::make_map_info( Region = Region, Extrapolation_
 # Yearly results figures
   # 1. Yearly_dens.png: color changes are within year - not across years.
   # 2. SpResults <spShortName>.png: Yearly results in a single plot; hexagon shapes (not circles) are used. The biomass index is also included.
-# SP.Results.Dpth <- JRWToolBox::YearlyResultsFigure_V3.5(Report = fit$Report, fit. = fit, map_list. = plot_list$map_list, Graph.Dev = 'png') # This function looks for 'spShortName' (defined above)
-
-SP.Results.Dpth <- YearlyResultsFigures(Report = fit$Report, Opt = fit, Graph.Dev = 'png', hexSymbolSize = 0.01) # This function looks for 'spShortName' (defined above)
-
-rm(SP.Results.Dpth)
-YearlyResultsFigure_V3.5(Report = fit$Report, fit. = fit, map_list. = plot_list$map_list, Graph.Dev = 'png') 
+SP.Results.Dpth <- JRWToolBox::YearlyResultsFigure_VAST3X(Report = Report, map_list = plot_list$map_list, fit = fit, Graph.Dev = 'png')  # This function looks for 'spShortName' (defined above)
 
 # Save it all in Image.RData
 save(list = names(.GlobalEnv), file = paste0(DateFile, "Image.RData"))
@@ -305,4 +300,5 @@ rev(sort((Total_sp_wt_kg/Area_Swept_ha)[Year %in% 2018]))[1:20]
 
 
 }
+
 
