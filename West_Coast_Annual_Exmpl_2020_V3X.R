@@ -24,33 +24,33 @@ HomeDir <- getwd()
 # =============================================
 
 
-summaryNWFSC <- function( obj = Obj, sdreport = Opt$SD, savedir=NULL ) {
+summaryNWFSC <- function( obj = fit$tmb_list$Obj, Opt = fit$parameter_estimates, sdreport = fit$parameter_estimates$SD, savedir = DateFile ) {
 
     # Based on James Thorson's summary_nwfsc(), circa 2017
     # Revised by John Wallace Dec 2018
 
-    f = function(num,threshold=0.000001) ifelse(num<threshold,paste0("< ",threshold),num)
+    f <- function(num,threshold=0.000001) ifelse(num<threshold,paste0("< ",threshold),num)
     # Table of settings
     TableA = data.frame( "Setting_name"=rep(NA,9), "Setting_used"=NA )
-    TableA[1,] = c("Number of knots", obj$env$data$n_x)
-    TableA[2,] = c("Maximum gradient", formatC(f(max(abs( obj$gr(TMB::summary.sdreport(sdreport,"fixed")[,'Estimate'])))),format="f",digits=6) )
-    TableA[3,] = c("Is hessian positive definite?", switch(as.character(sdreport$pdHess),"FALSE"="No","TRUE"="Yes") )
-    TableA[4,] = c("Was bias correction used?", ifelse("Est. (bias.correct)"%in%colnames(TMB::summary.sdreport(sdreport)),"Yes","No") )
-    TableA[5,] = c("Distribution for measurement errors", switch(as.character(obj$env$data$ObsModel[1]),"1"="Lognormal","2"="Gamma") )
-    TableA[6,] = c("Spatial effect for encounter probability", switch(as.character(obj$env$data$FieldConfig[1]),"-1"="No","1"="Yes") )
-    TableA[7,] = c("Spatio-temporal effect for encounter probability", switch(as.character(obj$env$data$FieldConfig[2]),"-1"="No","1"="Yes") )
-    TableA[8,] = c("Spatial effect for positive catch rate", switch(as.character(obj$env$data$FieldConfig[3]),"-1"="No","1"="Yes") )
-    TableA[9,] = c("Spatio-temporal effect for positive catch rate", switch(as.character(obj$env$data$FieldConfig[4]),"-1"="No","1"="Yes") )
+    TableA[1,] <- c("Number of knots", obj$env$data$n_x)
+    TableA[2,] <- c("Maximum gradient", formatC(f(max(abs( obj$gr(TMB::summary.sdreport(sdreport,"fixed")[,'Estimate'])))),format="f",digits=6) )
+    TableA[3,] <- c("Is hessian positive definite?", switch(as.character(sdreport$pdHess),"FALSE"="No","TRUE"="Yes") )
+    TableA[4,] <- c("Was bias correction used?", ifelse("Est. (bias.correct)"%in%colnames(TMB::summary.sdreport(sdreport)),"Yes","No") )
+    TableA[5,] <- c("Distribution for measurement errors", switch(as.character(obj$env$data$ObsModel[1]),"1"="Lognormal","2"="Gamma") )
+    TableA[6,] <- c("Spatial effect for encounter probability", switch(as.character(obj$env$data$FieldConfig[1]),"-1"="No","1"="Yes") )
+    TableA[7,] <- c("Spatio-temporal effect for encounter probability", switch(as.character(obj$env$data$FieldConfig[2]),"-1"="No","1"="Yes") )
+    TableA[8,] <- c("Spatial effect for positive catch rate", switch(as.character(obj$env$data$FieldConfig[3]),"-1"="No","1"="Yes") )
+    TableA[9,] <- c("Spatio-temporal effect for positive catch rate", switch(as.character(obj$env$data$FieldConfig[4]),"-1"="No","1"="Yes") )
     
     # Print number of parameters
     # TableB = FishStatsUtils::list_parameters( obj, verbose = FALSE )
-    TableB = list_parameters( obj, verbose = FALSE )
+    TableB <- list_parameters( obj, verbose = FALSE )
     
     # Print table of MLE of fixed effects
-    TableC = JRWToolBox::renum(cbind(Param = Opt$diagnostics[, 1], TMB::summary.sdreport( Opt$SD, "fixed" ), Opt$diagnostics[, -1]))
+    TableC <- JRWToolBox::r(JRWToolBox::renum(cbind(Param = Opt$diagnostics[, 1], TMB::summary.sdreport( Opt$SD, "fixed" ), Opt$diagnostics[, -1])))
         
     # Return
-    Return = list("TableA"=TableA, "TableB"=TableB, "TableC"=TableC)
+    Return <- list(TableA = TableA, TableB = TableB, TableC =TableC)
     if( !is.null(savedir)) for(i in 1:3) write.csv(Return[[i]], file=paste0(savedir,"/",names(Return)[i],".csv"), row.names = FALSE)
     cat("\n")
     Return
@@ -146,13 +146,13 @@ list.files(R.home(file.path("library", "VAST", "executables")))
 # Version 5+ gives a internal compiler error: Segmentation fault as of 21 Nov 2018
 Version <- "VAST_v8_5_0"  
 
-#  # define the spatial resolution for the model, and whether to use a grid or mesh approximation
-#  # mesh is default recommendation, number of knots need to be specified
-#  # do not modify Kmeans setup
-#  Method = c("Grid", "Mesh", "Spherical_mesh")[2]
-#  grid_size_km = 25     # Value only matters if Method="Grid"
-n_x = 100  # Number of "knots" used when Method="Mesh"
-#  Kmeans_Config = list( "randomseed"=1, "nstart"=100, "iter.max"=1e3 )   # Controls K-means algorithm to define location of knots when Method="Mesh"
+# # define the spatial resolution for the model, and whether to use a grid or mesh approximation
+# # mesh is default recommendation, number of knots need to be specified
+# # do not modify Kmeans setup
+# Method = c("Grid", "Mesh", "Spherical_mesh")[2]
+# grid_size_km = 25     # Value only matters if Method="Grid"
+n_x = 200  # Number of "knots" used when Method="Mesh"
+# Kmeans_Config = list( "randomseed"=1, "nstart"=100, "iter.max"=1e3 )   # Controls K-means algorithm to define location of knots when Method="Mesh"
 # 
 # Model settings
 
@@ -166,16 +166,15 @@ n_x = 100  # Number of "knots" used when Method="Mesh"
 # OverdispersionConfig, vessel effects for both components of the model?
 # settings can be on or off; 0,1
 # obs model - distribution for errors and which model to run (e.g. default is delta model with standard link functions)
-FieldConfig = c(Omega1 = 1, Epsilon1 = 1, Omega2 = 1, Epsilon2 = 1)
-RhoConfig = c(Beta1 = 0,  Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0)
-OverdispersionConfig = c(Delta1 = 1, Delta2 = 1)  # Turn on vessel-year effects for both components if using WCGBTS
-ObsModel = c(2,0)
+# ObsModel = c(2,0)
+# FieldConfig = c(Omega1 = 1, Epsilon1 = 1, Omega2 = 1, Epsilon2 = 1)
+# RhoConfig = c(Beta1 = 0,  Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0)
+# OverdispersionConfig = c(Delta1 = 1, Delta2 = 1)  # Turn on vessel-year effects for both components if using WCGBTS
+
 
 # outputs calculated after model runs, essentially reports to create
-Options = c(SD_site_density = 0, SD_site_logdensity = 0, Calculate_Range = 0, Calculate_evenness = 0, Calculate_effective_area = 0,  Calculate_Cov_SE = 0,
-             Calculate_Synchrony = 0, Calculate_Coherence = 0, Calculate_Range = 1, Calculate_effective_area = 1)
-
-
+# Options = c(SD_site_density = 0, SD_site_logdensity = 0, Calculate_Range = 0, Calculate_evenness = 0, Calculate_effective_area = 0,  Calculate_Cov_SE = 0,
+#             Calculate_Synchrony = 0, Calculate_Coherence = 0, Calculate_Range = 1, Calculate_effective_area = 1)
 
 # strata limits, run model but then calculate area specific indices
   (strata.limits <- data.frame(
@@ -185,11 +184,6 @@ Options = c(SD_site_density = 0, SD_site_logdensity = 0, Calculate_Range = 0, Ca
     shallow_border = c(55, 55, 55, 55),
     deep_border = c(1280, 1280, 1280, 1280)
     ))
-
-
-
-
-
 
 setwd(HomeDir)  # Make sure that the working directory is back where it started
 
@@ -223,16 +217,40 @@ Data_Geostat = na.omit(Data_Geostat)
 # shows data being used, read this document
 pander::pandoc.table(Data_Geostat[1:6,], digits=3)
 
-# FieldConfig = c(Omega1 = 1, Epsilon1 = 1, Omega2 = 1, Epsilon2 = 1)
-# RhoConfig = c(Beta1 = 0,  Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0)
-# OverdispersionConfig = c(Delta1 = 1, Delta2 = 1)
-settings <- make_settings( n_x = n_x, fine_scale = TRUE, ObsModel = c(2,0), Region = Region, purpose = "index", strata.limits = strata.limits, bias.correct = FALSE )  
+
+# https://docs.google.com/document/d/1pl3-q8zlSBqTmPNaSHJU67S_hwN5nok_I9LAr-Klyrw/edit
+
+# FieldConfig = c(Omega1 = 1, Epsilon1 = 1, Omega2 = 1, Epsilon2 = 1) #  where Omega refers to spatial variation, Epsilon refers to spatio-temporal variation, Omega1 refers to variation in encounter probability, 
+#    and Omega2 refers to variation in positive catch rates, where 0 is off, "AR1" is an AR1 process, and >0 is the number of elements in a factor-analysis covariance. 
+
+# RhoConfig = c(Beta1 = 0,  Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0)  # autocorrelation across time: defaults to zero, both annual intercepts (beta) and spatio-temporal (epsilon)
+
+# OverdispersionConfig = c(Delta1 = 1, Delta2 = 1) # Turn on vessel-year effects for both components if using WCGBTS
+settings <- make_settings( n_x = n_x, fine_scale = TRUE, ObsModel = c(2, 1), FieldConfig = c(Omega1 = 1, Epsilon1 = 1, Omega2 = 1, Epsilon2 = 1), RhoConfig = c(Beta1 = 0,  Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0), 
+                  OverdispersionConfig = c(Delta1 = 1, Delta2 = 1), Region = Region, purpose = "index", strata.limits = strata.limits, bias.correct = FALSE )  
 
 # Run model
 sink(paste0(DateFile, "Fit_Output.txt"))
-fit <- fit_model( settings = settings, Lat_i = Data_Geostat[,'Lat'], Lon_i = Data_Geostat[,'Lon'], t_i = Data_Geostat[,'Year'], working_dir = DateFile, test_fit = TRUE,
-                 c_i = rep(0,nrow(Data_Geostat)), b_i = Data_Geostat[,'Catch_KG'], a_i = Data_Geostat[,'AreaSwept_km2'], v_i = Data_Geostat[,'Vessel'], run_model = TRUE)
+fit <- fit_model( settings = settings, Lat_i = Data_Geostat$Lat, Lon_i = Data_Geostat$Lon, t_i = Data_Geostat$Year, working_dir = DateFile, test_fit = TRUE,
+                 c_i = rep(0, nrow(Data_Geostat)), b_i = Data_Geostat$Catch_KG, a_i = Data_Geostat$AreaSwept_km2, v_i = Data_Geostat$Vessel, newtonsteps = 0, run_model = TRUE)
 sink()                 
+
+summaryNWFSC( obj = fit$tmb_list$Obj, savedir = DateFile )
+
+fit$parameter_estimates$diagnostics
+
+# Check convergence via gradient (should be TRUE)
+all( abs(fit$parameter_estimates$diagnostics[,'final_gradient']) < 1e-2 )
+
+max(fit$parameter_estimates$diagnostics[,'final_gradient'])
+
+
+
+# Check convergence via Hessian (should be TRUE)
+all( eigen(fit$parameter_estimates$SD$cov.fixed)$values > 0 )
+
+cat("\nMax Gradient =", fit$parameter_estimates$max_gradient, "\n\n")
+cat("\nAIC =", fit$parameter_estimates$AIC, "\n\n")
 
 # Plot results # plot.fit_model()
 plot_list <- plot( fit, what = c('results', 'extrapolation_grid', 'spatial_mesh')[1], working_dir = DateFile)
@@ -240,15 +258,18 @@ plot_list <- plot( fit, what = c('results', 'extrapolation_grid', 'spatial_mesh'
 
 setwd(HomeDir)
 
-(Year_Set = seq(min(Data_Geostat[,'Year']),max(Data_Geostat[,'Year'])))
-(Years2Include = which( Year_Set %in% sort(unique(Data_Geostat[,'Year']))))
-MapDetails_List = FishStatsUtils::make_map_info( Region = Region, Extrapolation_List = fit$extrapolation_list, spatial_list = fit$spatial_list, 
-            NN_Extrap = fit$spatial_list$PolygonList$NN_Extrap) 
 
-# Yearly results figures
+# MapDetails_List = FishStatsUtils::make_map_info( Region = Region, Extrapolation_List = fit$extrapolation_list, spatial_list = fit$spatial_list, 
+#            NN_Extrap = fit$spatial_list$PolygonList$NN_Extrap) 
+
+# Yearly results figure
   # 1. Yearly_dens.png: color changes are within year - not across years.
   # 2. SpResults <spShortName>.png: Yearly results in a single plot; hexagon shapes (not circles) are used. The biomass index is also included.
+(Year_Set = seq(min(Data_Geostat[,'Year']),max(Data_Geostat[,'Year']))) # Default arg for YearlyResultsFigure_VAST3X
+(Years2Include = which( Year_Set %in% sort(unique(Data_Geostat[,'Year'])))) # Default arg for YearlyResultsFigure_VAST3X
+
 SP.Results.Dpth <- JRWToolBox::YearlyResultsFigure_VAST3X(Report = Report, map_list = plot_list$map_list, fit = fit, Graph.Dev = 'png')  # This function looks for 'spShortName' (defined above)
+
 
 # Save it all in Image.RData
 save(list = names(.GlobalEnv), file = paste0(DateFile, "Image.RData"))
@@ -271,20 +292,23 @@ if(F) {
 # Good wiki examples to follow in VAST on GitHub
 
 
-# Estimate_metric_tons by year figures for FS (fine_scale) and not FS compare fine
+# Estimate_metric_tons by year figures for FS (fine_scale) and not FS compares well
+
+
+
+
+
 
 # 2018 Lingcod in SP.Results.Dpth.FS has the highest 15 values, but the 2018 raw data only has 2nd highest value and the lower values
 # means and medians look reasonable however
 # Will need to stack SP.Results.Dpth.FS  to show comparable plots
 
+SP.Results.Dpth.FS <- YearlyResultsFigure_V3.5(Report = fit$Report, fit. = fit, map_list. = plot_list$map_list, Graph.Dev = 'png') 
+
 apply(exp(SP.Results.Dpth.FS[,-(1:2)])/10, 2, max)  # divide by 10 converts grams per sq mile to kg per hectare  (100/1000)
 apply(exp(SP.Results.Dpth.FS[,-(1:2)])/10, 2, mean)
 apply(exp(SP.Results.Dpth.FS[,-(1:2)])/10, 2, median)
 
-
-
-
-SP.Results.Dpth.FS <- YearlyResultsFigure_V3.5(Report = fit$Report, fit. = fit, map_list. = plot_list$map_list, Graph.Dev = 'png') 
 
 Data_Set <- JRWToolBox::dataWareHouseTrawlCatch(spFormalName, yearRange = c(2003, 2018), project = 'WCGBTS.Combo')
 change(Data_Set)
