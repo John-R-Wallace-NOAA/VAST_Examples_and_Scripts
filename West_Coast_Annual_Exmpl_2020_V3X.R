@@ -24,7 +24,7 @@ HomeDir <- getwd()
 # =============================================
 
 
-summaryNWFSC <- function( obj = fit$tmb_list$Obj, Opt = fit$parameter_estimates, sdreport = fit$parameter_estimates$SD, savedir = DateFile ) {
+summaryNWFSC <- function( fit = fit, obj = fit$tmb_list$Obj, Opt = fit$parameter_estimates, sdreport = fit$parameter_estimates$SD, savedir = DateFile ) {
 
     # Based on James Thorson's summary_nwfsc(), circa 2017
     # Revised by John Wallace Dec 2018
@@ -32,15 +32,15 @@ summaryNWFSC <- function( obj = fit$tmb_list$Obj, Opt = fit$parameter_estimates,
     f <- function(num,threshold=0.000001) ifelse(num<threshold,paste0("< ",threshold),num)
     # Table of settings
     TableA = data.frame( "Setting_name"=rep(NA,9), "Setting_used"=NA )
-    TableA[1,] <- c("Number of knots", obj$env$data$n_x)
+    TableA[1,] <- c("Number of knots", fit$spatial_list$n_x)
     TableA[2,] <- c("Maximum gradient", formatC(f(max(abs( obj$gr(TMB::summary.sdreport(sdreport,"fixed")[,'Estimate'])))),format="f",digits=6) )
     TableA[3,] <- c("Is hessian positive definite?", switch(as.character(sdreport$pdHess),"FALSE"="No","TRUE"="Yes") )
     TableA[4,] <- c("Was bias correction used?", ifelse("Est. (bias.correct)"%in%colnames(TMB::summary.sdreport(sdreport)),"Yes","No") )
     TableA[5,] <- c("Distribution for measurement errors", switch(as.character(obj$env$data$ObsModel[1]),"1"="Lognormal","2"="Gamma") )
-    TableA[6,] <- c("Spatial effect for encounter probability", switch(as.character(obj$env$data$FieldConfig[1]),"-1"="No","1"="Yes") )
-    TableA[7,] <- c("Spatio-temporal effect for encounter probability", switch(as.character(obj$env$data$FieldConfig[2]),"-1"="No","1"="Yes") )
-    TableA[8,] <- c("Spatial effect for positive catch rate", switch(as.character(obj$env$data$FieldConfig[3]),"-1"="No","1"="Yes") )
-    TableA[9,] <- c("Spatio-temporal effect for positive catch rate", switch(as.character(obj$env$data$FieldConfig[4]),"-1"="No","1"="Yes") )
+    TableA[6,] <- c("Spatial effect for encounter probability", switch(as.character(fit$data_list$FieldConfig[1, 1]),"-1"="No","1"="Yes") )
+    TableA[7,] <- c("Spatio-temporal effect for encounter probability", switch(as.character(fit$data_list$FieldConfig[1, 2]),"-1"="No","1"="Yes") )
+    TableA[8,] <- c("Spatial effect for positive catch rate", switch(as.character(fit$data_list$FieldConfig[2, 1]),"-1"="No","1"="Yes") )
+    TableA[9,] <- c("Spatio-temporal effect for positive catch rate", switch(as.character(fit$data_list$FieldConfig[2, 2]),"-1"="No","1"="Yes") )
     
     # Print number of parameters
     # TableB = FishStatsUtils::list_parameters( obj, verbose = FALSE )
@@ -226,7 +226,7 @@ pander::pandoc.table(Data_Geostat[1:6,], digits=3)
 # RhoConfig = c(Beta1 = 0,  Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0)  # autocorrelation across time: defaults to zero, both annual intercepts (beta) and spatio-temporal (epsilon)
 
 # OverdispersionConfig = c(Delta1 = 1, Delta2 = 1) # Turn on vessel-year effects for both components if using WCGBTS
-settings <- make_settings( n_x = n_x, fine_scale = TRUE, ObsModel = c(2, 1), FieldConfig = c(Omega1 = 1, Epsilon1 = 1, Omega2 = 1, Epsilon2 = 1), RhoConfig = c(Beta1 = 0,  Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0), 
+settings <- make_settings( n_x = n_x, fine_scale = FALSE, ObsModel = c(2, 1), FieldConfig = c(Omega1 = 1, Epsilon1 = 1, Omega2 = 1, Epsilon2 = 1), RhoConfig = c(Beta1 = 0,  Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0), 
                   OverdispersionConfig = c(Delta1 = 1, Delta2 = 1), Region = Region, purpose = "index", strata.limits = strata.limits, bias.correct = FALSE )  
 
 # Run model
@@ -262,9 +262,9 @@ setwd(HomeDir)
 # MapDetails_List = FishStatsUtils::make_map_info( Region = Region, Extrapolation_List = fit$extrapolation_list, spatial_list = fit$spatial_list, 
 #            NN_Extrap = fit$spatial_list$PolygonList$NN_Extrap) 
 
-# Yearly results figure
-  # 1. Yearly_dens.png: color changes are within year - not across years.
-  # 2. SpResults <spShortName>.png: Yearly results in a single plot; hexagon shapes (not circles) are used. The biomass index is also included.
+# Yearly results figure [ using YearlyResultsFigure_VAST3X() ]
+    # 1. SpResults <spShortName>.png: Yearly results in a single plot; hexagon shapes (not circles) are used. The biomass index is also included.
+
 (Year_Set = seq(min(Data_Geostat[,'Year']),max(Data_Geostat[,'Year']))) # Default arg for YearlyResultsFigure_VAST3X
 (Years2Include = which( Year_Set %in% sort(unique(Data_Geostat[,'Year'])))) # Default arg for YearlyResultsFigure_VAST3X
 
