@@ -1,5 +1,4 @@
 
-
 # Download with:
 # JRWToolBox::gitAFile("John-R-Wallace-NOAA/VAST_Examples_and_Scripts/master/West_Coast_Annual_Exmpl_2020_FS.R", "script", File = "West_Coast_Annual_example_2019.R", show = FALSE)
 # or edit with [using a properly configured gitEdit()]
