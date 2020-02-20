@@ -241,10 +241,9 @@ TmbData = VAST::make_data(Version = Version, FieldConfig = FieldConfig, spatial_
 
 # Rerun using this link if you want to include pass as a catchability covariate
 if(FALSE){
-  Q_ik <- as.matrix(Data_Geostat[, 'Pass', drop=F])
-  TmbData = VAST::make_data(Version = Version, FieldConfig = FieldConfig, spatial_list = Spatial_List, OverdispersionConfig = OverdispersionConfig, RhoConfig = RhoConfig, ObsModel = ObsModel,
+   TmbData = VAST::make_data(Version = Version, FieldConfig = FieldConfig, spatial_list = Spatial_List, OverdispersionConfig = OverdispersionConfig, RhoConfig = RhoConfig, ObsModel = ObsModel,
                     c_i = rep(0,nrow(Data_Geostat)), b_i = Data_Geostat[,'Catch_KG'], a_i = Data_Geostat[,'AreaSwept_km2'], v_i = Data_Geostat$Vessel,
-                    s_i = Data_Geostat[,'knot_i']-1, t_i = Data_Geostat[,'Year'], a_xl = Spatial_List$a_xl, Q_ik = Q_ik, MeshList = Spatial_List$MeshList, GridList = Spatial_List$GridList,
+                    s_i = Data_Geostat[,'knot_i']-1, t_i = Data_Geostat[,'Year'], a_xl = Spatial_List$a_xl, Q_ik = matrix(Data_Geostat$Pass, ncol = 1), MeshList = Spatial_List$MeshList, GridList = Spatial_List$GridList,
                     Method = Spatial_List$Method, Options = Options )
 }
 
