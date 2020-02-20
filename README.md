@@ -8,6 +8,7 @@ or edit [using a properly configured gitEdit()] with:
 
     JRWToolBox::gitEdit(West_Coast_Annual_example_2020, "John-R-Wallace-NOAA/VAST_Examples_and_Scripts/master/")
 
+-----------------------------------------------------------------------------------------
 
 West_Coast_Annual_Exmpl_2020_FS.R:
  
@@ -15,6 +16,7 @@ West_Coast_Annual_Exmpl_2020_FS.R:
   
 Uses fine_scale = TRUE in VAST ver. 3X and JRWToolBox::YearlyResultsFigure_VAST3X(), but otherwise uses the mid-level functions approach
 
+-----------------------------------------------------------------------------------------
 
 West_Coast_Annual_Exmpl_2020_V3X.R:
 
