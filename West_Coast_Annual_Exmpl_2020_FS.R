@@ -290,8 +290,8 @@ MapDetails_List = FishStatsUtils::make_map_info( Region = Region, NN_Extrap = Sp
 #Plot Anisotropy
 FishStatsUtils::plot_anisotropy( FileName=paste0(DateFile,"Aniso.png"), Report=Report, TmbData=TmbData )
 
-# Annual density surface, use plot_set = 3 to start and then do plot_set=c(3, 6, 7, 11:14)  (11 needs TmbData) to see more output on a good working model
-FishStatsUtils::plot_maps(plot_set=c(3, 6, 7, 12:14), Report=Report, TmbData=TmbData , Sdreport=Opt$SD, PlotDF=MapDetails_List[["PlotDF"]], MapSizeRatio=MapDetails_List[["MapSizeRatio"]], 
+# Use plot_set = 3 (annual density surface) to start and then do plot_set=c(3, 6, 7, 11:14) to see more output on a good working model
+FishStatsUtils::plot_maps(plot_set = 3, Report=Report, TmbData=TmbData , Sdreport=Opt$SD, PlotDF=MapDetails_List[["PlotDF"]], MapSizeRatio=MapDetails_List[["MapSizeRatio"]], 
                   working_dir =DateFile, Year_Set=Year_Set, Years2Include=Years2Include, mar=c(0,0,2,0), oma=c(3.5,3.5,0,0))
 
 
