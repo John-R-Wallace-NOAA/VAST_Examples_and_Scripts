@@ -1,3 +1,4 @@
+{
 # Download with:
 # JRWToolBox::gitAFile("John-R-Wallace-NOAA/VAST_Examples_and_Scripts/master/West_Coast_Annual_Exmpl_2020_V3X.R", "script", File = "West_Coast_Annual_example_2019.R", show = FALSE)
 # or edit with [using a properly configured gitEdit()]
@@ -24,7 +25,7 @@ HomeDir <- getwd()
 # =============================================
 
 
-summaryNWFSC <- function( fit = fit, obj = fit$tmb_list$Obj, Opt = fit$parameter_estimates, sdreport = fit$parameter_estimates$SD, savedir = DateFile ) {
+summaryNWFSC <- function( fit. = fit, obj = fit$tmb_list$Obj, Opt = fit$parameter_estimates, sdreport = fit$parameter_estimates$SD, savedir = DateFile ) {
 
     # Based on James Thorson's summary_nwfsc(), circa 2017
     # Revised by John Wallace Dec 2018
@@ -32,15 +33,15 @@ summaryNWFSC <- function( fit = fit, obj = fit$tmb_list$Obj, Opt = fit$parameter
     f <- function(num,threshold=0.000001) ifelse(num<threshold,paste0("< ",threshold),num)
     # Table of settings
     TableA = data.frame( "Setting_name"=rep(NA,9), "Setting_used"=NA )
-    TableA[1,] <- c("Number of knots", fit$spatial_list$n_x)
+    TableA[1,] <- c("Number of knots", fit.$spatial_list$n_x)
     TableA[2,] <- c("Maximum gradient", formatC(f(max(abs( obj$gr(TMB::summary.sdreport(sdreport,"fixed")[,'Estimate'])))),format="f",digits=6) )
     TableA[3,] <- c("Is hessian positive definite?", switch(as.character(sdreport$pdHess),"FALSE"="No","TRUE"="Yes") )
     TableA[4,] <- c("Was bias correction used?", ifelse("Est. (bias.correct)"%in%colnames(TMB::summary.sdreport(sdreport)),"Yes","No") )
     TableA[5,] <- c("Distribution for measurement errors", switch(as.character(obj$env$data$ObsModel[1]),"1"="Lognormal","2"="Gamma") )
-    TableA[6,] <- c("Spatial effect for encounter probability", switch(as.character(fit$data_list$FieldConfig[1, 1]),"-1"="No","1"="Yes") )
-    TableA[7,] <- c("Spatio-temporal effect for encounter probability", switch(as.character(fit$data_list$FieldConfig[1, 2]),"-1"="No","1"="Yes") )
-    TableA[8,] <- c("Spatial effect for positive catch rate", switch(as.character(fit$data_list$FieldConfig[2, 1]),"-1"="No","1"="Yes") )
-    TableA[9,] <- c("Spatio-temporal effect for positive catch rate", switch(as.character(fit$data_list$FieldConfig[2, 2]),"-1"="No","1"="Yes") )
+    TableA[6,] <- c("Spatial effect for encounter probability", switch(as.character(fit.$data_list$FieldConfig[1, 1]),"-1"="No","1"="Yes") )
+    TableA[7,] <- c("Spatio-temporal effect for encounter probability", switch(as.character(fit.$data_list$FieldConfig[1, 2]),"-1"="No","1"="Yes") )
+    TableA[8,] <- c("Spatial effect for positive catch rate", switch(as.character(fit.$data_list$FieldConfig[2, 1]),"-1"="No","1"="Yes") )
+    TableA[9,] <- c("Spatio-temporal effect for positive catch rate", switch(as.character(fit.$data_list$FieldConfig[2, 2]),"-1"="No","1"="Yes") )
     
     # Print number of parameters
     # TableB = FishStatsUtils::list_parameters( obj, verbose = FALSE )
@@ -205,7 +206,7 @@ if(!dir.exists(DateFile)) dir.create(DateFile)
 #creates data geostat...need this data format
 # Vessel has a unique value for each boat-licence and calendar year (i.e., it's a "Vessel-Year" effect)
 Data_Geostat = data.frame(Catch_KG = Data_Set$Total_sp_wt_kg, Year = Data_Set$Year, Vessel = paste(Data_Set$Vessel, Data_Set$Year,sep="_"),
-             AreaSwept_km2 = Data_Set$Area_Swept_ha/100, Lat =Data_Set$Latitude_dd, Lon = Data_Set$Longitude_dd, Pass = Data_Set$Pass - 1.5)
+             AreaSwept_km2 = Data_Set$Area_Swept_ha/100, Lat =Data_Set$Latitude_dd, Lon = Data_Set$Longitude_dd, Pass = Data_Set$Pass - 1)
 
 #see data format
 head(Data_Geostat)
@@ -226,13 +227,22 @@ pander::pandoc.table(Data_Geostat[1:6,], digits=3)
 # RhoConfig = c(Beta1 = 0,  Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0)  # autocorrelation across time: defaults to zero, both annual intercepts (beta) and spatio-temporal (epsilon)
 
 # OverdispersionConfig = c(Delta1 = 1, Delta2 = 1) # Turn on vessel-year effects for both components if using WCGBTS
-settings <- make_settings( n_x = n_x, fine_scale = FALSE, ObsModel = c(2, 1), FieldConfig = c(Omega1 = 1, Epsilon1 = 1, Omega2 = 1, Epsilon2 = 1), RhoConfig = c(Beta1 = 0,  Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0), 
+settings <- make_settings( n_x = n_x, fine_scale = TRUE, ObsModel = c(2, 1), FieldConfig = c(Omega1 = 1, Epsilon1 = 1, Omega2 = 1, Epsilon2 = 1), RhoConfig = c(Beta1 = 0,  Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0), 
                   OverdispersionConfig = c(Delta1 = 1, Delta2 = 1), Region = Region, purpose = "index", strata.limits = strata.limits, bias.correct = FALSE )  
 
 # Run model
 sink(paste0(DateFile, "Fit_Output.txt"))
+
+#  Without Pass
 fit <- fit_model( settings = settings, Lat_i = Data_Geostat$Lat, Lon_i = Data_Geostat$Lon, t_i = Data_Geostat$Year, working_dir = DateFile, test_fit = TRUE,
-                 c_i = rep(0, nrow(Data_Geostat)), b_i = Data_Geostat$Catch_KG, a_i = Data_Geostat$AreaSwept_km2, v_i = Data_Geostat$Vessel, newtonsteps = 0, run_model = TRUE)
+                c_i = rep(0, nrow(Data_Geostat)), b_i = Data_Geostat$Catch_KG, a_i = Data_Geostat$AreaSwept_km2, v_i = Data_Geostat$Vessel, newtonsteps = 0, run_model = TRUE)
+
+#  With Pass
+# fit <- fit_model( settings = settings, Lat_i = Data_Geostat$Lat, Lon_i = Data_Geostat$Lon, t_i = Data_Geostat$Year, working_dir = DateFile, test_fit = TRUE,
+#                  c_i = rep(0, nrow(Data_Geostat)), b_i = Data_Geostat$Catch_KG, a_i = Data_Geostat$AreaSwept_km2, v_i = Data_Geostat$Vessel, 
+#                  Q_ik = matrix(Data_Geostat$Pass, ncol = 1), newtonsteps = 0, run_model = TRUE)
+
+
 sink()                 
 
 summaryNWFSC( obj = fit$tmb_list$Obj, savedir = DateFile )
@@ -268,14 +278,14 @@ setwd(HomeDir)
 (Year_Set = seq(min(Data_Geostat[,'Year']),max(Data_Geostat[,'Year']))) # Default arg for YearlyResultsFigure_VAST3X
 (Years2Include = which( Year_Set %in% sort(unique(Data_Geostat[,'Year'])))) # Default arg for YearlyResultsFigure_VAST3X
 
-SP.Results.Dpth <- JRWToolBox::YearlyResultsFigure_VAST3X(Report = Report, map_list = plot_list$map_list, fit = fit, Graph.Dev = 'png')  # This function looks for 'spShortName' (defined above)
+SP.Results.Dpth <- JRWToolBox::YearlyResultsFigure_VAST3X(fit = fit, map_list = plot_list$map_list, Graph.Dev = 'png')  # This function looks for 'spShortName' (defined above)
 
 
 # Save it all in Image.RData
 save(list = names(.GlobalEnv), file = paste0(DateFile, "Image.RData"))
 
 
-
+}
 
 # =======================================================================
 
