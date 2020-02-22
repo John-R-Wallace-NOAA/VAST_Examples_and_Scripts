@@ -32,36 +32,42 @@ summaryNWFSC <- function( fit. = fit, obj = fit$tmb_list$Obj, Opt = fit$paramete
 
     f <- function(num,threshold=0.000001) ifelse(num<threshold,paste0("< ",threshold),num)
     # Table of settings
-    TableA = data.frame( "Setting_name"=rep(NA,9), "Setting_used"=NA )
+    TableA = data.frame( "Setting_name" = rep(NA, 6), "Setting_used" = NA )
     TableA[1,] <- c("Number of knots", fit.$spatial_list$n_x)
     TableA[2,] <- c("Maximum gradient", formatC(f(max(abs( obj$gr(TMB::summary.sdreport(sdreport,"fixed")[,'Estimate'])))),format="f",digits=6) )
     TableA[3,] <- c("Is hessian positive definite?", switch(as.character(sdreport$pdHess),"FALSE"="No","TRUE"="Yes") )
     TableA[4,] <- c("Was bias correction used?", ifelse("Est. (bias.correct)"%in%colnames(TMB::summary.sdreport(sdreport)),"Yes","No") )
     TableA[5,] <- c("Distribution for measurement errors", switch(as.character(obj$env$data$ObsModel[1]),"1"="Lognormal","2"="Gamma") )
-    TableA[6,] <- c("Spatial effect for encounter probability", switch(as.character(fit.$data_list$FieldConfig[1, 1]),"-1"="No","1"="Yes") )
-    TableA[7,] <- c("Spatio-temporal effect for encounter probability", switch(as.character(fit.$data_list$FieldConfig[1, 2]),"-1"="No","1"="Yes") )
-    TableA[8,] <- c("Spatial effect for positive catch rate", switch(as.character(fit.$data_list$FieldConfig[2, 1]),"-1"="No","1"="Yes") )
-    TableA[9,] <- c("Spatio-temporal effect for positive catch rate", switch(as.character(fit.$data_list$FieldConfig[2, 2]),"-1"="No","1"="Yes") )
+    
+    # TableA[6,] <- c("Spatial effect for encounter probability", switch(as.character(fit.$data_list$FieldConfig[1, 1]),"-1"="No","1"="Yes") )
+    # TableA[7,] <- c("Spatio-temporal effect for encounter probability", switch(as.character(fit.$data_list$FieldConfig[1, 2]),"-1"="No","1"="Yes") )
+    # TableA[8,] <- c("Spatial effect for positive catch rate", switch(as.character(fit.$data_list$FieldConfig[2, 1]),"-1"="No","1"="Yes") )
+    # TableA[9,] <- c("Spatio-temporal effect for positive catch rate", switch(as.character(fit.$data_list$FieldConfig[2, 2]),"-1"="No","1"="Yes") )
+    
+    FieldConfig <- fit.$data_list$FieldConfig
+    comment(FieldConfig) <- "\n                                Encounter Probability(1), Positive Catch Rates(2)\nSpatial Random Effects\nSpatiotemporal\n# of Factors for Intercepts\n\n0 = Off, 1 = On, +2 = additionl factors up to maximum number of categories in factor analysis covariance, IID = independent for each category\n\n"
+
     
     # Print number of parameters
-    # TableB = FishStatsUtils::list_parameters( obj, verbose = FALSE )
+    # TableB = FishStatsUtils:::list_parameters( obj, verbose = FALSE )
     TableB <- list_parameters( obj, verbose = FALSE )
     
     # Print table of MLE of fixed effects
     TableC <- JRWToolBox::r(JRWToolBox::renum(cbind(Param = Opt$diagnostics[, 1], TMB::summary.sdreport( Opt$SD, "fixed" ), Opt$diagnostics[, -1])))
         
     # Return
-    Return <- list(TableA = TableA, TableB = TableB, TableC =TableC)
-    if( !is.null(savedir)) for(i in 1:3) write.csv(Return[[i]], file=paste0(savedir,"/",names(Return)[i],".csv"), row.names = FALSE)
+    # Return <- list(TableA = TableA, TableB = TableB, TableC =TableC)
+    # if( !is.null(savedir)) for(i in 1:3) write(Return[[i]], file=paste0(savedir,"/",names(Return)[i],".txt"), row.names = FALSE)
+    if( !is.null(savedir)) capture.output(cat("\n"), TableA, cat("\n\n"), FieldConfig, cat(comment(FieldConfig), "\n\n"), TableB, cat("\n\n"), TableC, file = paste0(savedir,"/Model_Summary.txt"))
+
     cat("\n")
-    Return
+    print(TableA); cat("\n\n"); print(FieldConfig); cat(comment(FieldConfig), "\n\n"); print(TableB); cat("\n\n"); print(TableC)
 }
 
 list_parameters <- function (Obj, verbose = TRUE) {
 
     # From ThorsonUtilities, circa 2017
     # If list.parameters() is moved to FishStatsUtils, this fucntion will be removed.
-
 
     Return = list()
     Table = data.frame()
@@ -231,6 +237,14 @@ settings <- make_settings( n_x = n_x, fine_scale = TRUE, ObsModel = c(2, 1), Fie
                   OverdispersionConfig = c(Delta1 = 1, Delta2 = 1), Region = Region, purpose = "index", strata.limits = strata.limits, bias.correct = FALSE )  
 
 # Run model
+
+# c_i = category
+# b_i = biomass/ cpue input
+# a_i= effort/area covered
+# v_i= vessel ID
+# s_i= knot locations
+# t_i= time
+
 sink(paste0(DateFile, "Fit_Output.txt"))
 
 #  Without Pass
@@ -242,8 +256,31 @@ fit <- fit_model( settings = settings, Lat_i = Data_Geostat$Lat, Lon_i = Data_Ge
 #                  c_i = rep(0, nrow(Data_Geostat)), b_i = Data_Geostat$Catch_KG, a_i = Data_Geostat$AreaSwept_km2, v_i = Data_Geostat$Vessel, 
 #                  Q_ik = matrix(Data_Geostat$Pass, ncol = 1), newtonsteps = 0, run_model = TRUE)
 
+sink()
 
-sink()                 
+
+# Create 'parameter_estimates.txt' without scientific notation
+Opt <- fit$parameter_estimates
+OptRnd <- list()
+OptRnd$par <- JRWToolBox::r(Opt$par)
+OptRnd$diagnostics <- JRWToolBox::r(Opt$diagnostics)
+OptRnd$SD <- JRWToolBox::r(summary(Opt$SD, "fixed"), 6) 
+OptRnd$Maximum_gradient_component <- Opt$max_gradient
+OptRnd$pdHess <- Opt$SD$pdHess
+OptRnd$Convergence_check <- ifelse(Opt$SD$pdHess,  { ifelse(Opt$max_gradient < 0.0001, "There is no evidence that the model is not converged", 
+                 "The model is likely not converged (the critera is a pd Hess and the max_gradient < 0.0001)") }, "The model is definitely not converged")
+# print(OptRnd) No need for print() - use 'split = TRUE' below
+capture.output(OptRnd, file = file.path(DateFile, "parameter_estimates.txt"), split = TRUE)
+
+
+# Optimization result- including the test of the range of Raw1 and Raw2 should be inside of min and max distance of between knot locations
+sink(paste0(DateFile, "Final_Convergence_Results.txt"), split = TRUE)
+   cat("\nMaximum_gradient_component:", Opt$max_gradient, "\n\nnlminb() convergence:", OptRnd$Convergence_check, "\n\nnlminb() pdHess:", Opt$SD$pdHess, "\n\nAIC:", Opt$AIC, "\n\n")
+   cat("\nRange Raw1 and Raw2 should be inside of min and max distance of between knot locations\n\n")
+   # Range Raw1 and Raw2 should be inside of min and max distance of between knot locations (J. Thorson, pers. comm.)
+   print(r(sort(c(Range_raw1 = fit$Report$Range_raw1, Range_raw2 = fit$Report$Range_raw2, minDist = min(dist(fit$spatial_list$loc_x )), maxDist = max(dist(fit$spatial_list$loc_x ))))))
+sink() 
+
 
 summaryNWFSC( obj = fit$tmb_list$Obj, savedir = DateFile )
 
@@ -334,5 +371,6 @@ rev(sort((Total_sp_wt_kg/Area_Swept_ha)[Year %in% 2018]))[1:20]
 
 
 }
+
 
 
