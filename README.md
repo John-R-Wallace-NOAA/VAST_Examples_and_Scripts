@@ -12,7 +12,7 @@ or edit [using a properly configured gitEdit()] with:
 
 West_Coast_Annual_Exmpl_2020_FS.R:
  
-    JRWToolBox::gitEdit(West_Coast_Annual_Exmpl_2020_FS, "John-R-Wallace-NOAA/VAST_Examples_and_Scripts/master/")
+    JRWToolBox::gitEdit(West_Coast_Example_2020_FS, "John-R-Wallace-NOAA/VAST_Examples_and_Scripts/master/")
   
 Uses fine_scale = TRUE in VAST ver. 3X and JRWToolBox::YearlyResultsFigure_VAST3X(), but otherwise uses the mid-level functions approach
 
@@ -20,6 +20,6 @@ Uses fine_scale = TRUE in VAST ver. 3X and JRWToolBox::YearlyResultsFigure_VAST3
 
 West_Coast_Annual_Exmpl_2020_V3X.R:
 
-    JRWToolBox::gitEdit(West_Coast_Annual_Exmpl_2020_V3X, "John-R-Wallace-NOAA/VAST_Examples_and_Scripts/master/")
+    JRWToolBox::gitEdit(West_Coast_Example_2020_V3X, "John-R-Wallace-NOAA/VAST_Examples_and_Scripts/master/")
   
 Uses fine_scale = TRUE in VAST ver. 3X and JRWToolBox::YearlyResultsFigure_VAST3X(), following the upper level functions (wrappers) approach.
