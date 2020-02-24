@@ -250,13 +250,14 @@ settings <- make_settings( n_x = n_x, fine_scale = TRUE, ObsModel = c(2, 1), Fie
 sink(paste0(DateFile, "Fit_Output.txt"))
 
 #  Without Pass 
-fit <- fit_model( settings = settings, Lat_i = Data_Geostat$Lat, Lon_i = Data_Geostat$Lon, t_i = Data_Geostat$Year, working_dir = DateFile, test_fit = TRUE,
-                  c_i = rep(0, nrow(Data_Geostat)), b_i = Data_Geostat$Catch_KG, a_i = Data_Geostat$AreaSwept_km2, v_i = Data_Geostat$Vessel, newtonsteps = 0, run_model = TRUE)
-
-# With Pass - Pass not working with fine_scale = TRUE
 # fit <- fit_model( settings = settings, Lat_i = Data_Geostat$Lat, Lon_i = Data_Geostat$Lon, t_i = Data_Geostat$Year, working_dir = DateFile, test_fit = TRUE,
-#                  c_i = rep(0, nrow(Data_Geostat)), b_i = Data_Geostat$Catch_KG, a_i = Data_Geostat$AreaSwept_km2, v_i = Data_Geostat$Vessel, 
-#                  Q_ik = matrix(Data_Geostat$Pass, ncol = 1), newtonsteps = 0, run_model = TRUE)
+#                  c_i = rep(0, nrow(Data_Geostat)), b_i = Data_Geostat$Catch_KG, a_i = Data_Geostat$AreaSwept_km2, v_i = Data_Geostat$Vessel, newtonsteps = 0, run_model = TRUE)
+
+# With Pass - for Lingcod, 'test_fit' needs to be FALSE for the model to finish - the extra parameters (lambda1_k, lambda2_k) both ended up with a small final gradient.
+# The model with Pass had a lower AIC (29,828.48) compared to without Pass, AIC = 29,835.95 .
+fit <- fit_model( settings = settings, Lat_i = Data_Geostat$Lat, Lon_i = Data_Geostat$Lon, t_i = Data_Geostat$Year, working_dir = DateFile, test_fit = FALSE,
+                  c_i = rep(0, nrow(Data_Geostat)), b_i = Data_Geostat$Catch_KG, a_i = Data_Geostat$AreaSwept_km2, v_i = Data_Geostat$Vessel, 
+                  Q_ik = matrix(Data_Geostat$Pass, ncol = 1), newtonsteps = 0, run_model = TRUE)
 
 sink()
 
@@ -373,6 +374,7 @@ rev(sort((Total_sp_wt_kg/Area_Swept_ha)[Year %in% 2018]))[1:20]
 
 
 }
+
 
 
 
