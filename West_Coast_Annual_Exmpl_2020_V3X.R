@@ -1,4 +1,4 @@
-{
+
 # Download with:
 # JRWToolBox::gitAFile("John-R-Wallace-NOAA/VAST_Examples_and_Scripts/master/West_Coast_Annual_Exmpl_2020_V3X.R", "script", File = "West_Coast_Annual_example_2019.R", show = FALSE)
 # or edit with [using a properly configured gitEdit()]
@@ -111,9 +111,10 @@ spFormalName <- 'lingcod'
 spLongName <- 'Lingcod'
 spShortName <- 'LCOD'
 
- if (!any(installed.packages()[, 1] %in% "devtools")) 
+if (!any(installed.packages()[, 1] %in% "devtools")) 
         install.packages("devtools")
 
+# If needed, re-install for the new YearlyResultsFigure_VAST3X()
 if (!any(installed.packages()[, 1] %in% "JRWToolBox"))
      devtools::install_github("John-R-Wallace/R-ToolBox")
 
@@ -139,6 +140,7 @@ if (!any(installed.packages()[, 1] %in% "rnaturalearthdata"))
 
 require(TMB)
 require(VAST)
+# require(JRWToolBox)  # This code should work without the need to attach the JRWToolBox package.
 
 # Extract species data from the Warehouse
 Data_Set <- JRWToolBox::dataWareHouseTrawlCatch(spFormalName, yearRange = c(2003, 2018), project = 'WCGBTS.Combo')
@@ -158,7 +160,7 @@ Version <- "VAST_v8_5_0"
 # # do not modify Kmeans setup
 # Method = c("Grid", "Mesh", "Spherical_mesh")[2]
 # grid_size_km = 25     # Value only matters if Method="Grid"
-n_x = 200  # Number of "knots" used when Method="Mesh"
+n_x <- 200  # Number of "knots" used when Method="Mesh"
 # Kmeans_Config = list( "randomseed"=1, "nstart"=100, "iter.max"=1e3 )   # Controls K-means algorithm to define location of knots when Method="Mesh"
 # 
 # Model settings
@@ -247,11 +249,11 @@ settings <- make_settings( n_x = n_x, fine_scale = TRUE, ObsModel = c(2, 1), Fie
 
 sink(paste0(DateFile, "Fit_Output.txt"))
 
-#  Without Pass
+#  Without Pass 
 fit <- fit_model( settings = settings, Lat_i = Data_Geostat$Lat, Lon_i = Data_Geostat$Lon, t_i = Data_Geostat$Year, working_dir = DateFile, test_fit = TRUE,
-                c_i = rep(0, nrow(Data_Geostat)), b_i = Data_Geostat$Catch_KG, a_i = Data_Geostat$AreaSwept_km2, v_i = Data_Geostat$Vessel, newtonsteps = 0, run_model = TRUE)
+                  c_i = rep(0, nrow(Data_Geostat)), b_i = Data_Geostat$Catch_KG, a_i = Data_Geostat$AreaSwept_km2, v_i = Data_Geostat$Vessel, newtonsteps = 0, run_model = TRUE)
 
-#  With Pass
+# With Pass - Pass not working with fine_scale = TRUE
 # fit <- fit_model( settings = settings, Lat_i = Data_Geostat$Lat, Lon_i = Data_Geostat$Lon, t_i = Data_Geostat$Year, working_dir = DateFile, test_fit = TRUE,
 #                  c_i = rep(0, nrow(Data_Geostat)), b_i = Data_Geostat$Catch_KG, a_i = Data_Geostat$AreaSwept_km2, v_i = Data_Geostat$Vessel, 
 #                  Q_ik = matrix(Data_Geostat$Pass, ncol = 1), newtonsteps = 0, run_model = TRUE)
@@ -322,7 +324,7 @@ SP.Results.Dpth <- JRWToolBox::YearlyResultsFigure_VAST3X(fit = fit, map_list = 
 save(list = names(.GlobalEnv), file = paste0(DateFile, "Image.RData"))
 
 
-}
+
 
 # =======================================================================
 
@@ -371,6 +373,7 @@ rev(sort((Total_sp_wt_kg/Area_Swept_ha)[Year %in% 2018]))[1:20]
 
 
 }
+
 
 
 
