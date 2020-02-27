@@ -355,7 +355,8 @@ if(F) {
     # Good wiki examples to follow in VAST on GitHub
     
     
-    # 'Estimate_metric_tons' by year figures for FS (fine_scale) and not FS compare well. The AIC is lower for FS.
+    # 'Estimate_metric_tons' by year figures for FS (fine_scale) and not FS compare well. The AIC is lower for FS. 
+    #  The AIC is also lower with knot_method = 'grid' (FS used).
     
   
     
