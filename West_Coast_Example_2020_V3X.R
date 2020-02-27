@@ -13,7 +13,7 @@
 # Revised by James Thorson April 2017
 # Revised by J. Wallace Apr 2017
 # Revised by J. Wallace Dec 2018
-# Revised by J. Wallace FEb 2020; uses fine_scale = TRUE in VAST ver. 3X and JRWToolBox::YearlyResultsFigure_VAST3X(), following the upper level functions (wrappers) approach.
+# Revised by J. Wallace Feb 2020; uses fine_scale = TRUE in VAST ver. 3X and JRWToolBox::YearlyResultsFigure_VAST3X(), following the upper level functions (wrappers) approach.
 
 # =============================================
 
