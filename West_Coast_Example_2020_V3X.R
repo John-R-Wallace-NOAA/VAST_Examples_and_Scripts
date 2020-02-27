@@ -39,15 +39,9 @@ summaryNWFSC <- function( fit. = fit, obj = fit$tmb_list$Obj, Opt = fit$paramete
     TableA[4,] <- c("Was bias correction used?", ifelse("Est. (bias.correct)"%in%colnames(TMB::summary.sdreport(sdreport)),"Yes","No") )
     TableA[5,] <- c("Distribution for measurement errors", switch(as.character(obj$env$data$ObsModel[1]),"1"="Lognormal","2"="Gamma") )
     
-    # TableA[6,] <- c("Spatial effect for encounter probability", switch(as.character(fit.$data_list$FieldConfig[1, 1]),"-1"="No","1"="Yes") )
-    # TableA[7,] <- c("Spatio-temporal effect for encounter probability", switch(as.character(fit.$data_list$FieldConfig[1, 2]),"-1"="No","1"="Yes") )
-    # TableA[8,] <- c("Spatial effect for positive catch rate", switch(as.character(fit.$data_list$FieldConfig[2, 1]),"-1"="No","1"="Yes") )
-    # TableA[9,] <- c("Spatio-temporal effect for positive catch rate", switch(as.character(fit.$data_list$FieldConfig[2, 2]),"-1"="No","1"="Yes") )
-    
     FieldConfig <- fit.$data_list$FieldConfig
     comment(FieldConfig) <- "\nExplanation of the above figure:\n\n                                Encounter Probability(1), Positive Catch Rates(2)\nSpatial Random Effects\nSpatiotemporal\n# of Factors for Intercepts\n\n0 = Off, 1 = On, +2 = additionl factors up to maximum number of categories in factor analysis covariance, IID = independent for each category\n\n"
 
-    
     # Print number of parameters
     # TableB = FishStatsUtils:::list_parameters( obj, verbose = FALSE )
     TableB <- list_parameters( obj, verbose = FALSE )
