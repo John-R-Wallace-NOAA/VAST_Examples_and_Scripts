@@ -22,8 +22,8 @@
 
 HomeDir <- getwd()
 
-# =============================================
 
+# =========== Internal Functions ==================================
 
 summaryNWFSC <- function( fit. = fit, obj = fit$tmb_list$Obj, Opt = fit$parameter_estimates, sdreport = fit$parameter_estimates$SD, savedir = DateFile ) {
 
@@ -88,8 +88,8 @@ list_parameters <- function (Obj, verbose = TRUE) {
     return(invisible(Table))
 }
 
+# =========== End Internal Functions ==============================
 
-# =============================================
 
 # 'spFormalName', is a common name that needs to work with the Data Warehouse, i.e. only proper names capitalized.
 # 'spLongName' and 'spShortName' can be whatever is desired, the long name goes in the directory name and
