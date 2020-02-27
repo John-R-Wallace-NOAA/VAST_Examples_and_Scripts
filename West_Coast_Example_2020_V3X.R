@@ -229,7 +229,7 @@ pander::pandoc.table(Data_Geostat[1:6,], digits=3)
 # RhoConfig = c(Beta1 = 0,  Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0)  # autocorrelation across time: defaults to zero, both annual intercepts (beta) and spatio-temporal (epsilon)
 
 # OverdispersionConfig = c(Delta1 = 1, Delta2 = 1) # Turn on vessel-year effects for both components if using WCGBTS
-settings <- make_settings( n_x = n_x, fine_scale = TRUE, knot_method = 'grid', ObsModel = c(2, 1), FieldConfig = c(Omega1 = 1, Epsilon1 = 1, Omega2 = 1, Epsilon2 = 1), RhoConfig = c(Beta1 = 0,  Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0), 
+settings <- make_settings( n_x = n_x, fine_scale = TRUE, ObsModel = c(2, 1), FieldConfig = c(Omega1 = 1, Epsilon1 = 1, Omega2 = 1, Epsilon2 = 1), RhoConfig = c(Beta1 = 0,  Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0), 
                   OverdispersionConfig = c(Delta1 = 1, Delta2 = 1), Region = Region, purpose = "index", strata.limits = strata.limits, bias.correct = FALSE )  
 
 # Run model
@@ -246,13 +246,13 @@ sink(paste0(DateFile, "Fit_Output.txt"))
 #  Without Pass 
 # fit <- fit_model( settings = settings, Lat_i = Data_Geostat$Lat, Lon_i = Data_Geostat$Lon, t_i = Data_Geostat$Year, working_dir = DateFile, test_fit = TRUE,
 #                  c_i = rep(0, nrow(Data_Geostat)), b_i = Data_Geostat$Catch_KG, a_i = Data_Geostat$AreaSwept_km2, v_i = Data_Geostat$Vessel, newtonsteps = 0, 
-#                  getJointPrecision = TRUE, run_model = TRUE)
+#                  knot_method = 'samples', getsd = TRUE, getJointPrecision = TRUE, run_model = TRUE)
 
-# With Pass - for Lingcod, 'test_fit' needs to be FALSE for the model to finish - the extra parameters (lambda1_k, lambda2_k) both ended up with a small final gradient.
+# With Pass - for Lingcod (at least), 'test_fit' needs to be FALSE for the model to finish - the extra parameters (lambda1_k, lambda2_k) both ended up with a small final gradient.
 # The model with Pass had a lower AIC (29,828.48) compared to without Pass, AIC = 29,835.95 .
 fit <- fit_model( settings = settings, Lat_i = Data_Geostat$Lat, Lon_i = Data_Geostat$Lon, t_i = Data_Geostat$Year, working_dir = DateFile, test_fit = FALSE,
                   c_i = rep(0, nrow(Data_Geostat)), b_i = Data_Geostat$Catch_KG, a_i = Data_Geostat$AreaSwept_km2, v_i = Data_Geostat$Vessel, 
-                  Q_ik = matrix(Data_Geostat$Pass, ncol = 1), newtonsteps = 0, getJointPrecision = TRUE, run_model = TRUE)
+                  Q_ik = matrix(Data_Geostat$Pass, ncol = 1), newtonsteps = 0, knot_method = 'samples', getsd = TRUE, getJointPrecision = TRUE, run_model = TRUE)
 
 sink()
 
@@ -271,6 +271,8 @@ OptRnd$Convergence_check <- ifelse(Opt$SD$pdHess,  { ifelse(Opt$max_gradient < 0
 capture.output(OptRnd, file = file.path(DateFile, "parameter_estimates.txt"), split = TRUE)
 
 
+summaryNWFSC( obj = fit$tmb_list$Obj, savedir = DateFile )
+
 # Optimization result- including the test of the range of Raw1 and Raw2 should be inside of min and max distance of between knot locations
 sink(paste0(DateFile, "Model_Summary.txt"), append = TRUE, split = TRUE)
    cat("\n\nMaximum_gradient_component:", Opt$max_gradient, "\n\nnlminb() convergence:", OptRnd$Convergence_check, "\n\nnlminb() pdHess:", Opt$SD$pdHess, "\n\nAIC:", Opt$AIC, "\n\n")
@@ -279,8 +281,6 @@ sink(paste0(DateFile, "Model_Summary.txt"), append = TRUE, split = TRUE)
    print(r(sort(c(Range_raw1 = fit$Report$Range_raw1, Range_raw2 = fit$Report$Range_raw2, minDist = min(dist(fit$spatial_list$loc_x )), maxDist = max(dist(fit$spatial_list$loc_x ))))))
 sink() 
 
-
-summaryNWFSC( obj = fit$tmb_list$Obj, savedir = DateFile )
 
 fit$parameter_estimates$diagnostics
 
@@ -338,7 +338,7 @@ save(list = names(.GlobalEnv), file = paste0(DateFile, "Image.RData"))
 
 if(F) {
 
-   # Notes
+   # Notes from the Workshop (Feb, 2020)
     
     # Advanced Spatial Modeling with Stochastic Partial Differential Equations Using R and INLA is here: http://www.r-inla.org/spde-book
     # The R-INLA tutorial on SPDE models: https://folk.ntnu.no/fuglstad/Lund2016/Session6/spde-tutorial.pdf
@@ -346,18 +346,33 @@ if(F) {
     INLA::plot.inla.mesh(fit$spatial_list$MeshList$isotropic_mesh) # Plot isotropic mesh
     INLA::plot.inla.mesh(fit$spatial_list$MeshList$anisotropic_mesh) # Plot anisotropic mesh
     
-    # For fit$spatial_list$knot_method = 'samples' is default, but the 'grid' method is prefered.   See the help for make_spatial_info().
+    # For fit$spatial_list$knot_method = 'samples' is default, but the 'grid' method is prefered for some extrapolation grids.   See the help for make_spatial_info().
+         # JT said it would make little difference for the CA Current.
          # This is not the same as fit$spatial_list$Method whose default is 'Mesh', with an option that is 'Grid' (again see the help).
      
-    # getJointPrecision = TRUE is an argument of FishStatsUtils::fit_model() that is passed to TMBhelper::fit_tmb() which passes it to TMB::sdreport. See the help for TMB::sdreport.
+    # getJointPrecision (fit$parameter_estimates$SD$jointPrecision) = TRUE/FALSE is an argument of FishStatsUtils::fit_model() that is passed to TMBhelper::fit_tmb() which passes it to TMB::sdreport. See the help for TMB::sdreport.
          # From the help: Optional. Return full joint precision matrix of random effects and parameters?
-    
-    # Good wiki examples to follow in VAST on GitHub
-    
-    
+         
+    # getsd (fit$input_args$optimize_args_input2$getsd) = TRUE/FALSE is an argument of FishStatsUtils::fit_model() that is passed to TMBhelper::fit_tmb(). See the help for TMBhelper::fit_tmb.
+         # From the help: Boolean whether to run standard error calculation
+         # The default is for getsd = TRUE, and hence if fit$input_args$optimize_args_input2$getsd is missing that implies getsd = TRUE in the actual model fitting (TMBhelper::fit_tmb). 
+         # optimize_args_input1 args are used when check.fit = TRUE and fit$input_args$optimize_args_input1$getsd is always FALSE (but can be the only one found since fit$input_args$optimize_args_input2$getsd can be missing).
+         
+         
+    # There are good wiki examples to follow in VAST on GitHub.
+  
+  
+   # Testing of models (using Lingcod)
+   
+    # With Pass - for Lingcod (at least), 'test_fit' needs to be FALSE for the model to finish - the extra parameters (lambda1_k, lambda2_k) both ended up with a small final gradient.
+    # The model with Pass had a lower AIC (29,828.48) compared to without Pass, AIC = 29,835.95 .
+   
     # 'Estimate_metric_tons' by year figures for FS (fine_scale) and not FS compare well. The AIC is lower for FS. 
-    #  The AIC is also lower with knot_method = 'grid' (FS used).
     
+    #  The AIC was higher with knot_method = 'grid' (FS used) for Lingcod using the California Current extrapolation grid. 
+    
+  
+  
   
     
    # 2018 Lingcod in SP.Results.Dpth.FS has the highest 15 values, but the 2018 raw data only has 2nd highest value and the lower values.
@@ -386,6 +401,7 @@ if(F) {
 
 
 }
+
 
 
 
