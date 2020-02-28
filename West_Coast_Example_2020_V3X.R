@@ -229,7 +229,7 @@ pander::pandoc.table(Data_Geostat[1:6,], digits=3)
 # RhoConfig = c(Beta1 = 0,  Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0)  # autocorrelation across time: defaults to zero, both annual intercepts (beta) and spatio-temporal (epsilon)
 
 # OverdispersionConfig = c(Delta1 = 1, Delta2 = 1) # Turn on vessel-year effects for both components if using WCGBTS
-settings <- make_settings( n_x = n_x, fine_scale = TRUE, ObsModel = c(2, 1), FieldConfig = c(Omega1 = 1, Epsilon1 = 1, Omega2 = 1, Epsilon2 = 1), RhoConfig = c(Beta1 = 0,  Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0), 
+settings <- make_settings( n_x = n_x, fine_scale = TRUE, ObsModel = c(1, 1), FieldConfig = c(Omega1 = 1, Epsilon1 = 1, Omega2 = 1, Epsilon2 = 1), RhoConfig = c(Beta1 = 0,  Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0), 
                   OverdispersionConfig = c(Delta1 = 1, Delta2 = 1), Region = Region, purpose = "index", strata.limits = strata.limits, bias.correct = FALSE )  
 
 # Run model
@@ -369,10 +369,10 @@ if(F) {
    
     # 'Estimate_metric_tons' by year figures for FS (fine_scale) and not FS compare well. The AIC is lower for FS. 
     
-    #  The AIC was higher with knot_method = 'grid' (FS used) for Lingcod using the California Current extrapolation grid. 
+    # The AIC was higher with knot_method = 'grid' (FS used) for Lingcod using the California Current extrapolation grid. 
     
-  
-  
+    # ObsModel = c(1, 1) lognormal fits better than c(2, 1) gamma (29316.6 vs 29828.5) both with log-link and the “Poisson-link” delta-model (ObsModel[2] = 1).
+    # With fine_scale = TRUE, knot_method = 'samples', and n_x = 200.
   
     
    # 2018 Lingcod in SP.Results.Dpth.FS has the highest 15 values, but the 2018 raw data only has 2nd highest value and the lower values.
