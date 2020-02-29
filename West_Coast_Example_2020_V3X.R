@@ -207,8 +207,8 @@ if(!dir.exists(DateFile)) dir.create(DateFile)
 #set up data frame from data set
 #creates data geostat...need this data format
 # Vessel has a unique value for each boat-licence and calendar year (i.e., it's a "Vessel-Year" effect)
-Data_Geostat = data.frame(Catch_KG = Data_Set$Total_sp_wt_kg, Year = Data_Set$Year, Vessel = paste(Data_Set$Vessel, Data_Set$Year,sep="_"),
-             AreaSwept_km2 = Data_Set$Area_Swept_ha/100, Lat =Data_Set$Latitude_dd, Lon = Data_Set$Longitude_dd, Pass = Data_Set$Pass - 1)
+Data_Geostat = data.frame(Year = Data_Set$Year, Vessel = paste(Data_Set$Vessel, Data_Set$Year,sep="_"), Lat = Data_Set$Latitude_dd, Lon = Data_Set$Longitude_dd, Depth_km = Data_Set$Depth_m/1000, 
+                Catch_KG = Data_Set$Total_sp_wt_kg, AreaSwept_km2 = Data_Set$Area_Swept_ha/100,  Pass = Data_Set$Pass - 1)
 
 #see data format
 head(Data_Geostat)
@@ -241,20 +241,35 @@ settings <- make_settings( n_x = n_x, fine_scale = TRUE, ObsModel = c(1, 1), Fie
 # s_i= knot locations
 # t_i= time
 
+
 sink(paste0(DateFile, "Fit_Output.txt"))
 
-#  Without Pass 
-# fit <- fit_model( settings = settings, Lat_i = Data_Geostat$Lat, Lon_i = Data_Geostat$Lon, t_i = Data_Geostat$Year, working_dir = DateFile, test_fit = TRUE,
-#                  c_i = rep(0, nrow(Data_Geostat)), b_i = Data_Geostat$Catch_KG, a_i = Data_Geostat$AreaSwept_km2, v_i = Data_Geostat$Vessel, newtonsteps = 0, 
-#                  knot_method = 'samples', getsd = TRUE, getJointPrecision = TRUE, run_model = TRUE)
+#  #  Without Pass 
+#  # fit <- fit_model( settings = settings, Lat_i = Data_Geostat$Lat, Lon_i = Data_Geostat$Lon, t_i = Data_Geostat$Year, working_dir = DateFile, test_fit = TRUE,
+#  #                  c_i = rep(0, nrow(Data_Geostat)), b_i = Data_Geostat$Catch_KG, a_i = Data_Geostat$AreaSwept_km2, v_i = Data_Geostat$Vessel, newtonsteps = 0, 
+#  #                  knot_method = 'samples', getsd = TRUE, getJointPrecision = TRUE, run_model = TRUE)
+#  
+#  # With Pass - for Lingcod (at least), 'test_fit' needs to be FALSE for the model to finish - the extra parameters (lambda1_k, lambda2_k) both ended up with a small final gradient.
+#  # The model with Pass had a lower AIC (29,828.48) compared to without Pass, AIC = 29,835.95 .
+#  
+#  fit <- fit_model( settings = settings, Lat_i = Data_Geostat$Lat, Lon_i = Data_Geostat$Lon, t_i = Data_Geostat$Year, working_dir = DateFile, test_fit = FALSE,
+#                    c_i = rep(0, nrow(Data_Geostat)), b_i = Data_Geostat$Catch_KG, a_i = Data_Geostat$AreaSwept_km2, v_i = Data_Geostat$Vessel, 
+#                    Q_ik = matrix(Data_Geostat$Pass, ncol = 1), newtonsteps = 0, knot_method = 'samples', getsd = TRUE, getJointPrecision = TRUE, run_model = TRUE)
 
-# With Pass - for Lingcod (at least), 'test_fit' needs to be FALSE for the model to finish - the extra parameters (lambda1_k, lambda2_k) both ended up with a small final gradient.
-# The model with Pass had a lower AIC (29,828.48) compared to without Pass, AIC = 29,835.95 .
+                
+# ---- Using depth as a covariate - using only depth on sampled data, not on the extrapolation grid ---                 
+
+lib(splines) 
+Covariate_Data <- Data_Geostat[, c("Lon", "Lat", "Depth_km")] 
+Covariate_Data$Year <- NA
+formula = ~ bs( log(Depth_km), knots=3, intercept=FALSE)
+# formula = ~ Depth_km
+
 fit <- fit_model( settings = settings, Lat_i = Data_Geostat$Lat, Lon_i = Data_Geostat$Lon, t_i = Data_Geostat$Year, working_dir = DateFile, test_fit = FALSE,
                   c_i = rep(0, nrow(Data_Geostat)), b_i = Data_Geostat$Catch_KG, a_i = Data_Geostat$AreaSwept_km2, v_i = Data_Geostat$Vessel, 
-                  Q_ik = matrix(Data_Geostat$Pass, ncol = 1), newtonsteps = 0, knot_method = 'samples', getsd = TRUE, getJointPrecision = TRUE, run_model = TRUE)
-
-sink()
+                  Q_ik = matrix(Data_Geostat$Pass, ncol = 1), newtonsteps = 0, knot_method = 'samples', getsd = TRUE, getJointPrecision = TRUE, run_model = TRUE,
+                  formula = formula, covariate_data = Covariate_Data)
+sink() # End sinking to Fit_Output.txt
 
 
 # Create 'parameter_estimates.txt' without scientific notation
@@ -267,11 +282,11 @@ OptRnd$Maximum_gradient_component <- Opt$max_gradient
 OptRnd$pdHess <- Opt$SD$pdHess
 OptRnd$Convergence_check <- ifelse(Opt$SD$pdHess,  { ifelse(Opt$max_gradient < 0.0001, "There is no evidence that the model is not converged", 
                  "The model is likely not converged (the critera is a pd Hess and the max_gradient < 0.0001)") }, "The model is definitely not converged")
-# print(OptRnd) No need for print() - use 'split = TRUE' below
+# print(OptRnd) # No need for this print() - use 'split = TRUE' below
 capture.output(OptRnd, file = file.path(DateFile, "parameter_estimates.txt"), split = TRUE)
 
 
-summaryNWFSC( obj = fit$tmb_list$Obj, savedir = DateFile )
+summaryNWFSC( obj = fit$tmb_list$Obj, savedir = DateFile ) # Creates Model_Summary.txt
 
 # Optimization result- including the test of the range of Raw1 and Raw2 should be inside of min and max distance of between knot locations
 sink(paste0(DateFile, "Model_Summary.txt"), append = TRUE, split = TRUE)
@@ -281,20 +296,25 @@ sink(paste0(DateFile, "Model_Summary.txt"), append = TRUE, split = TRUE)
    print(r(sort(c(Range_raw1 = fit$Report$Range_raw1, Range_raw2 = fit$Report$Range_raw2, minDist = min(dist(fit$spatial_list$loc_x )), maxDist = max(dist(fit$spatial_list$loc_x ))))))
 sink() 
 
-
+#  Extra looks at convergence
 fit$parameter_estimates$diagnostics
 
 # Check convergence via gradient (should be TRUE)
 all( abs(fit$parameter_estimates$diagnostics[,'final_gradient']) < 1e-2 )
 
-max(fit$parameter_estimates$diagnostics[,'final_gradient'])
-
-
-
-# Check convergence via Hessian (should be TRUE)
+# Check convergence via invertd Hessian (should be TRUE)
 all( eigen(fit$parameter_estimates$SD$cov.fixed)$values > 0 )
 
-cat("\nMax Gradient =", fit$parameter_estimates$max_gradient, "\n\n")
+# h = optimHess(fit$parameter_estimates$par, fn = fit$tmb_list$Obj$fn, gr = fit$tmb_list$Obj$gr)
+# all( eigen(h)$values > 0 )
+
+
+
+
+# Max final gradient
+cat("\nMax Gradient =", fit$parameter_estimates$max_gradient, "\n\n")  # Max after abs(): max(abs(fit$parameter_estimates$diagnostics[,'final_gradient']))
+
+# AIC
 cat("\nAIC =", fit$parameter_estimates$AIC, "\n\n")
 
 
@@ -401,6 +421,7 @@ if(F) {
 
 
 }
+
 
 
 
