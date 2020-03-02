@@ -24,7 +24,7 @@ West_Coast_Annual_Exmpl_2020_V3X.R:
   
 Uses fine_scale = TRUE in VAST ver. 3X and JRWToolBox::YearlyResultsFigure_VAST3X(), following the upper level functions (wrappers) approach.
 
-             Model                                                              AIC
+             Model                                                            AIC
              
     No Fine scale (No Pass; Gamma errors)                                   31,232.5
     Fine scale (No Pass; Gamma errors)                                      29,835.9
