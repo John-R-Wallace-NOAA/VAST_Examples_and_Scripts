@@ -111,12 +111,6 @@ if (!any(installed.packages()[, 1] %in% "devtools"))
 # If needed, re-install for the new YearlyResultsFigure_VAST3X()
 if (!any(installed.packages()[, 1] %in% "JRWToolBox"))
      devtools::install_github("John-R-Wallace/R-ToolBox")
-
-# ***** To get years added to the residual plot do this until pulled to Kelli's verion ***    
-# JRWToolBox::lib("John-R-Wallace-NOAA/FishStatsUtils")
-
-# ***** Once Kelly accepts my fork, do this until pulled to Thorson's verion ***          
-# JRWToolBox::lib("kellijohnson-NOAA/FishStatsUtils")
  
 # With the INSTALL_opts argument, warning messasges given when SHA number has not changed since last install.
 if (!any(installed.packages()[, 1] %in% "FishStatsUtils"))
