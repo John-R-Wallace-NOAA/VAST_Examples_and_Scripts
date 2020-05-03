@@ -342,7 +342,7 @@ setwd(HomeDir)
 SP.Results.Dpth <- JRWToolBox::YearlyResultsFigure_VAST3X(fit = fit, map_list = plot_list$map_list, Graph.Dev = 'png')  # This function looks for 'spShortName' (defined above)
 
 
-# Save it all in Image.RData
+# Save it all in Image.RData [ When reloading, remember to dyn.load() the '.dll' e.g. dyn.load(paste0(DateFile, 'VAST_v9_2_0.dll')) ]
 save(list = names(.GlobalEnv), file = paste0(DateFile, "Image.RData"))
 
 
