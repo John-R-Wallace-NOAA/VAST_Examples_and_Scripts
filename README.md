@@ -14,7 +14,7 @@ West_Coast_Annual_Exmpl_2020_FS.R:
  
     JRWToolBox::gitEdit(West_Coast_Example_2020_FS, "John-R-Wallace-NOAA/VAST_Examples_and_Scripts/master/")
   
-Uses fine_scale = TRUE in VAST ver. 3X and JRWToolBox::YearlyResultsFigure_VAST3X(), but otherwise uses the mid-level functions approach
+Uses fine_scale = TRUE in VAST ver. 3X and JRWToolBox::YearlyResultsFigure_VAST3X(), but otherwise uses the mid-level functions approach.
 
 -----------------------------------------------------------------------------------------
 
