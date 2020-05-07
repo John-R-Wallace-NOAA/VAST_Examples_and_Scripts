@@ -248,13 +248,16 @@ load(paste0(HomeDir, 'LengthCompWithZero_2012_2016.RData'))
 
 # Using  < c_i = as.numeric(as.factor(LengthCompWithZero[,"Length_bin"])) - 1 > in fit.model(), which is based on character sorting, doesn't give the correct bin ordering for large animals of 100cm
 #      or more [e.g. sort(c('10', '15', '20', '100')) gives c( "10", "100", "15", "20") ] :
-    LengthCompWithZero$Length_bin_num <- as.numeric(as.factor(LengthCompWithZero[,"Length_bin"])) - 1
-   (charSort <- LengthCompWithZero[!duplicated(LengthCompWithZero$Length_bin), c('Length_bin', 'Length_bin_num')][order(LengthCompWithZero$Length_bin[!duplicated(LengthCompWithZero$Length_bin)]), ])
+   LengthCompWithZero$Length_bin_num <- as.numeric(as.factor(LengthCompWithZero[,"Length_bin"])) - 1
+   (charSort <- renum(LengthCompWithZero[!duplicated(LengthCompWithZero$Length_bin), c('Length_bin', 'Length_bin_num')][order(LengthCompWithZero$Length_bin[!duplicated(LengthCompWithZero$Length_bin)]), ]))
   
 # Using JRWToolBox::recode.simple() to re-code correctly via 'Length_bin_num' (hacked the 'ref_Table' but that could be created in anyway desired)
-   (ref_Table <- data.frame (Length_bin = charSort$Length_bin[c(9:25, 1:8)], Length_bin_num = 0:24))
+   Order <- c(9:25, 1:8)
+   (ref_Table <- data.frame (Length_bin = charSort$Length_bin[Order], Length_bin_num = 0:(length(Order) - 1)))
    LengthCompWithZero$Length_bin_num <- as.numeric(recode.simple(LengthCompWithZero$Length_bin, ref_Table))
-   LengthCompWithZero[!duplicated(LengthCompWithZero$Length_bin), c('Length_bin', 'Length_bin_num')][order(LengthCompWithZero$Length_bin[!duplicated(LengthCompWithZero$Length_bin)]), ][c(9:25, 1:8), ]
+   # Check
+   renum(LengthCompWithZero[!duplicated(LengthCompWithZero$Length_bin), c('Length_bin', 'Length_bin_num')][order(LengthCompWithZero$Length_bin[!duplicated(LengthCompWithZero$Length_bin)]), ][Order, ])
+
 
 
   
