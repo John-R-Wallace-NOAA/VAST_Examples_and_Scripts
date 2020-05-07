@@ -145,7 +145,7 @@ bin_size = 5
 
 # Expand and format length composition data for SS
 #LFs <- SurveyLFs.fn(dir = getwd(), datL = bio, datTows = catch,  
-stage_one  <- SurveyLFs.fn(dir = getwd(), datL = len, datTows = catch,  
+stage_one  <- SurveyLFs.fn(dir = getwd(), datL = bio, datTows = catch,  
                     strat.df = strata, lgthBins = len.bins, gender = 3, 
                     sexRatioStage = 2, sexRatioUnsexed = 0.5, maxSizeUnsexed = 20, outputStage1 = TRUE,
                     nSamps = n)
