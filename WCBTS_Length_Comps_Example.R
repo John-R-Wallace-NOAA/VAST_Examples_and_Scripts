@@ -35,7 +35,9 @@ ls("package:nwfscSurvey")
 HomeDir <- "W:/ALL_USR/JRW/Assessment/Length_Comps_VAST/"
 setwd(HomeDir); getwd()
 
-DateDir <- paste0(HomeDir, 'VAST_', Sys.Date(), '_Longnose_Comps_NWFSC_Combo_2012_2016/')
+yearRange <- c(2012, 2019)
+
+DateDir <- paste0(HomeDir, 'VAST_', Sys.Date(), '_Longnose_Comps_NWFSC_Combo_', yearRange[1], '_', yearRange[2], '/')
 dir.create(DateDir, showWarnings = FALSE)
 setwd(DateDir); getwd()
 
@@ -45,14 +47,16 @@ spFormalName <- 'longnose skate'
 spLongName <- 'Longnose skate'
 spShortName <- 'LSKT'
 
+
 # catch = PullCatch.fn(SciName = "Raja rhina", SurveyName = "NWFSC.Combo", YearRange = c(2012, 2016), SaveFile = TRUE, Dir = getwd()) 
-catch <- JRWToolBox::dataWareHouseTrawlCatch(spFormalName, yearRange = c(2012, 2019), project = 'WCGBTS.Combo')
+catch <- JRWToolBox::dataWareHouseTrawlCatch(spFormalName, yearRange = yearRange, project = 'WCGBTS.Combo')
 catch$cpue_kg_km2 <- catch$Total_sp_wt_kg/(catch$Area_Swept_ha/100)
 names(catch)[grep('Total_sp_numbers', names(catch))] <- 'total_catch_numbers'
 
 # bio = PullBio.fn(SciName = "Raja rhina", SurveyName = "NWFSC.Combo", YearRange = c(2012, 2016), SaveFile = TRUE, Dir = getwd())
-bio <- JRWToolBox::dataWareHouseTrawlBio(spFormalName, yearRange = c(2012, 2016), project = 'WCGBTS.Combo')
+bio <- JRWToolBox::dataWareHouseTrawlBio(spFormalName, yearRange = yearRange, project = 'WCGBTS.Combo')
 names(bio)[grep('Weight_kg', names(bio))] <- 'Weight'  # I added the units to the 'Weight_kg' and the PullBio.fn() is behind
+
 
 head(catch)
 head(bio)
@@ -231,7 +235,7 @@ dev.off()
        
        
 # write.csv(LengthCompWithZero,"LengthCompWithZero.csv")
-save(LengthCompWithZero, file = paste0(HomeDir, 'LengthCompWithZero_2012_2016.RData'))
+save(LengthCompWithZero, file = paste0(HomeDir, 'LengthCompWithZero_', yearRange[1], '_', yearRange[2], '.RData'))
 
 
 #===============================================================================
@@ -253,7 +257,7 @@ library(VAST)
 
 
 setwd(DateDir); getwd()
-load(paste0(HomeDir, 'LengthCompWithZero_2012_2016.RData'))
+load(paste0(HomeDir, 'LengthCompWithZero_', yearRange[1], '_', yearRange[2], '.RData'))
 
 # Using  < c_i = as.numeric(as.factor(LengthCompWithZero[,"Length_bin"])) - 1 > in fit.model(), which is based on character sorting, doesn't give the correct bin ordering for large animals of 100cm
 #      or more [e.g. sort(c('10', '15', '20', '100')) gives c( "10", "100", "15", "20") ] :
