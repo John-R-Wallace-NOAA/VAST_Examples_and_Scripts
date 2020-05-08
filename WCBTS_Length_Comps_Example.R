@@ -359,32 +359,11 @@ fit$parameter_estimates[['AIC']]
 
 VAST::check_fit(fit$parameter_estimates)
 
-
-# Calculate proportions
-proportions = calculate_proportion( TmbData = fit$data_list, Index = results$Index, Year_Set = fit$year_labels )
-
-
-names(proportions)
-#  [1] "Prop_ctl"     "Neff_tl"      "var_Prop_ctl" "Index_tl"     "Neff_ctl"     "Mean_tl"    "sd_Mean_tl"  
-
-dimnames(proportions$Neff_tl) <- list(fit$year_labels, strataLimits$STRATA)
-proportions$Neff_tl
-
-#       Coastwide       CA       OR       WA
-#  2012 1068.3964 822.1577 604.8729 405.2903
-#  2013  785.7562 659.2093 525.6161 329.0785
-#  2014 1052.4279 860.3130 599.4407 419.9012
-#  2015 1102.8253 854.1759 622.8817 434.1367
-#  2016 1158.8981 895.9349 715.3605 467.1724
-
-save(proportions, file = paste0(DateDir, "proportions.RData"))
-
-
+# Early save - done again below
 # Save it all in Image.RData [ When reloading, remember to dyn.load() the '.dll', e.g. dyn.load(paste0(DateDir, 'VAST_v9_2_0.dll')) ]
 save(list = names(.GlobalEnv), file = paste0(DateDir, "Image.RData"))
 
-
-                  
+                 
 # Plot results
 FigDir <- paste0(DateDir, 'Figs/')
 dir.create(FigDir, showWarnings = FALSE)
@@ -392,22 +371,49 @@ dir.create(FigDir, showWarnings = FALSE)
 results = plot_results(fit = fit, settings = fit$settings, plot_set = 3, category_names = ref_Table$Length_bin, 
               strata_names = strataLimits$STRATA, check_residuals = FALSE, working_dir = FigDir)
  
-# Do this again with strata_names included [ doesn't get added in plot_results() ]
+# Do plot_range_index() (for Effective_Area.png) again by itself so strata_names are included [ doesn't get added properly in plot_results() ] 
+#      plot_range_index() also recreates 'center_of_gravity.png' with no change but the 'Date modified'
 plot_range_index(Report = fit$Report, TmbData = fit$data_list, 
             Sdreport = fit$parameter_estimates$SD, Znames = colnames(fit$data_list$Z_xm), 
             PlotDir = FigDir, Year_Set = fit$year_labels, Years2Include = fit$years_to_plot, 
             use_biascorr = FALSE, category_names = ref_Table$Length_bin, strata_names = strataLimits$STRATA)
 
-         
-
-# If plot_biomass_index() fails, try setting 'treat_nonencounter_as_zero' to FALSE and re-try
-# This fails when a length bin is empty over all years - which needs to be fixed, but at least the figures can be looked at.
-fit$data_list$Options_list$Options['treat_nonencounter_as_zero']
-fit$data_list$Options_list$Options['treat_nonencounter_as_zero'] <- c(TRUE, FALSE)[2]
-fit$data_list$Options_list$Options['treat_nonencounter_as_zero']
-
+            
+#  # If plot_biomass_index() fails, try setting 'treat_nonencounter_as_zero' to FALSE and re-try
+#  # This fails when a length bin is empty over all years - which needs to be fixed, but at least the figures can be looked at.
+#  fit$data_list$Options_list$Options['treat_nonencounter_as_zero']
+#  fit$data_list$Options_list$Options['treat_nonencounter_as_zero'] <- c(TRUE, FALSE)[2]
+#  fit$data_list$Options_list$Options['treat_nonencounter_as_zero']
  
-   
+ 
+# Calculate proportions
+proportions = calculate_proportion( TmbData = fit$data_list, Index = results$Index, Year_Set = fit$year_labels )
+
+names(proportions)
+#  [1] "Prop_ctl"     "Neff_tl"      "var_Prop_ctl" "Index_tl"     "Neff_ctl"     "Mean_tl"    "sd_Mean_tl"  
+
+dimnames(proportions$Neff_tl) <- list(fit$year_labels, strataLimits$STRATA)
+proportions$Neff_tl
+
+#           Coastwide            CA           OR           WA
+#  2012 1105.56027577  916.58676889 655.01395386 453.06775573
+#  2013  798.63061932  689.23672238 579.85407685 382.71489703
+#  2014 1122.73744094  987.29969613 691.42093641 471.60152020
+#  2015 1143.63275765  976.06640714 695.09905904 496.94268546
+#  2016 1208.55527243  970.84796261 787.71612659 488.28437210
+#  2017 1173.23343141 1054.01173679 747.54463707 536.80411689
+#  2018 1116.78034561  938.28118559 698.00185540 513.77874095
+#  2019  561.42381200  508.07606527 427.41826495 338.07075632
+
+
+save(proportions, file = paste0(DateDir, "proportions.RData"))
+
+
+# Save it all in Image.RData [ When reloading, remember to dyn.load() the '.dll', e.g. dyn.load(paste0(DateDir, 'VAST_v9_2_0.dll')) ]
+save(list = names(.GlobalEnv), file = paste0(DateDir, "Image.RData"))
+ 
+ 
+ 
 # Summary of the fit
 fitSummary <- summary(fit)  # FishStatsUtils:::summary.fit_model (The column names for the head of `Density_dataframe` are in the wrong place for the printing.)
 dim(fitSummary$Density_dataframe)  
@@ -456,4 +462,3 @@ Ages <- SurveyAgeAtLen.fn (dir = getwd(), datAL = age, datTows = catch,
                           strat.df = strata, lgthBins = len.bins, ageBins = age.bins, partition = 0)
 
  
-                          
