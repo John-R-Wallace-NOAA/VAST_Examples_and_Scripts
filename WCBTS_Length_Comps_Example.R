@@ -219,7 +219,16 @@ nrow(LengthCompWithZero)/nrow(catch)
 # Not much length data for Longnose skate beyond 300 fathoms (549 meters).
 xyplot(Lat ~ -Depth_m | factor(Year), groups = as.logical(First_stage_expanded_numbers), data = LengthCompWithZero, 
        panel = function(...) { panel.xyplot(...); panel.abline(v = -unique(c(strata$Depth_m.1, strata$Depth_m.2)), h = unique(c(strata$Latitude_dd.1, strata$Latitude_dd.2)))})
- 
+
+# Save above xyplot() to Fig directory as a png
+FigDir <- paste0(DateDir, 'Figs/')
+dir.create(FigDir, showWarnings = FALSE) 
+      
+png(1000, 1000, file = paste0(FigDir, file = 'Raw_data_Lat_by_Depth_by_Year_by_Presence.png')) # Presence is First_stage_expanded_numbers != 0 (i.e. a length taken, not just a catch)
+xyplot(Lat ~ -Depth_m | factor(Year), groups = as.logical(First_stage_expanded_numbers), data = LengthCompWithZero, 
+       panel = function(...) { panel.xyplot(...); panel.abline(v = -unique(c(strata$Depth_m.1, strata$Depth_m.2)), h = unique(c(strata$Latitude_dd.1, strata$Latitude_dd.2)))})
+dev.off()
+       
        
 # write.csv(LengthCompWithZero,"LengthCompWithZero.csv")
 save(LengthCompWithZero, file = paste0(HomeDir, 'LengthCompWithZero_2012_2016.RData'))
@@ -364,7 +373,7 @@ VAST::check_fit(fit$parameter_estimates)
 save(list = names(.GlobalEnv), file = paste0(DateDir, "Image.RData"))
 
                  
-# Plot results
+# Plot results (Make sure the Fig directory is present, in case the code wasn't run above.)
 FigDir <- paste0(DateDir, 'Figs/')
 dir.create(FigDir, showWarnings = FALSE)
 
