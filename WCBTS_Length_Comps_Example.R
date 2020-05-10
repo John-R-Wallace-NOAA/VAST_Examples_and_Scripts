@@ -398,9 +398,10 @@ plot_range_index(Report = fit$Report, TmbData = fit$data_list,
 #  fit$data_list$Options_list$Options['treat_nonencounter_as_zero'] <- c(TRUE, FALSE)[2]
 #  fit$data_list$Options_list$Options['treat_nonencounter_as_zero']
  
- 
-# Calculate proportions
-proportions = calculate_proportion( TmbData = fit$data_list, Index = results$Index, Year_Set = fit$year_labels )
+
+# Calculate proportions 
+proportions <- calculate_proportion(TmbData = fit$data_list, Index = results$Index, Year_Set = fit$year_labels,
+                  strata_names = strataLimits$STRATA, DirName = FigDir)
 
 names(proportions)
 #  [1] "Prop_ctl"     "Neff_tl"      "var_Prop_ctl" "Index_tl"     "Neff_ctl"     "Mean_tl"    "sd_Mean_tl"  
