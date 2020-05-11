@@ -272,7 +272,7 @@ load(paste0(HomeDir, 'LengthCompWithZero_', yearRange[1], '_', yearRange[2], '.R
    LengthCompWithZero$Length_bin_num <- as.numeric(recode.simple(LengthCompWithZero$Length_bin, ref_Table))
    # Check
    renum(LengthCompWithZero[!duplicated(LengthCompWithZero$Length_bin), c('Length_bin', 'Length_bin_num')][order(LengthCompWithZero$Length_bin[!duplicated(LengthCompWithZero$Length_bin)]), ][Order, ])
-   # An additional check is below where only the 'Length_bin" should not be zero, since that's a character vector that is not given to VAST
+   # An additional check is below where only 'Length_bin" should not be zero, since that's a character vector that is not given to VAST
    lapply(LengthCompWithZero, function(x) sum(!is.finite(x)))
 
 
