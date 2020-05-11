@@ -10,6 +10,8 @@ library(JRWToolBox)
 #install.packages("devtools")
 library(devtools)
 
+options(stringsAsFactors = FALSE)  # This is the now the default starting with R ver 4.0.0
+
 #===============================================================================
 #=============          Package test          ==================================
 #===============================================================================
@@ -265,11 +267,13 @@ load(paste0(HomeDir, 'LengthCompWithZero_', yearRange[1], '_', yearRange[2], '.R
    (charSort <- renum(LengthCompWithZero[!duplicated(LengthCompWithZero$Length_bin), c('Length_bin', 'Length_bin_num')][order(LengthCompWithZero$Length_bin[!duplicated(LengthCompWithZero$Length_bin)]), ]))
   
 # Using JRWToolBox::recode.simple() to re-code correctly via 'Length_bin_num' (hacked the 'ref_Table' but that could be created in anyway desired)
-   Order <- c(9:25, 1:8)
+   Order <- c(9:25, 1:8)  # Change this 'Order' data frame correctly so that 'Length_bin' goes from smallest to largest and Length_bin_num starts at zero and monotonically increases with ordinal numbers
    (ref_Table <- data.frame (Length_bin = charSort$Length_bin[Order], Length_bin_num = 0:(length(Order) - 1)))
    LengthCompWithZero$Length_bin_num <- as.numeric(recode.simple(LengthCompWithZero$Length_bin, ref_Table))
    # Check
    renum(LengthCompWithZero[!duplicated(LengthCompWithZero$Length_bin), c('Length_bin', 'Length_bin_num')][order(LengthCompWithZero$Length_bin[!duplicated(LengthCompWithZero$Length_bin)]), ][Order, ])
+   # An additional check is below where only the 'Length_bin" should not be zero, since that's a character vector that is not given to VAST
+   lapply(LengthCompWithZero, function(x) sum(!is.finite(x)))
 
 
 
@@ -348,7 +352,7 @@ settings = FishStatsUtils::make_settings( n_x = 300, Region = "California_curren
          bias.correct = FALSE,
             max_cells = 3000,
         strata.limits = strataLimits)
-) 
+ 
 
 
 # Run model  
