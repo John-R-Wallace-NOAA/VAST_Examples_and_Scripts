@@ -37,7 +37,7 @@ Uses fine_scale = TRUE in VAST ver. 3X and JRWToolBox::YearlyResultsFigure_VAST3
 
 WCBTS_Length_Comps_Example_V3X:
  
-   JRWToolBox::gitEdit(WCBTS_Length_Comps_Example_V3X, "John-R-Wallace-NOAA/VAST_Examples_and_Scripts/master/")
+    JRWToolBox::gitEdit(WCBTS_Length_Comps_Example_V3X, "John-R-Wallace-NOAA/VAST_Examples_and_Scripts/master/")
 
 
 
