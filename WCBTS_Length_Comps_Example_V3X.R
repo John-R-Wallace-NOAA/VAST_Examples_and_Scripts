@@ -105,7 +105,8 @@ bio$Length_cm[is.na(bio$Length_cm) & !is.na(bio$Width_cm) & bio$Sex %in% "M"] <-
 bio$Length_cm[is.na(bio$Length_cm) & !is.na(bio$Width_cm) & bio$Sex %in% "U"] <- bio$Width_cm[is.na(bio$Length_cm) & !is.na(bio$Width_cm) & bio$Sex %in% "U"]*1.404374 + 0.700501
   
 # Look at a table of missing lengths and of missing length vs width after applying the formula
-Table(is.finite(bio$Length_cm))
+Table(is.finite(bio$Length_cm), bio$Year)
+Table(is.finite(bio$Width_cm), bio$Year)
 Table(is.finite(bio$Length_cm), is.finite(bio$Width_cm))
 # Length in rows, width in columns
 
