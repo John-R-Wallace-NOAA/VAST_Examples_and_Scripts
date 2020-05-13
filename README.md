@@ -33,11 +33,11 @@ Uses fine_scale = TRUE in VAST ver. 3X and JRWToolBox::YearlyResultsFigure_VAST3
     Depth covariate, on data not grid (FS; Pass; LN errors)                 27,832.2
     Depth covarite, on data not grid, bs() spline (FS; Pass; LN errors)     27,459.2
 
+-----------------------------------------------------------------------------------------
 
-
-
-
-
+WCBTS_Length_Comps_Example_V3X:
+ 
+   JRWToolBox::gitEdit(WCBTS_Length_Comps_Example_V3X, "John-R-Wallace-NOAA/VAST_Examples_and_Scripts/master/")
 
 
 
