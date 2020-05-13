@@ -88,6 +88,7 @@ xyplot(Width_cm ~ Length_cm | factor(Year), data = bio) # Now no width data???
 
 # Look at a table of missing lengths and of missing length vs width before applying the formula
 Table(is.finite(bio$Length_cm), bio$Year)
+Table(is.finite(bio$Width_cm), bio$Year)
 Table(is.finite(bio$Length_cm), is.finite(bio$Width_cm))
 # Length in rows, Width in columns
 
