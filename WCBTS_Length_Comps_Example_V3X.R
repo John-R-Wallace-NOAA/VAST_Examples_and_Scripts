@@ -23,7 +23,7 @@ setwd(HomeDir); getwd()
 #===============================================================================
 
 # https://github.com/nwfsc-assess/nwfscSurvey
-devtools::install_github("nwfsc-assess/nwfscSurvey", build_vignettes = TRUE)
+# devtools::install_github("nwfsc-assess/nwfscSurvey", build_vignettes = TRUE)
 
 # Load the package
 library(nwfscSurvey)
@@ -76,6 +76,9 @@ if(numSexInModel %in% 2)
 dir.create(DateDir, showWarnings = FALSE)
 setwd(DateDir); getwd()
 
+FigDir <- paste0(DateDir, 'Figs/')
+dir.create(FigDir, showWarnings = FALSE) 
+     
 
 #===============================================================================
 #=============      Data          ==============================================
@@ -99,11 +102,14 @@ xyplot(cpue_kg_km2 ~ -Depth_m | factor(Year), groups = factor(sign(cpue_kg_km2))
 dev.new()
 xyplot(Weight ~ Length_cm | factor(Year), data = bio)  # Longnose weight data only in years 2012 & 2016
 dev.new()
-xyplot(Width_cm ~ Length_cm | factor(Year), data = bio) # Now no width data???
+xyplot(Width_cm ~ Length_cm | factor(Year), data = bio) 
 dev.new()
 histogram(~ Length_cm | factor(Year), data = bio) 
-dev.new()
-histogram(~ Width_cm | factor(Year), data = bio) 
+
+if(any(is.finite(bio$Width))) {
+  dev.new()
+  histogram(~ Width_cm | factor(Year), data = bio)
+} 
 
 # Can pull data based on the general name (Name) of the scientific name(SciName). The default year range (YearRange)
 # is set to cover all potential years.  The SurveyName options are: Triennial, AFSC.Slope, NWFSC.Slope, NWFSC.Shelf
@@ -113,15 +119,16 @@ histogram(~ Width_cm | factor(Year), data = bio)
 
 
 #===============================================================================
-#=============          Length conversion          =============================
+#=============          Width to Length Conversion          ====================
 #===============================================================================
 
 #If Length_cm is missing but Width_cm has a value, then the following formula
 
 # Look at a table of missing lengths and of missing length vs width before applying the formula
-Table(is.finite(bio$Length_cm), bio$Year)
-Table(is.finite(bio$Width_cm), bio$Year)
-Table(is.finite(bio$Length_cm), is.finite(bio$Width_cm))
+cat("\n\n")
+Table(is.finite(bio$Length_cm), bio$Year); cat("\n\n")
+Table(is.finite(bio$Width_cm), bio$Year); cat("\n\n")
+Table(is.finite(bio$Length_cm), is.finite(bio$Width_cm)); cat("\n\n")
 # Length in rows, Width in columns
 
 
@@ -135,9 +142,10 @@ bio$Length_cm[is.na(bio$Length_cm) & !is.na(bio$Width_cm) & bio$Sex %in% "M"] <-
 bio$Length_cm[is.na(bio$Length_cm) & !is.na(bio$Width_cm) & bio$Sex %in% "U"] <- bio$Width_cm[is.na(bio$Length_cm) & !is.na(bio$Width_cm) & bio$Sex %in% "U"]*1.404374 + 0.700501
   
 # Look at a table of missing lengths and of missing length vs width after applying the formula
-Table(is.finite(bio$Length_cm), bio$Year)
-Table(is.finite(bio$Width_cm), bio$Year)
-Table(is.finite(bio$Length_cm), is.finite(bio$Width_cm))
+cat("\n\n")
+Table(is.finite(bio$Length_cm), bio$Year); cat("\n\n")
+Table(is.finite(bio$Width_cm), bio$Year); cat("\n\n")
+Table(is.finite(bio$Length_cm), is.finite(bio$Width_cm)); cat("\n\n")
 # Length in rows, width in columns
 
 
@@ -171,7 +179,7 @@ nwfscSurvey::PlotBio.fn(dir = getwd(), dat = biomass, main = "NWFSC shelf-slope 
 
 
 #============================================================================================
-#=============          Length Biological Data            ===================================
+#=============          Length Data            ==============================================
 #============================================================================================
 
 bin_size = 5
@@ -255,14 +263,12 @@ LengthCompWithZero <- JRWToolBox::match.f(LengthCompWithZero, LenCompNoZero, c("
 #Change NA First_stage_expanded_numbers for zero catch hauls to 0
 LengthCompWithZero$First_stage_expanded_numbers[is.na(LengthCompWithZero$First_stage_expanded_numbers)] <- 0
 
-#Add column Area_Swept_km2
-LengthCompWithZero$Area_Swept_km2 <- LengthCompWithZero$Area_Swept_ha/100
-
-#Remove column Area_Swept_ha
+#Create column AreaSwept_km2 and remove column Area_Swept_ha
+LengthCompWithZero$AreaSwept_km2 <- LengthCompWithZero$Area_Swept_ha/100
 LengthCompWithZero$Area_Swept_ha <- NULL
 
 #Change location of columns
-LengthCompWithZero <- renum(LengthCompWithZero[, c("Trawl_id", "Year", "Latitude_dd", "Longitude_dd", "Depth_m", "Area_Swept_km2", "First_stage_expanded_numbers", "Length_bin")])
+LengthCompWithZero <- renum(LengthCompWithZero[, c("Trawl_id", "Year", "Latitude_dd", "Longitude_dd", "Depth_m", "AreaSwept_km2", "First_stage_expanded_numbers", "Length_bin")])
 LengthCompWithZero[1:10,]
 
 #Change names of columns
@@ -283,10 +289,7 @@ nrow(LengthCompWithZero)/nrow(catch)
 xyplot(Lat ~ -Depth_m | factor(Year), groups = as.logical(First_stage_expanded_numbers), data = LengthCompWithZero, 
        panel = function(...) { panel.xyplot(...); panel.abline(v = -unique(c(strata$Depth_m.1, strata$Depth_m.2)), h = unique(c(strata$Latitude_dd.1, strata$Latitude_dd.2)))})
 
-# Save above xyplot() to 'Fig' directory as a png
-FigDir <- paste0(DateDir, 'Figs/')
-dir.create(FigDir, showWarnings = FALSE) 
-      
+# Save above xyplot() to the 'Figs' directory as a png
 png(1000, 1000, file = paste0(FigDir, file = 'Raw_data_Lat_by_Depth_by_Year_by_Presence.png')) # Presence is First_stage_expanded_numbers != 0 (i.e. a length taken, not just a catch)
 xyplot(Lat ~ -Depth_m | factor(Year), groups = as.logical(First_stage_expanded_numbers), data = LengthCompWithZero, 
        panel = function(...) { panel.xyplot(...); panel.abline(v = -unique(c(strata$Depth_m.1, strata$Depth_m.2)), h = unique(c(strata$Latitude_dd.1, strata$Latitude_dd.2)))})
@@ -294,12 +297,6 @@ dev.off()
        
        
 # write.csv(LengthCompWithZero,"LengthCompWithZero.csv")
-
-if(numSexInModel %in% 1)
-   save(LengthCompWithZero, file = paste0(HomeDir, 'LengthCompWithZero_', yearRange[1], '_', yearRange[2], '_sex', casefold(substring(sex, 2, 2), upper = TRUE), '.RData'))
-
-if(numSexInModel %in% 2)
-   save(LengthCompWithZero, file = paste0(HomeDir, 'LengthCompWithZero_', yearRange[1], '_', yearRange[2], '_sexMF.RData'))
 
 
 
@@ -320,16 +317,7 @@ library(VAST)
 # that are installed automatically with `FishStatsUtils`.
 #example = load_example( data_set="Lingcod_comp_expansion" )
 
-
 setwd(DateDir); getwd()
-
-# Load back in LengthCompWithZero if needed
-if(numSexInModel %in% 1)
-   load(paste0(HomeDir, 'LengthCompWithZero_', yearRange[1], '_', yearRange[2], '_sex', casefold(substring(sex, 2, 2), upper = TRUE), '.RData'))
-
-if(numSexInModel %in% 2)
-   load(file = paste0(HomeDir, 'LengthCompWithZero_', yearRange[1], '_', yearRange[2], '_sexMF.RData'))
-
 
 
 # Using  < c_i = as.numeric(as.factor(LengthCompWithZero[,"Length_bin"])) - 1 > in fit.model(), which is based on character sorting, doesn't give the correct bin ordering for large animals of 100cm
@@ -341,19 +329,34 @@ if(numSexInModel %in% 2)
    
    # Change this 'Order' vector correctly so that 'Length_bin' goes from smallest to largest and Length_bin_num starts at zero and monotonically increases with ordinal numbers within sex
    if(numSexInModel %in% 1)
-      Order <- c(9:25, 1:8) 
+      Order <- c(10:26, 1:9) 
    if(numSexInModel %in% 2)
-      Order <- c(c(9:25, 1:8), c(9:25, 1:8) + 25) # Females then males    
+      Order <- c(c(10:26, 1:9), c(10:26, 1:9) + 26) # Females then males    
    (ref_Table <- data.frame (Length_bin = charSort$Length_bin[Order], Length_bin_num = 0:(length(Order) - 1)))
    LengthCompWithZero$Length_bin_num <- as.numeric(JRWToolBox::recode.simple(LengthCompWithZero$Length_bin, ref_Table))
-   # Check
+   # Check Length_bin and Length_bin_num in LengthCompWithZero
    renum(LengthCompWithZero[!duplicated(LengthCompWithZero$Length_bin), c('Length_bin', 'Length_bin_num')][order(LengthCompWithZero$Length_bin[!duplicated(LengthCompWithZero$Length_bin)]), ][Order, ])
-   # An additional check is below where only 'Length_bin" should not be zero, since that's a character vector that is not given to VAST
+   # Additional check, note that only 'Length_bin" should not be zero, since that's a character vector which is not given to VAST
    lapply(LengthCompWithZero, function(x) sum(!is.finite(x)))
 
+   
+# Save LengthCompWithZero in HomeDir
+if(numSexInModel %in% 1)
+   save(LengthCompWithZero, file = paste0(HomeDir, 'LengthCompWithZero_', yearRange[1], '_', yearRange[2], '_sex', casefold(substring(sex, 2, 2), upper = TRUE), '.RData'))
 
+if(numSexInModel %in% 2)
+   save(LengthCompWithZero, file = paste0(HomeDir, 'LengthCompWithZero_', yearRange[1], '_', yearRange[2], '_sexMF.RData'))
 
-  
+   
+# Load back in LengthCompWithZero if needed
+if(numSexInModel %in% 1)
+   load(paste0(HomeDir, 'LengthCompWithZero_', yearRange[1], '_', yearRange[2], '_sex', casefold(substring(sex, 2, 2), upper = TRUE), '.RData'))
+
+if(numSexInModel %in% 2)
+   load(file = paste0(HomeDir, 'LengthCompWithZero_', yearRange[1], '_', yearRange[2], '_sexMF.RData'))
+ 
+ 
+ 
 # === Comments for FishStatsUtils::make_settings() and FishStatsUtils::fit_model() ===
 
 #     Changed the 700 fathom (1280 meter) 'deep border' to 300 (549 meters), thus removing the 300 - 700 fathom strata that has limited data for Longnose skate. 
@@ -428,21 +431,25 @@ settings = FishStatsUtils::make_settings( n_x = 300, Region = "California_curren
          bias.correct = FALSE,
             max_cells = 3000,
         strata.limits = strataLimits)
- 
+        
+
+# Set max threads on a PC for MRO (depending on the system, threads are often half the number of logical processors on a machine)
+setMKLthreads(100)
 
 
 # Run model  
 sink("Fit_Output.txt")
 fit = FishStatsUtils::fit_model( 
   settings = settings, 
-  Lat_i = LengthCompWithZero[,'Lat'], 
-  Lon_i = LengthCompWithZero[,'Lon'],
-  t_i = LengthCompWithZero[,'Year'], 
-  c_i = LengthCompWithZero$Length_bin_num,
-  b_i = LengthCompWithZero[,'First_stage_expanded_numbers'],
-  a_i = LengthCompWithZero[,'AreaSwept_km2'], 
+  Lat_i = LengthCompWithZero$Lat, 
+  Lon_i = LengthCompWithZero$Lon,
+    t_i = LengthCompWithZero$Year, 
+    c_i = LengthCompWithZero$Length_bin_num,
+    b_i = LengthCompWithZero$First_stage_expanded_numbers,
+    a_i = LengthCompWithZero$AreaSwept_km2, 
   model_args = list(Npool = 200), newtonsteps = 1, test_fit = c(TRUE, FALSE)[2] )
 sink()
+
 
 # Max gradient
 fit$parameter_estimates[['max_gradient']]
@@ -453,14 +460,11 @@ fit$parameter_estimates[['AIC']]
 VAST::check_fit(fit$parameter_estimates)
 
 # Early save - done again below
-# Save it all in Image.RData [ When reloading, remember to dyn.load() the '.dll', e.g. dyn.load(paste0(DateDir, 'VAST_v9_2_0.dll')) ]
+# Save it all in Image.RData 
 save(list = names(.GlobalEnv), file = paste0(DateDir, "Image.RData"))
 
                  
-# Plot results (Make sure the Fig directory is present, in case the code wasn't run above.)
-FigDir <- paste0(DateDir, 'Figs/')
-dir.create(FigDir, showWarnings = FALSE)
-
+# Plot results 
 results = FishStatsUtils::plot_results(fit = fit, settings = fit$settings, plot_set = 3, category_names = ref_Table$Length_bin, 
               strata_names = strataLimits$STRATA, check_residuals = FALSE, working_dir = FigDir)
  
@@ -503,7 +507,7 @@ proportions$Neff_tl
 save(proportions, file = paste0(DateDir, "proportions.RData"))
 
 
-# Save it all in Image.RData [ When reloading, remember to dyn.load() the '.dll', e.g. dyn.load(paste0(DateDir, 'VAST_v9_2_0.dll')) ]
+# Save it all in Image.RData [ When reloading, remember to dyn.load() the '.dll', e.g. dyn.load(paste0(DateDir, 'VAST_v9_2_0.dll')), if needed. ]
 save(list = names(.GlobalEnv), file = paste0(DateDir, "Image.RData"))
  
  
@@ -556,4 +560,5 @@ Ages <- SurveyAgeAtLen.fn (dir = getwd(), datAL = age, datTows = catch,
                           strat.df = strata, lgthBins = len.bins, ageBins = age.bins, partition = 0)
 
  
+
 
