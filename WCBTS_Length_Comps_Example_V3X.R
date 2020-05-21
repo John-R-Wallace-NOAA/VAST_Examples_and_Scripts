@@ -295,30 +295,6 @@ xyplot(Lat ~ -Depth_m | factor(Year), groups = as.logical(First_stage_expanded_n
        panel = function(...) { panel.xyplot(...); panel.abline(v = -unique(c(strata$Depth_m.1, strata$Depth_m.2)), h = unique(c(strata$Latitude_dd.1, strata$Latitude_dd.2)))})
 dev.off()
        
-       
-# write.csv(LengthCompWithZero,"LengthCompWithZero.csv")
-
-
-
-#===============================================================================
-#=============          VAST         ===========================================
-#===============================================================================
-
-# Download release number 3.4.0; its useful for reproducibility to use a specific release number
-# devtools::install_github("james-thorson-noaa/VAST", ref="3.4.0")
-# devtools::install_github("james-thorson-noaa/FishStatsUtils", ref="2.6.0")
-
-# Load packages
-library(TMB)
-library(VAST)
-
-# load data set
-# see `?load_example` for list of stocks with example data
-# that are installed automatically with `FishStatsUtils`.
-#example = load_example( data_set="Lingcod_comp_expansion" )
-
-setwd(DateDir); getwd()
-
 
 # Using  < c_i = as.numeric(as.factor(LengthCompWithZero[,"Length_bin"])) - 1 > in fit.model(), which is based on character sorting, doesn't give the correct bin ordering for large animals of 100cm
 #      or more [e.g. sort(c('10', '15', '20', '100')) gives c( "10", "100", "15", "20") ] :
@@ -340,7 +316,10 @@ setwd(DateDir); getwd()
    lapply(LengthCompWithZero, function(x) sum(!is.finite(x)))
 
    
-# Save LengthCompWithZero in HomeDir
+# --- Save LengthCompWithZero in HomeDir ---
+       
+# write.csv(LengthCompWithZero,"LengthCompWithZero.csv")
+
 if(numSexInModel %in% 1)
    save(LengthCompWithZero, file = paste0(HomeDir, 'LengthCompWithZero_', yearRange[1], '_', yearRange[2], '_sex', casefold(substring(sex, 2, 2), upper = TRUE), '.RData'))
 
@@ -348,12 +327,39 @@ if(numSexInModel %in% 2)
    save(LengthCompWithZero, file = paste0(HomeDir, 'LengthCompWithZero_', yearRange[1], '_', yearRange[2], '_sexMF.RData'))
 
    
-# Load back in LengthCompWithZero if needed
+#===============================================================================
+#=============          VAST         ===========================================
+#===============================================================================
+
+# Download release number 3.4.0; its useful for reproducibility to use a specific release number
+# devtools::install_github("james-thorson-noaa/VAST", ref="3.4.0")
+# devtools::install_github("james-thorson-noaa/FishStatsUtils", ref="2.6.0")
+
+# Load packages
+library(TMB)
+library(VAST)
+
+# load data set
+# see `?load_example` for list of stocks with example data
+# that are installed automatically with `FishStatsUtils`.
+#example = load_example( data_set="Lingcod_comp_expansion" )
+
+setwd(DateDir); getwd()
+
+# Load back in LengthCompWithZero from HomeDir, if needed
 if(numSexInModel %in% 1)
    load(paste0(HomeDir, 'LengthCompWithZero_', yearRange[1], '_', yearRange[2], '_sex', casefold(substring(sex, 2, 2), upper = TRUE), '.RData'))
 
 if(numSexInModel %in% 2)
    load(file = paste0(HomeDir, 'LengthCompWithZero_', yearRange[1], '_', yearRange[2], '_sexMF.RData'))
+ 
+
+# # Extra removal of length bins with almost no data for models that have convergence issues
+# if(numSexInModel %in% 1)
+#    LengthCompWithZero <- LengthCompWithZero[!LengthCompWithZero$Length_bin %in% '10-15cm', ]
+# if(numSexInModel %in% 2) {
+#    LengthCompWithZero <- LengthCompWithZero[!LengthCompWithZero$Length_bin %in% c('F_10-15cm', 'M_10-15cm', 'M_130-135cm', 'M_135-140cm', 'M_140-145cm'), ]
+                                                                                               
  
  
  
@@ -433,13 +439,13 @@ settings = FishStatsUtils::make_settings( n_x = 300, Region = "California_curren
         strata.limits = strataLimits)
         
 
-# Set max threads on a PC for MRO (depending on the system, threads are often half the number of logical processors on a machine)
-setMKLthreads(100)
+# Set max threads if using MRO (depending on the system, threads are often half the number of logical processors on a machine).
+# setMKLthreads(1000)
 
 
 # Run model  
 sink("Fit_Output.txt")
-fit = FishStatsUtils::fit_model( 
+fit <- FishStatsUtils::fit_model( 
   settings = settings, 
   Lat_i = LengthCompWithZero$Lat, 
   Lon_i = LengthCompWithZero$Lon,
@@ -560,5 +566,6 @@ Ages <- SurveyAgeAtLen.fn (dir = getwd(), datAL = age, datTows = catch,
                           strat.df = strata, lgthBins = len.bins, ageBins = age.bins, partition = 0)
 
  
+
 
 
