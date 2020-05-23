@@ -15,6 +15,11 @@ options(stringsAsFactors = FALSE)  # This is the now the default starting with R
 
 # HomeDir <- "C:/Users/Vladlena.Gertseva/Desktop/VAST_2020/2020 runs/"
 HomeDir <- "W:/ALL_USR/JRW/Assessment/Length_Comps_VAST/"
+
+# Linux server (e.g. Tantalus)
+# (HomeDir <- paste0(getwd(), "/"))
+# options(width = 220)
+
 setwd(HomeDir); getwd()
 
 
