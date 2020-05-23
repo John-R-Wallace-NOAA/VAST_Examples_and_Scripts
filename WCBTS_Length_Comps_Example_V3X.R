@@ -430,7 +430,7 @@ strataLimits <- data.frame(STRATA = c("Coastwide","CA","OR","WA"),
 settings = FishStatsUtils::make_settings( n_x = 300, Region = "California_current", purpose = "index2",  
            fine_scale = TRUE, 
              ObsModel = c(2, 0), 
-        # FieldConfig = c(Omega1 = 1, Epsilon1 = 0, Omega2 = 0, Epsilon2 = 1), 
+          FieldConfig = c(Omega1 = 'IID', Epsilon1 = 'IID', Omega2 = 'IID', Epsilon2 = 'IID'), 
             RhoConfig = c(Beta1 = 0,  Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0), 
  OverdispersionConfig = c(Eta1 = 0, Eta2 = 0),
        use_anisotropy = FALSE,
@@ -439,8 +439,12 @@ settings = FishStatsUtils::make_settings( n_x = 300, Region = "California_curren
         strata.limits = strataLimits)
         
 
-# Set max threads if using MRO (depending on the system, threads are often half the number of logical processors on a machine).
-# setMKLthreads(1000)
+
+# Set max threads (or less if desired) if using R ver 4X with partially patched MRO on Windows (depending on the system, threads are often half the number of logical processors on a machine).        
+RhpcBLASctl::blas_set_num_threads(RhpcBLASctl::get_num_cores()); RhpcBLASctl::blas_get_num_procs()
+    
+# Set max threads if using MRO on a Linux server running CentOS (e.g. Tantalus), using (for now) R ver 3.5.3 
+setMKLthreads(6); getMKLthreads() 
 
 
 # Run model  
@@ -566,6 +570,7 @@ Ages <- SurveyAgeAtLen.fn (dir = getwd(), datAL = age, datTows = catch,
                           strat.df = strata, lgthBins = len.bins, ageBins = age.bins, partition = 0)
 
  
+
 
 
 
