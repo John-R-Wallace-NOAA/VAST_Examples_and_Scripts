@@ -359,12 +359,16 @@ if(numSexInModel %in% 2)
    load(file = paste0(HomeDir, 'LengthCompWithZero_', yearRange[1], '_', yearRange[2], '_sexMF.RData'))
  
 
-# # Extra removal of length bins with almost no data for models that have convergence issues
-# if(numSexInModel %in% 1)
-#    LengthCompWithZero <- LengthCompWithZero[!LengthCompWithZero$Length_bin %in% '10-15cm', ]
-# if(numSexInModel %in% 2) {
-#    LengthCompWithZero <- LengthCompWithZero[!LengthCompWithZero$Length_bin %in% c('F_10-15cm', 'M_10-15cm', 'M_130-135cm', 'M_135-140cm', 'M_140-145cm'), ]
-                                                                                               
+# Extra removal of length bins with no or very little data for models that have convergence issues
+(numRowsOld <- nrow(LengthCompWithZero))
+if(numSexInModel %in% 1)
+    LengthCompWithZero <- LengthCompWithZero[!LengthCompWithZero$Length_bin %in% '10-15cm', ]
+if(numSexInModel %in% 2) 
+   LengthCompWithZero <- LengthCompWithZero[!LengthCompWithZero$Length_bin %in% c('F_10-15cm', 'M_10-15cm', 'M_130-135cm', 'M_135-140cm', 'M_140-145cm'), ]
+# Percent reduction of rows
+ 100 * (1 - nrow(LengthCompWithZero)/numRowsOld)
+ 
+                                                                                        
  
  
  
