@@ -246,11 +246,15 @@ if(numSexInModel %in% 2) {
 # Check that all length bins have data in at least one year
 JRWToolBox::agg.table(aggregate(list(Num = LenCompNoZero$First_stage_expanded_numbers), list(Length_bin = LenCompNoZero$Length_bin, Year = LenCompNoZero$Year), sum)) 
 
-# No or little data in length bin 10-15cm - so remove it for now
+# No or little data for some length bins, so remove them for now
+(numRowsOld <- nrow(LengthCompWithZero))
 if(numSexInModel %in% 1)
     LenCompNoZero <- LenCompNoZero[!LenCompNoZero$Length_bin %in% '10-15cm', ]
 if(numSexInModel %in% 2)
-    LenCompNoZero <- LenCompNoZero[!LenCompNoZero$Length_bin %in% c('F_10-15cm', 'M_10-15cm'), ]
+    LenCompNoZero <- LenCompNoZero[!LenCompNoZero$Length_bin %in% c('F_10-15cm', 'M_10-15cm', 'M_130-135cm', 'M_135-140cm', 'M_140-145cm'), ]
+# Percent reduction of rows
+ 100 * (1 - nrow(LengthCompWithZero)/numRowsOld)
+
 
 # Check LenCompNoZero
 JRWToolBox::agg.table(aggregate(list(Num = LenCompNoZero$First_stage_expanded_numbers), list(Length_bin = LenCompNoZero$Length_bin, Year = LenCompNoZero$Year), sum))
@@ -359,18 +363,16 @@ if(numSexInModel %in% 2)
    load(file = paste0(HomeDir, 'LengthCompWithZero_', yearRange[1], '_', yearRange[2], '_sexMF.RData'))
  
 
-# Extra removal of length bins with no or very little data for models that have convergence issues
-(numRowsOld <- nrow(LengthCompWithZero))
-if(numSexInModel %in% 1)
-    LengthCompWithZero <- LengthCompWithZero[!LengthCompWithZero$Length_bin %in% '10-15cm', ]
-if(numSexInModel %in% 2) 
-   LengthCompWithZero <- LengthCompWithZero[!LengthCompWithZero$Length_bin %in% c('F_10-15cm', 'M_10-15cm', 'M_130-135cm', 'M_135-140cm', 'M_140-145cm'), ]
-# Percent reduction of rows
- 100 * (1 - nrow(LengthCompWithZero)/numRowsOld)
- 
-                                                                                        
- 
- 
+# Extra removal of length bins with no or very little data for models that have convergence issues (LengthCompWithZero could be recreated above instead)
+   # (numRowsOld <- nrow(LengthCompWithZero))
+   # if(numSexInModel %in% 1)
+   #     LengthCompWithZero <- LengthCompWithZero[!LengthCompWithZero$Length_bin %in% '10-15cm', ]
+   # if(numSexInModel %in% 2) 
+   #    LengthCompWithZero <- LengthCompWithZero[!LengthCompWithZero$Length_bin %in% c('F_10-15cm', 'M_10-15cm', 'M_130-135cm', 'M_135-140cm', 'M_140-145cm'), ]
+   # # Percent reduction of rows
+   #  100 * (1 - nrow(LengthCompWithZero)/numRowsOld)
+       
+  
  
 # === Comments for FishStatsUtils::make_settings() and FishStatsUtils::fit_model() ===
 
@@ -579,6 +581,7 @@ Ages <- SurveyAgeAtLen.fn (dir = getwd(), datAL = age, datTows = catch,
                           strat.df = strata, lgthBins = len.bins, ageBins = age.bins, partition = 0)
 
  
+
 
 
 
