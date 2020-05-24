@@ -373,7 +373,7 @@ if(numSexInModel %in% 2)
    #  100 * (1 - nrow(LengthCompWithZero)/numRowsOld)
        
 # Remake 'ref_Table' with Length bins removed (used for plotting labels below)
-ref_Table <- JRWToolBox::sort.f(LengthCompWithZero[!duplicated(LengthCompWithZero$Length_bin_num), c('Length_bin', 'Length_bin_num')], 'Length_bin_num')
+(ref_Table <- JRWToolBox::sort.f(LengthCompWithZero[!duplicated(LengthCompWithZero$Length_bin_num), c('Length_bin', 'Length_bin_num')], 'Length_bin_num'))
     
     
 # === Comments for FishStatsUtils::make_settings() and FishStatsUtils::fit_model() ===
