@@ -372,8 +372,10 @@ if(numSexInModel %in% 2)
    # # Percent reduction of rows
    #  100 * (1 - nrow(LengthCompWithZero)/numRowsOld)
        
-  
- 
+# Remake 'ref_Table' with Length bins removed (used for plotting labels below)
+ref_Table <- JRWToolBox::sort.f(LengthCompWithZero[!duplicated(LengthCompWithZero$Length_bin_num), c('Length_bin', 'Length_bin_num')], 'Length_bin_num')
+    
+    
 # === Comments for FishStatsUtils::make_settings() and FishStatsUtils::fit_model() ===
 
 #     Changed the 700 fathom (1280 meter) 'deep border' to 300 (549 meters), thus removing the 300 - 700 fathom strata that has limited data for Longnose skate. 
