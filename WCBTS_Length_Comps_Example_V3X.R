@@ -313,14 +313,14 @@ dev.off()
    
    # Change this 'Order' vector correctly so that 'Length_bin' goes from smallest to largest and Length_bin_num starts at zero and monotonically increases with ordinal numbers within sex
    if(numSexInModel %in% 1)
-      Order <- c(10:26, 1:9) 
+      Order <- c(7:23, 1:6)
    if(numSexInModel %in% 2)
-      Order <- c(c(10:26, 1:9), c(10:26, 1:9) + 26) # Females then males    
+      Order <- c(7:23, 1:6, 29:45, 24:28) # Females then males    
    (ref_Table <- data.frame (Length_bin = charSort$Length_bin[Order], Length_bin_num = 0:(length(Order) - 1)))
    LengthCompWithZero$Length_bin_num <- as.numeric(JRWToolBox::recode.simple(LengthCompWithZero$Length_bin, ref_Table))
    # Check Length_bin and Length_bin_num in LengthCompWithZero
    renum(LengthCompWithZero[!duplicated(LengthCompWithZero$Length_bin), c('Length_bin', 'Length_bin_num')][order(LengthCompWithZero$Length_bin[!duplicated(LengthCompWithZero$Length_bin)]), ][Order, ])
-   # Additional check, note that only 'Length_bin" should not be zero, since that's a character vector which is not given to VAST
+   # Additional check, note that only 'Length_bin" should not be zero - since that's a character vector which is not given to VAST
    lapply(LengthCompWithZero, function(x) sum(!is.finite(x)))
 
    
