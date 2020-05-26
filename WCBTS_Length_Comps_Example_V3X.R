@@ -358,9 +358,22 @@ setwd(DateDir); getwd()
 if(numSexInModel %in% 1)
    load(paste0(HomeDir, 'LengthCompWithZero_', yearRange[1], '_', yearRange[2], '_sex', casefold(substring(sex, 2, 2), upper = TRUE), '.RData'))
 
-if(numSexInModel %in% 2)
+if(numSexInModel %in% 2) {
    load(file = paste0(HomeDir, 'LengthCompWithZero_', yearRange[1], '_', yearRange[2], '_sexMF.RData'))
- 
+
+   # Follow below to get single sex data from the 2 sex data frame with (years could also be easily reduced). 
+   #    The directory names should then be switched with the code at the top of this script.
+
+   #  # Females
+   #  LengthCompWithZero <- renum(LengthCompWithZero[grepl('F', LengthCompWithZero$Length_bin), ])
+   #  Table(LengthCompWithZero$Length_bin, LengthCompWithZero$Length_bin_num)
+   #  
+   #  # Males
+   #  LengthCompWithZero <- renum(LengthCompWithZero[grepl('M', LengthCompWithZero$Length_bin), ])
+   #  LengthCompWithZero$Length_bin_num <- LengthCompWithZero$Length_bin_num - min(LengthCompWithZero$Length_bin_num)
+   #  Table(LengthCompWithZero$Length_bin, LengthCompWithZero$Length_bin_num)
+}
+
 
 # Extra removal of length bins with no or very little data for models that have convergence issues (LengthCompWithZero could be recreated above instead)
    # (numRowsOld <- nrow(LengthCompWithZero))
