@@ -8,7 +8,6 @@
 
 library(JRWToolBox)
 #install.packages("devtools")
-library(devtools)
 library(lattice)
 
 options(stringsAsFactors = FALSE)  # This is the now the default starting with R ver 4.0.0
@@ -160,7 +159,7 @@ Table(is.finite(bio$Length_cm), is.finite(bio$Width_cm)); cat("\n\n")
 
 
 #===============================================================================
-#=============          Create Stratafication      =============================
+#=============  Create Stratafication and Design Based Index   =================
 #===============================================================================
 
 # The stratafication areas are calculated from the SA3 file which is attached to the package.
@@ -247,13 +246,13 @@ if(numSexInModel %in% 2) {
 JRWToolBox::agg.table(aggregate(list(Num = LenCompNoZero$First_stage_expanded_numbers), list(Length_bin = LenCompNoZero$Length_bin, Year = LenCompNoZero$Year), sum)) 
 
 # No or little data for some length bins, so remove them for now
-(numRowsOld <- nrow(LengthCompWithZero))
+(numRowsOld <- nrow(LenCompNoZero))
 if(numSexInModel %in% 1)
     LenCompNoZero <- LenCompNoZero[!LenCompNoZero$Length_bin %in% '10-15cm', ]
 if(numSexInModel %in% 2)
     LenCompNoZero <- LenCompNoZero[!LenCompNoZero$Length_bin %in% c('F_10-15cm', 'M_10-15cm', 'M_130-135cm', 'M_135-140cm', 'M_140-145cm'), ]
 # Percent reduction of rows
- 100 * (1 - nrow(LengthCompWithZero)/numRowsOld)
+ 100 * (1 - nrow(LenCompNoZero)/numRowsOld)
 
 
 # Check LenCompNoZero
