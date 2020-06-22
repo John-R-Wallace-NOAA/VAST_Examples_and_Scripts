@@ -6,7 +6,7 @@ Download West_Coast_Annual_example_2020.R using:
     
 or edit [using a properly configured gitEdit()] with:
 
-    JRWToolBox::gitEdit(West_Coast_Annual_example_2020, "John-R-Wallace-NOAA/VAST_Examples_and_Scripts/master/")
+    rgit::gitEdit(West_Coast_Annual_example_2020, "John-R-Wallace-NOAA/VAST_Examples_and_Scripts/master/")
 
 -----------------------------------------------------------------------------------------
 
