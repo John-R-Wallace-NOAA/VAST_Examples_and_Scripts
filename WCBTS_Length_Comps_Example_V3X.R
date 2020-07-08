@@ -51,8 +51,8 @@ spSciName <- 'Raja rhina'
 #=============         Survey          =========================================
 #===============================================================================
 
-Survey <- "NWFSC.Combo"
-
+# Survey <- "NWFSC.Combo"
+Survey <- 'WCGBTS.Combo'
 
 #===============================================================================
 #=============         Years          ==========================================
@@ -89,12 +89,12 @@ dir.create(FigDir, showWarnings = FALSE)
 #===============================================================================
 
 # catch = PullCatch.fn(SciName = spSciName , SurveyName = Survey, YearRange = c(2012, 2016), SaveFile = TRUE, Dir = getwd()) 
-catch <- JRWToolBox::dataWareHouseTrawlCatch(spFormalName, yearRange = yearRange, project = 'WCGBTS.Combo')
+catch <- JRWToolBox::dataWareHouseTrawlCatch(spFormalName, yearRange = yearRange, project = Survey)
 catch$cpue_kg_km2 <- catch$Total_sp_wt_kg/(catch$Area_Swept_ha/100)
 names(catch)[grep('Total_sp_numbers', names(catch))] <- 'total_catch_numbers'
 
 # bio = PullBio.fn(SciName = spSciName, SurveyName = Survey, YearRange = c(2012, 2016), SaveFile = TRUE, Dir = getwd())
-bio <- JRWToolBox::dataWareHouseTrawlBio(spFormalName, yearRange = yearRange, project = 'WCGBTS.Combo')
+bio <- JRWToolBox::dataWareHouseTrawlBio(spFormalName, yearRange = yearRange, project = Survey)
 names(bio)[grep('Weight_kg', names(bio))] <- 'Weight'  # I added the units to the 'Weight_kg' and the PullBio.fn() is behind
 
 
