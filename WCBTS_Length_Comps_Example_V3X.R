@@ -7,7 +7,7 @@
 # Revised by J. Wallace Apr & May 2020
 
 library(JRWToolBox)
-#install.packages("devtools")
+# install.packages("devtools")
 library(lattice)
 
 options(stringsAsFactors = FALSE)  # This is the now the default starting with R ver 4.0.0
