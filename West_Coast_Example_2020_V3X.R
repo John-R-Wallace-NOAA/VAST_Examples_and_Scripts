@@ -316,7 +316,8 @@ cat("\nAIC =", fit$parameter_estimates$AIC, "\n\n")
 
 # **** Note that as of 26 Feb 2020 the help for plot.fit_model() claims that 'spatial_mesh' is an option for the arg 'what'.
 #    However, looking at the code, that option needs to be one of ("spatial_info", "inla_mesh").  ****
-plot_list <- plot( fit, what = c('results', 'extrapolation_grid', 'inla_mesh')[1], working_dir = DateFile) # Calls FishStatsUtils:::plot.fit_model() which calls FishStatsUtils::plot_results()
+# Need try() around plots since as of 18 Jul 2020 VAST is throwing an error about plot_range_edge() not being implemented.
+try(plot_list <- plot( fit, what = c('results', 'extrapolation_grid', 'inla_mesh')[1], working_dir = DateFile)) # Calls FishStatsUtils:::plot.fit_model() which calls FishStatsUtils::plot_results()
 
 png(paste0(DateFile, 'Extrapolation_grid.png'), width = 500, height = 750)
 plot( fit, what = c('results', 'extrapolation_grid', 'inla_mesh')[2], working_dir = DateFile)  # Calls FishStatsUtils:::plot.make_extrapolation_info
