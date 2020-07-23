@@ -253,7 +253,7 @@ sink(paste0(DateFile, "Fit_Output.txt"))
                 
 # ---- Using depth as a covariate - using only depth on sampled data, not on the extrapolation grid ---                 
 
-lib(splines) 
+JRWToolBox::lib(splines) 
 Covariate_Data <- Data_Geostat[, c("Lon", "Lat", "Depth_km")] 
 Covariate_Data$Year <- NA
 formula = ~ bs( log(Depth_km), knots=3, intercept=FALSE)
