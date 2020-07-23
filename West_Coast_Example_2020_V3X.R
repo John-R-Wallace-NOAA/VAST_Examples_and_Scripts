@@ -325,6 +325,9 @@ cat("\nMax Gradient =", fit$parameter_estimates$max_gradient, "\n\n")  # Max aft
 # AIC
 cat("\nAIC =", fit$parameter_estimates$AIC, "\n\n")
 
+# Early save in case there is an issue with the plotting of results
+save(list = names(.GlobalEnv), file = paste0(DateFile, "Image.RData")) 
+
 
 # Plot results
 
