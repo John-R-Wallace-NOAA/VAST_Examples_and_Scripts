@@ -325,9 +325,6 @@ cat("\nMax Gradient =", fit$parameter_estimates$max_gradient, "\n\n")  # Max aft
 # AIC
 cat("\nAIC =", fit$parameter_estimates$AIC, "\n\n")
 
-# Early save in case there is an issue with the plotting of results
-save(list = names(.GlobalEnv), file = paste0(DateFile, "Image.RData")) 
-
 
 # Plot results
 
@@ -357,7 +354,7 @@ setwd(HomeDir)
 (Year_Set = seq(min(Data_Geostat[,'Year']),max(Data_Geostat[,'Year']))) # Default arg for YearlyResultsFigure_VAST3X
 (Years2Include = which( Year_Set %in% sort(unique(Data_Geostat[,'Year'])))) # Default arg for YearlyResultsFigure_VAST3X
 
-SP.Results.Dpth <- JRWToolBox::YearlyResultsFigure_VAST3X(fit = fit, map_list = plot_list$map_list, Graph.Dev = 'png')  # This function looks for 'spShortName' (defined above)
+try(SP.Results.Dpth <- JRWToolBox::YearlyResultsFigure_VAST3X(fit = fit, map_list = plot_list$map_list, Graph.Dev = 'png'))  # This function looks for 'spShortName' (defined above)
 
 
 # Save it all in Image.RData [ When reloading, remember to dyn.load() the '.dll' e.g. dyn.load(paste0(DateFile, 'VAST_v9_2_0.dll')) ]
