@@ -126,6 +126,20 @@ if (!any(installed.packages()[, 1] %in% "rnaturalearthdata"))
     install.packages("rnaturalearthdata")
 
 
+# R_OPEN (Microsoft's MRO/MRAN) thread control
+if('RevoUtilsMath' %in% installed.packages()[, 'Package']) {
+
+   RevoUtilsMath::setMKLthreads(6)
+   RevoUtilsMath::getMKLthreads()
+}
+
+# R_MKL (Intel's Math Kernel library) thread control
+if('RhpcBLASctl' %in% installed.packages()[, 'Package']) {
+
+   RhpcBLASctl::blas_set_num_threads(6)
+   RhpcBLASctl::blas_get_num_procs()
+}
+
 require(TMB)
 require(VAST)
 # require(JRWToolBox)  # This code should work without the need to attach the JRWToolBox package.
