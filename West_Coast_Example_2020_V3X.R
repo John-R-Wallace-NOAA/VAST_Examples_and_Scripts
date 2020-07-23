@@ -21,7 +21,7 @@
 # Only do this once per R session, after you are in the your main working directory:
 
 HomeDir <- getwd()
-
+options(repos=c(CRAN="https://cloud.r-project.org/", CRANextra = "http://lib.stat.cmu.edu/R/CRAN/"))
 
 # =========== Internal Functions ==================================
 
