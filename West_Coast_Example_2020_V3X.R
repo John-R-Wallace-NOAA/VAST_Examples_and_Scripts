@@ -224,7 +224,7 @@ pander::pandoc.table(Data_Geostat[1:6,], digits=3)
 
 # OverdispersionConfig = c(Delta1 = 1, Delta2 = 1) # Turn on vessel-year effects for both components if using WCGBTS
 settings <- make_settings( n_x = n_x, fine_scale = TRUE, ObsModel = c(1, 1), FieldConfig = c(Omega1 = 1, Epsilon1 = 1, Omega2 = 1, Epsilon2 = 1), RhoConfig = c(Beta1 = 0,  Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0), 
-                  OverdispersionConfig = c(Delta1 = 1, Delta2 = 1), Region = Region, purpose = "index", strata.limits = strata.limits, bias.correct = FALSE )  
+                  OverdispersionConfig = c(Delta1 = 1, Delta2 = 1), Region = Region, purpose = "index2", strata.limits = strata.limits, bias.correct = FALSE )  
 
 # Run model
 
