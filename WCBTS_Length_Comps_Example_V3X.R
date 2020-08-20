@@ -504,7 +504,7 @@ results = FishStatsUtils::plot_results(fit = fit, settings = fit$settings, plot_
               strata_names = strataLimits$STRATA, check_residuals = FALSE, working_dir = FigDir)
  
 # Do plot_range_index() (for Effective_Area.png) again by itself so strata_names are included [ doesn't get added properly in plot_results() ] 
-#      plot_range_index() also recreates 'center_of_gravity.png' with no change but the 'Date modified'
+#      plot_range_index() also recreates 'center_of_gravity.png' with no change but the 'Date modified' on the file properties
 FishStatsUtils::plot_range_index(Report = fit$Report, TmbData = fit$data_list, 
             Sdreport = fit$parameter_estimates$SD, Znames = colnames(fit$data_list$Z_xm), 
             PlotDir = FigDir, Year_Set = fit$year_labels, Years2Include = fit$years_to_plot, 
