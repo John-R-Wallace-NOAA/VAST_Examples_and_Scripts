@@ -1,0 +1,36 @@
+     
+     # Center of gravity changes by year converted back to Lat-Long 
+     
+     # Opt has been created and the raw data is in Data_Geostat
+     
+     if (!any(installed.packages()[, 1] %in% "JRWToolBox")) 
+           devtools::install_github("John-R-Wallace/R-ToolBox")
+     if (!any(installed.packages()[, 1] %in% "Imap")) 
+           devtools::install_github("John-R-Wallace/Imap")
+     JRWToolBox::lib(sp) # lib() will download from CRAN only when needed
+
+     (N.Years <- length(unique(Data_Geostat$Year)))
+     (UTM.Center.of.gravity <- renum(cbind(Opt$SD$value[grep("mean_Z", names(Opt$SD$value))][1:N.Years], 
+                       Opt$SD$value[grep("mean_Z", names(Opt$SD$value))][(N.Years + 1):(2 * N.Years)])))
+     (sputm <- sp::SpatialPoints(1000 * UTM.Center.of.gravity, proj4string=CRS("+proj=utm +zone=10T +datum=WGS84")))
+     (spgeo <- sp::spTransform(sputm, CRS("+proj=longlat +datum=WGS84")))
+     Coords <- data.frame(spgeo@coords)
+     cbind(Year = 1:N.Years, Coords <- data.frame(spgeo@coords))
+
+     
+     # Center of gravity with all tow locations
+     imap(longrange = c(-116, -126.5), latrange = c(32, 49), zoom = FALSE)
+     # imap() # Alternatively, do a custom zoom on the West Coast
+     points(Data_Geostat[,c("Lon", "Lat")], pch=".", cex = 1.5, col='cyan')) # Raw data locations
+     # Larger center of gravity points for later years
+     lines(Coords, col = Imap::col.alpha('red', 0.5), pch=16, cex = 3 * (1:N.Years)/nYears, type='o', lwd=1.5) 
+
+     # With Contour lines (may take a bit of time to download; refer to the help for plotGIS for details)
+     Imap::plotGIS(Data_Geostat[,c("Lon", "Lat")], longrange = c(min(Coords$coords.x1) - 1.3, max(Coords$coords.x1) + 0.1), 
+	    latrange = c(min(Coords$coords.x2) - 1, max(Coords$coords.x2) + 1), cex.pt=0.8, col.pts='cyan', imap=F) 
+     lines(Coords, col = Imap::col.alpha('red', 0.5), pch=16, cex = 3 * (1:N.Years)/nYears, type='o', lwd=1.5) 
+	   
+
+     
+     # See 'Function to convert from UTM to Lat_Long' for the above conversion made into a function
+

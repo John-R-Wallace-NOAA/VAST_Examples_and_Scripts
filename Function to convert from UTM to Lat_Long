@@ -1,0 +1,70 @@
+
+      # Function to convert from UTM to Lat/Long using geographic assumptions in VAST
+
+      if (!any(installed.packages()[, 1] %in% "JRWToolBox")) 
+           devtools::install_github("John-R-Wallace/R-ToolBox")
+      if (!any(installed.packages()[, 1] %in% "Imap")) 
+           devtools::install_github("John-R-Wallace/Imap")
+      JRWToolBox::lib(sp) # lib() will download from CRAN only when needed
+          
+      UTM.to.LatLong <- function(UTM, zone = "10T") {
+          lib(sp,  require = FALSE)
+          sputm <- sp::SpatialPoints(UTM, proj4string = sp::CRS(paste0("+proj=utm +zone=", zone, " +datum=WGS84")))
+          spgeo <- sp::spTransform(sputm, sp::CRS("+proj=longlat +datum=WGS84"))
+          OUT <- data.frame(spgeo@coords)
+		  names(OUT) <- c('Long', 'Lat')
+          OUT
+     }  
+      
+      # This function is in JRWToolBox
+      
+
+# Example: To get the lat/long locations of the vertices (knots) in VAST you have to first mulitply Spatial_List$loc_x by 1,000 
+ 
+Spatial_List$loc_x[1:10,]
+       E_km     N_km
+1  368.8325 5023.652
+2  374.5611 4518.163
+3  364.6591 5082.010
+4  356.8080 4783.004
+5  352.9146 4926.658
+6  364.5543 4657.475
+7  366.8523 5029.990
+8  497.6781 4157.810
+9  444.6214 4258.225
+10 349.2983 4852.216
+
+
+UTM.to.LatLong(1000 * Spatial_List$loc_x[1:10,])
+        Long      Lat
+1  -124.6746 45.35411
+2  -124.4871 40.80490
+3  -124.7441 45.87834
+4  -124.7621 43.18624
+5  -124.8495 44.47826
+6  -124.6369 42.05767
+7  -124.7016 45.41075
+8  -123.0263 37.56732
+9  -123.6348 38.47063
+10 -124.8736 43.80766
+
+
+# West Coast (contiguous US) examples using 'Spatial_List' from VAST
+
+# Add triangulation mesh to lat/long figure of the entire coast
+Imap::imap(longrange = c(-128, -118), latrange = c(32,49.5), zoom = F) # For triangulation mesh
+spatialIsoLL <- Spatial_List$MeshList$isotropic_mesh
+spatialIsoLL$loc <- UTM.to.LatLong(1000 * spatialIsoLL$loc)
+plot(spatialIsoLL, draw.vertices = T, add=T)
+
+
+# Add triangulation mesh to lat/long figure off the northern coast of Washington State using plotGIS()
+png("VAST_Mesh.png", width = 2048, height = 2048, bg = 'grey') 
+Imap::plotGIS(long = c(-126, -124), lat = c(47.25, 48.5))
+# Thicker lines and larger vertices (knots) (optimized for PNG output)
+plot(spatialIsoLL, draw.vertices = T, lwd = 2, add=T) 
+points(UTM.to.LatLong(1000 * Spatial_List$loc_x), col = 'blue', pch = 19, cex=2)
+
+
+
+
