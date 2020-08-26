@@ -6,11 +6,13 @@ West_Coast_Example_2020_V3X <- function(spFormalName = 'lingcod', spLongName = '
    
    
    # Canary rockfish
-   # spFormalName = 'canary rockfish', spLongName = 'Canary rockfish',  spShortName = 'CNRY'
+   # spFormalName = 'canary rockfish'; spLongName = 'Canary rockfish';  spShortName = 'CNRY'
    
    # Lingcod
-   # spFormalName = 'lingcod', spLongName = 'Lingcod', spShortName = 'LCOD'
+   # spFormalName = 'lingcod'; spLongName = 'Lingcod'; spShortName = 'LCOD'
   
+   # Spiny dogs
+   spFormalName = 'Pacific spiny dogfish'; spLongName = 'Spiny dogfish'; spShortName = 'DSRK'
 
    # Download into your working directory with:
    # rgit::gitAFile("John-R-Wallace-NOAA/VAST_Examples_and_Scripts/master/West_Coast_Example_2020_V3X.R", "script", File = "West_Coast_Example_2020_V3X.R", show = FALSE)
@@ -159,10 +161,8 @@ West_Coast_Example_2020_V3X <- function(spFormalName = 'lingcod', spLongName = '
    
    # Versions of VAST you can use:
    list.files(R.home(file.path("library", "VAST", "executables")))
-   # This gives the latest version available. (Up to v10_0_0 - then broken.)
-   # (Version <- substr(list.files(R.home(file.path("library", "VAST", "executables")))[length(list.files(R.home(file.path("library", "VAST", "executables"))))], 1, 11))
-   # Version 5+ gives a internal compiler error: Segmentation fault as of 21 Nov 2018
-   Version <- "VAST_v8_5_0"  
+   # Version <- FishStatsUtils::get_latest_version(package="VAST")
+   Version <- "VAST_v9_4_0"  
    
    # # define the spatial resolution for the model, and whether to use a grid or mesh approximation
    # # mesh is default recommendation, number of knots need to be specified
@@ -244,7 +244,7 @@ West_Coast_Example_2020_V3X <- function(spFormalName = 'lingcod', spLongName = '
    # RhoConfig = c(Beta1 = 0,  Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0)  # autocorrelation across time: defaults to zero, both annual intercepts (beta) and spatio-temporal (epsilon)
    
    # OverdispersionConfig = c(Delta1 = 1, Delta2 = 1) # Turn on vessel-year effects for both components if using WCGBTS
-   settings <- make_settings( n_x = n_x, fine_scale = TRUE, ObsModel = c(1, 1), FieldConfig = c(Omega1 = 1, Epsilon1 = 1, Omega2 = 1, Epsilon2 = 1), RhoConfig = c(Beta1 = 0,  Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0), 
+   settings <- make_settings(Version = Version, n_x = n_x, fine_scale = TRUE, ObsModel = c(1, 1), FieldConfig = c(Omega1 = 1, Epsilon1 = 1, Omega2 = 1, Epsilon2 = 1), RhoConfig = c(Beta1 = 0,  Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0), 
                      OverdispersionConfig = c(Delta1 = 1, Delta2 = 1), Region = Region, purpose = if(as.numeric(substr(packageVersion('VAST'), 1, 3)) <= 3.3)  'index' else 'index2',
                      strata.limits = strata.limits, bias.correct = FALSE )  
    
@@ -277,8 +277,9 @@ West_Coast_Example_2020_V3X <- function(spFormalName = 'lingcod', spLongName = '
    
    Covariate_Data <- Data_Geostat[, c("Year", "Lon", "Lat", "Depth_km")] 
    Covariate_Data$Year <- NA
-   formula = ~ splines::bs( log(Depth_km), knots = 3, intercept = FALSE)
+   formula = ~splines::bs( log(Depth_km), knots = 3, intercept = FALSE)
    # formula = ~ Depth_km
+   # formula = ~0
    
    fit <- fit_model( settings = settings, Lat_i = Data_Geostat$Lat, Lon_i = Data_Geostat$Lon, t_i = Data_Geostat$Year, working_dir = DateFile, test_fit = FALSE,
                      c_i = rep(0, nrow(Data_Geostat)), b_i = Data_Geostat$Catch_KG, a_i = Data_Geostat$AreaSwept_km2, v_i = Data_Geostat$Vessel, 
@@ -312,19 +313,17 @@ West_Coast_Example_2020_V3X <- function(spFormalName = 'lingcod', spLongName = '
    sink() 
    
    #  Extra looks at convergence
-   fit$parameter_estimates$diagnostics
+   cat("\nParamater estimates diagnostics")
+   print(fit$parameter_estimates$diagnostics)
    
    # Check convergence via gradient (should be TRUE)
-   all( abs(fit$parameter_estimates$diagnostics[,'final_gradient']) < 1e-2 )
+   cat("\nAll gradients are less than 0.01:", try(all( abs(fit$parameter_estimates$diagnostics[,'final_gradient']) < 1e-2 )), "\n\n")
    
-   # Check convergence via invertd Hessian (should be TRUE)
-   all( eigen(fit$parameter_estimates$SD$cov.fixed)$values > 0 )
+   # Check convergence via inverted Hessian (should be TRUE)
+   cat("\nAll eigen vectors of the inverted Hessian are greater than zero:", try(all( eigen(fit$parameter_estimates$SD$cov.fixed)$values > 0 )), "\n\n")
    
    # h = optimHess(fit$parameter_estimates$par, fn = fit$tmb_list$Obj$fn, gr = fit$tmb_list$Obj$gr)
    # all( eigen(h)$values > 0 )
-   
-   
-   
    
    # Max final gradient
    cat("\nMax Gradient =", fit$parameter_estimates$max_gradient, "\n\n")  # Max after abs(): max(abs(fit$parameter_estimates$diagnostics[,'final_gradient']))
@@ -338,7 +337,7 @@ West_Coast_Example_2020_V3X <- function(spFormalName = 'lingcod', spLongName = '
    # **** Note that as of 26 Feb 2020 the help for plot.fit_model() claims that 'spatial_mesh' is an option for the arg 'what'.
    #    However, looking at the code, that option needs to be one of ("spatial_info", "inla_mesh").  ****
    # As of 25 Aug 2020, need to set "Calculate_Range" to FALSE for VAST ver 3.5 and above since '"ln_Index_ctl" %in% rownames(TMB::summary.sdreport(fit$parameter_estimates$SD))' is TRUE which breaks plot_range_edge()
-   fit$data_list$Options_list$Options["Calculate_Range"] <- if(as.numeric(substr(packageVersion('VAST'), 1, 3)) <= 3.4) TRUE else FALSE
+   (fit$data_list$Options_list$Options["Calculate_Range"] <- if(as.numeric(substr(packageVersion('VAST'), 1, 3)) <= 3.4) TRUE else FALSE)
    plot_list <- plot( fit, what = c('results', 'extrapolation_grid', 'inla_mesh')[1], working_dir = DateFile) # Calls FishStatsUtils:::plot.fit_model() which calls FishStatsUtils::plot_results()
    
    png(paste0(DateFile, 'Extrapolation_grid.png'), width = 500, height = 750)
@@ -408,7 +407,7 @@ West_Coast_Example_2020_V3X <- function(spFormalName = 'lingcod', spLongName = '
        
        # The AIC was higher with knot_method = 'grid' (FS used) for Lingcod using the California Current extrapolation grid. 
        
-       # ObsModel = c(1, 1) lognormal fits better than c(2, 1) gamma (29316.6 vs 29828.5) both with log-link and the “Poisson-link” delta-model (ObsModel[2] = 1).
+       # ObsModel = c(1, 1) lognormal fits better than c(2, 1) gamma (29316.6 vs 29828.5) both with log-link and the <U+0093>Poisson-link<U+0094> delta-model (ObsModel[2] = 1).
        # With fine_scale = TRUE, knot_method = 'samples', and n_x = 200.
      
        
@@ -440,9 +439,5 @@ West_Coast_Example_2020_V3X <- function(spFormalName = 'lingcod', spLongName = '
    }
 
 }
-
-
-
-
 
 
