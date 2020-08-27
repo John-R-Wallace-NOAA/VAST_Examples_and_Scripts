@@ -361,7 +361,7 @@ West_Coast_Example_2020_V3X <- function(spFormalName = 'lingcod', spLongName = '
    #    However, looking at the code, that option needs to be one of ("spatial_info", "inla_mesh").  ****
    # As of 25 Aug 2020, need to set "Calculate_Range" to FALSE for VAST ver 3.5 and above since '"ln_Index_ctl" %in% rownames(TMB::summary.sdreport(fit$parameter_estimates$SD))' is TRUE which breaks plot_range_edge()
    (fit$data_list$Options_list$Options["Calculate_Range"] <- if(as.numeric(substr(packageVersion('VAST'), 1, 3)) <= 3.4) TRUE else FALSE)
-   plot_list <- plot( fit, what = c('results', 'extrapolation_grid', 'inla_mesh')[1], working_dir = DateFile) # Calls FishStatsUtils:::plot.fit_model() which calls FishStatsUtils::plot_results()
+   try(plot( fit, what = c('results', 'extrapolation_grid', 'inla_mesh')[1], working_dir = DateFile)) # Calls FishStatsUtils:::plot.fit_model() which calls FishStatsUtils::plot_results()
    
    png(paste0(DateFile, 'Extrapolation_grid.png'), width = 500, height = 750)
    plot( fit, what = c('results', 'extrapolation_grid', 'inla_mesh')[2], working_dir = DateFile)  # Calls FishStatsUtils:::plot.make_extrapolation_info
@@ -371,9 +371,7 @@ West_Coast_Example_2020_V3X <- function(spFormalName = 'lingcod', spLongName = '
    
    graphics.off()
    
-   
    setwd(HomeDir)
-   
    
    # MapDetails_List = FishStatsUtils::make_map_info( Region = Region, Extrapolation_List = fit$extrapolation_list, spatial_list = fit$spatial_list, 
    #            NN_Extrap = fit$spatial_list$PolygonList$NN_Extrap) 
@@ -384,10 +382,10 @@ West_Coast_Example_2020_V3X <- function(spFormalName = 'lingcod', spLongName = '
    (Year_Set = seq(min(Data_Geostat[,'Year']),max(Data_Geostat[,'Year']))) # Default arg for YearlyResultsFigure_VAST3X
    (Years2Include = which( Year_Set %in% sort(unique(Data_Geostat[,'Year'])))) # Default arg for YearlyResultsFigure_VAST3X
    
-   # try(SP.Results.Dpth <- JRWToolBox::YearlyResultsFigure_VAST3X(fit = fit, map_list = plot_list$map_list, Graph.Dev = 'png'))  # This function looks for 'spShortName' (defined above)
+   # try(SP.Results.Dpth <- JRWToolBox::YearlyResultsFigure_VAST3X(fit = fit, Graph.Dev = 'png'))  # This function looks for 'spShortName' (defined above)
    # Git directly from GitHub (this avoids the need for the JRWToolBox package to be up-to-date within the R PC/Linux library)
    rgit::S(YearlyResultsFigure_VAST3X, repoPath = "John-R-Wallace-NOAA/JRWToolBox", show = FALSE)
-   try(SP.Results.Dpth <- YearlyResultsFigure_VAST3X(fit = fit, map_list = plot_list$map_list, Graph.Dev = 'png'))  # This function looks for 'spShortName' (defined above)
+   try(SP.Results.Dpth <- YearlyResultsFigure_VAST3X(fit = fit, Graph.Dev = 'png'))  # This function looks for 'spShortName' (defined above)
    
    
    # Save it all in Image.RData [ When reloading, remember to dyn.load() the '.dll' e.g. dyn.load(paste0(DateFile, 'VAST_v9_2_0.dll')) ]
