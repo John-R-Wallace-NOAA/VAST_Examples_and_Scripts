@@ -1,5 +1,5 @@
 
-West_Coast_Example_2020_V3X <- function(spFormalName = 'lingcod', spLongName = 'Lingcod', spShortName = 'LCOD', ObsModel. = c(2, 0), n_x. = 250, fine_scale. = 250, depthCov = TRUE,
+West_Coast_Example_2020_V3X <- function(spFormalName = 'lingcod', spLongName = 'Lingcod', spShortName = 'LCOD', ObsModel. = c(2, 0), n_x. = 250, fine_scale. = TRUE, depthCov = TRUE,
               formulaDepthSpline = TRUE, formulaDepth = FALSE) {
        
    # # Download into your .GlobalEnv with:
@@ -24,7 +24,7 @@ West_Coast_Example_2020_V3X <- function(spFormalName = 'lingcod', spLongName = '
    # spFormalName = 'Pacific spiny dogfish'; spLongName = 'Spiny dogfish'; spShortName = 'DSRK'
 
    # Other arguments
-   #  ObsModel. = c(2, 0); n_x. = 250; fine_scale. = 250; depthCov = TRUE;  formulaDepthSpline = TRUE; formulaDepth = FALSE
+   #  ObsModel. = c(2, 0); n_x. = 250; fine_scale. = TRUE; depthCov = TRUE;  formulaDepthSpline = TRUE; formulaDepth = FALSE
   
    
    # Test run of single species spatial delta glmm
