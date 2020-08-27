@@ -479,6 +479,4 @@ West_Coast_Example_2020_V3X <- function(spFormalName = 'lingcod', spLongName = '
 }
 
 
- West_Coast_Example_2020_V3X(spFormalName = 'Pacific spiny dogfish', spLongName = 'Spiny dogfish', spShortName = 'DSRK', ObsModel = c(1, 1), depthCov = TRUE, formulaDepthSpline = FALSE, formulaDepth = FALSE)
-
 
