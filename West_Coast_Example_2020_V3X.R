@@ -473,7 +473,8 @@ West_Coast_Example_2020_V3X <- function(spFormalName = 'lingcod', spLongName = '
      # Setting formulaDepthSpline = TRUE or formulaDepth = TRUE will result in somewhat less smooth figures, but not as grainy as anything done with VAST 3.4 or VAST 3.5
      # [ The important thing is not using the formula argument, not what ObsModel was used. ]
      
-    # On Tantalus - Default formula (~0) model 
+    # On Tantalus - Default formula (~0) model
+     /opt/R/64-bit/R-4.0.1_MKL/bin/R
      library(JRWToolBox)
      Linux.First()
      
