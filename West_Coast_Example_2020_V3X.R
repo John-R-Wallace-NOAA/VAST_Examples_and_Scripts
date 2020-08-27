@@ -1,9 +1,18 @@
 
-West_Coast_Example_2020_V3X <- function(spFormalName = 'lingcod', spLongName = 'Lingcod', spShortName = 'LCOD') {
-
-
-   # *** This function can be run as a script to better follow along and to keep files in .GlobalEnv" by first copying and pasting a species' names row below, or create your own for a new species. ***
+West_Coast_Example_2020_V3X <- function(spFormalName = 'lingcod', spLongName = 'Lingcod', spShortName = 'LCOD', ObsModel. = c(2, 0), n_x. = 250, fine_scale. = 250, depthCov = TRUE,
+              formulaDepthSpline = TRUE, formulaDepth = FALSE) {
+       
+   # # Download into your .GlobalEnv with:
+   # repoPath <- "John-R-Wallace-NOAA/VAST_Examples_and_Scripts"
+   # rgit::S(West_Coast_Example_2020_V3X, subDir = NULL, show = FALSE)  # fix(West_Coast_Example_2020_V3X) could then be used to edit
    
+   # # Put directly into Notepad++ for editing with:
+   # repoPath <- "John-R-Wallace-NOAA/VAST_Examples_and_Scripts"
+   # rgit::gitEdit(West_Coast_Example_2020_V3X, subDir = NULL)
+   # # (Edit the path or app within a copy of gitEdit() if needed.) 
+   
+   # *** The main body can be run as a script to better follow along and to keep files in .GlobalEnv" by un-commenting a species' names row below. Or create your own for a new species. ***
+   # *** Also un-comment (and make changes if desired) the other arguments row. ***
    
    # Canary rockfish
    # spFormalName = 'canary rockfish'; spLongName = 'Canary rockfish';  spShortName = 'CNRY'
@@ -12,13 +21,11 @@ West_Coast_Example_2020_V3X <- function(spFormalName = 'lingcod', spLongName = '
    # spFormalName = 'lingcod'; spLongName = 'Lingcod'; spShortName = 'LCOD'
   
    # Spiny dogs
-   spFormalName = 'Pacific spiny dogfish'; spLongName = 'Spiny dogfish'; spShortName = 'DSRK'
+   # spFormalName = 'Pacific spiny dogfish'; spLongName = 'Spiny dogfish'; spShortName = 'DSRK'
 
-   # Download into your working directory with:
-   # rgit::gitAFile("John-R-Wallace-NOAA/VAST_Examples_and_Scripts/master/West_Coast_Example_2020_V3X.R", "script", File = "West_Coast_Example_2020_V3X.R", show = FALSE)
-   # or edit with [using a properly configured gitEdit()]
-   # rgit::gitEdit(West_Coast_Example_2020_V3X, "John-R-Wallace-NOAA/VAST_Examples_and_Scripts/master/")
-   
+   # Other arguments
+   #  ObsModel. = c(2, 0); n_x. = 250; fine_scale. = 250; depthCov = TRUE;  formulaDepthSpline = TRUE; formulaDepth = FALSE
+  
    
    # Test run of single species spatial delta glmm
    # Test, canary data; implementation, Lingcod groundfish survey data
@@ -28,7 +35,8 @@ West_Coast_Example_2020_V3X <- function(spFormalName = 'lingcod', spLongName = '
    # Revised by James Thorson April 2017
    # Revised by J. Wallace Apr 2017
    # Revised by J. Wallace Dec 2018
-   # Revised by J. Wallace Feb 2020; uses fine_scale = TRUE in VAST ver. 3X and JRWToolBox::YearlyResultsFigure_VAST3X(), following the upper level functions (wrappers) approach.
+   # Revised by J. Wallace Feb 2020: uses fine_scale = TRUE in VAST ver. 3X and JRWToolBox::YearlyResultsFigure_VAST3X(), following the upper level functions (wrappers) approach.
+   # Revised by J. Wallace Aug 2020: made into a function with various arguments
    
    # =============================================
    
@@ -134,18 +142,20 @@ West_Coast_Example_2020_V3X <- function(spFormalName = 'lingcod', spLongName = '
    if (!any(installed.packages()[, 1] %in% "splines"))
        install.packages("splines")	
    
+   # Multi-threading
+   Cores <- 6
    
    # R_OPEN (Microsoft's MRO/MRAN) thread control
    if('RevoUtilsMath' %in% installed.packages()[, 'Package']) {
    
-      RevoUtilsMath::setMKLthreads(6)
+      RevoUtilsMath::setMKLthreads(Cores)
       RevoUtilsMath::getMKLthreads()
    }
    
    # R_MKL (Intel's Math Kernel library) thread control
    if('RhpcBLASctl' %in% installed.packages()[, 'Package']) {
    
-      RhpcBLASctl::blas_set_num_threads(6)
+      RhpcBLASctl::blas_set_num_threads(Cores)
       RhpcBLASctl::blas_get_num_procs()
    }
    
@@ -154,22 +164,26 @@ West_Coast_Example_2020_V3X <- function(spFormalName = 'lingcod', spLongName = '
    # require(JRWToolBox)  # This code should work without the need to attach the JRWToolBox package.
    
    # Extract species data from the Warehouse
-   Data_Set <- JRWToolBox::dataWareHouseTrawlCatch(spFormalName, yearRange = c(2003, 2018), project = 'WCGBTS.Combo')
+   Data_Set <- JRWToolBox::dataWareHouseTrawlCatch(spFormalName, yearRange = c(2003, 5000), project = 'WCGBTS.Combo')
    
    # Look at the data by year and pass - showing 'NA's if any via JRWToolBox::Table function.
    JRWToolBox::Table(Data_Set$Year, Data_Set$Pass)
    
    # Versions of VAST you can use:
    list.files(R.home(file.path("library", "VAST", "executables")))
-   # Version <- FishStatsUtils::get_latest_version(package="VAST")
-   Version <- "VAST_v9_4_0"  
+   (Version <- FishStatsUtils::get_latest_version(package="VAST"))
+   # if(as.numeric(substr(packageVersion('VAST'), 1, 3)) == 3.3)  Version <- "VAST_v8_5_0.cpp"  # Do this for a lower cpp version with a VAST package version
+   # if(as.numeric(substr(packageVersion('VAST'), 1, 3)) == 3.5)  Version <- "VAST_v9_4_0.cpp"
+   
+   
+   
    
    # # define the spatial resolution for the model, and whether to use a grid or mesh approximation
    # # mesh is default recommendation, number of knots need to be specified
    # # do not modify Kmeans setup
    # Method = c("Grid", "Mesh", "Spherical_mesh")[2]
    # grid_size_km = 25     # Value only matters if Method="Grid"
-   n_x <- 200  # Number of "knots" used when Method="Mesh"
+   n_x <- n_x. # Number of "knots" used when Method="Mesh"
    # Kmeans_Config = list( "randomseed"=1, "nstart"=100, "iter.max"=1e3 )   # Controls K-means algorithm to define location of knots when Method="Mesh"
    # 
    # Model settings
@@ -244,7 +258,7 @@ West_Coast_Example_2020_V3X <- function(spFormalName = 'lingcod', spLongName = '
    # RhoConfig = c(Beta1 = 0,  Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0)  # autocorrelation across time: defaults to zero, both annual intercepts (beta) and spatio-temporal (epsilon)
    
    # OverdispersionConfig = c(Delta1 = 1, Delta2 = 1) # Turn on vessel-year effects for both components if using WCGBTS
-   settings <- make_settings(Version = Version, n_x = n_x, fine_scale = TRUE, ObsModel = c(1, 1), FieldConfig = c(Omega1 = 1, Epsilon1 = 1, Omega2 = 1, Epsilon2 = 1), RhoConfig = c(Beta1 = 0,  Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0), 
+   settings <- make_settings(Version = Version, n_x = n_x, fine_scale = fine_scale., ObsModel = ObsModel., FieldConfig = c(Omega1 = 1, Epsilon1 = 1, Omega2 = 1, Epsilon2 = 1), RhoConfig = c(Beta1 = 0,  Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0), 
                      OverdispersionConfig = c(Delta1 = 1, Delta2 = 1), Region = Region, purpose = if(as.numeric(substr(packageVersion('VAST'), 1, 3)) <= 3.3)  'index' else 'index2',
                      strata.limits = strata.limits, bias.correct = FALSE )  
    
@@ -275,11 +289,18 @@ West_Coast_Example_2020_V3X <- function(spFormalName = 'lingcod', spLongName = '
                    
    # ---- Using depth as a covariate - using only depth on sampled data, not on the extrapolation grid ---                 
    
-   Covariate_Data <- Data_Geostat[, c("Year", "Lon", "Lat", "Depth_km")] 
-   Covariate_Data$Year <- NA
-   formula = ~splines::bs( log(Depth_km), knots = 3, intercept = FALSE)
-   # formula = ~ Depth_km
-   # formula = ~0
+   Covariate_Data <- NULL
+   if(depthCov) {
+     Covariate_Data <- Data_Geostat[, c("Year", "Lon", "Lat", "Depth_km")] 
+     Covariate_Data$Year <- NA
+   }
+   
+   formula = ~0
+   if(formulaDepthSpline)   
+      formula = ~splines::bs( log(Depth_km), knots = 3, intercept = FALSE)
+   if(formulaDepth)    
+      formula = ~Depth_km
+   
    
    fit <- fit_model( settings = settings, Lat_i = Data_Geostat$Lat, Lon_i = Data_Geostat$Lon, t_i = Data_Geostat$Year, working_dir = DateFile, test_fit = FALSE,
                      c_i = rep(0, nrow(Data_Geostat)), b_i = Data_Geostat$Catch_KG, a_i = Data_Geostat$AreaSwept_km2, v_i = Data_Geostat$Vessel, 
@@ -361,7 +382,8 @@ West_Coast_Example_2020_V3X <- function(spFormalName = 'lingcod', spLongName = '
    (Year_Set = seq(min(Data_Geostat[,'Year']),max(Data_Geostat[,'Year']))) # Default arg for YearlyResultsFigure_VAST3X
    (Years2Include = which( Year_Set %in% sort(unique(Data_Geostat[,'Year'])))) # Default arg for YearlyResultsFigure_VAST3X
    
-   try(SP.Results.Dpth <- JRWToolBox::YearlyResultsFigure_VAST3X(fit = fit, map_list = plot_list$map_list, Graph.Dev = 'png'))  # This function looks for 'spShortName' (defined above)
+   # try(SP.Results.Dpth <- JRWToolBox::YearlyResultsFigure_VAST3X(fit = fit, map_list = plot_list$map_list, Graph.Dev = 'png', hex = TRUE))  # This function looks for 'spShortName' (defined above)
+   try(JRWToolBox::YearlyResultsFigure_VAST3X(fit = fit, map_list = plot_list$map_list, Graph.Dev = 'png'))  # This function looks for 'spShortName' (defined above)
    
    
    # Save it all in Image.RData [ When reloading, remember to dyn.load() the '.dll' e.g. dyn.load(paste0(DateFile, 'VAST_v9_2_0.dll')) ]
@@ -407,7 +429,7 @@ West_Coast_Example_2020_V3X <- function(spFormalName = 'lingcod', spLongName = '
        
        # The AIC was higher with knot_method = 'grid' (FS used) for Lingcod using the California Current extrapolation grid. 
        
-       # ObsModel = c(1, 1) lognormal fits better than c(2, 1) gamma (29316.6 vs 29828.5) both with log-link and the <U+0093>Poisson-link<U+0094> delta-model (ObsModel[2] = 1).
+       # ObsModel = c(1, 1) lognormal fits better than c(2, 1) gamma (29316.6 vs 29828.5) both with log-link and the <U+0093>Poisson-link<U+0094> delta model (ObsModel[2] = 1).
        # With fine_scale = TRUE, knot_method = 'samples', and n_x = 200.
      
        
@@ -434,10 +456,24 @@ West_Coast_Example_2020_V3X <- function(spFormalName = 'lingcod', spLongName = '
            # 2018
            rev(sort(exp(SP.Results.Dpth.FS[,18])/10))[1:20]
            rev(sort((Total_sp_wt_kg/Area_Swept_ha)[Year %in% 2018]))[1:20]
-   
-   
+           
+     # Spiny dogs; with defaults:  n_x = 250, fine_scale = 250, depthCov = TRUE, and formulaDepthSpline = TRUE  
+     West_Coast_Example_2020_V3X(spFormalName = 'Pacific spiny dogfish', spLongName = 'Spiny dogfish', spShortName = 'DSRK', ObsModel = c(2, 0))  # Gamma with standard delta model
+     West_Coast_Example_2020_V3X(spFormalName = 'Pacific spiny dogfish', spLongName = 'Spiny dogfish', spShortName = 'DSRK', ObsModel = c(1, 0))  # Lognormal with standard delta model
+     West_Coast_Example_2020_V3X(spFormalName = 'Pacific spiny dogfish', spLongName = 'Spiny dogfish', spShortName = 'DSRK', ObsModel = c(2, 1))  # Gamma with Thorson's Poisson-link
+     West_Coast_Example_2020_V3X(spFormalName = 'Pacific spiny dogfish', spLongName = 'Spiny dogfish', spShortName = 'DSRK', ObsModel = c(1, 1))  # Lognormal with Thorson's Poisson-link
+     
+     # Smooth 'SpResults DSRK.png' and 'ln_density.png' (with fit$Report[["D_gcy"]] having a dimension of: [36070, 1, 16])  
+     #   only obtained by using VAST 3.3.0 (FishStatsUtils 2.5.0 & INLA 18.07.12) under MRO ver 3.6.2 with:
+     West_Coast_Example_2020_V3X(spFormalName = 'Pacific spiny dogfish', spLongName = 'Spiny dogfish', spShortName = 'DSRK', ObsModel = c(1, 1),
+              depthCov = TRUE, formulaDepthSpline = FALSE, formulaDepth = FALSE )  # Lognormal with Thorson's Poisson-link
+     
+     # Setting formulaDepthSpline = TRUE or formulaDepth = TRUE will result in somewhat less smooth figures, but not as grainy as anything done with VAST 3.4 or VAST 3.5
+     # [ The important thing is not using the formula argument; not the ObsModel used was c(1, 1). ]
    }
 
 }
+
+
 
 
