@@ -385,7 +385,7 @@ West_Coast_Example_2020_V3X <- function(spFormalName = 'lingcod', spLongName = '
    # try(SP.Results.Dpth <- JRWToolBox::YearlyResultsFigure_VAST3X(fit = fit, Graph.Dev = 'png'))  # This function looks for 'spShortName' (defined above)
    # Git directly from GitHub (this avoids the need for the JRWToolBox package to be up-to-date within the R PC/Linux library)
    rgit::S(YearlyResultsFigure_VAST3X, repoPath = "John-R-Wallace-NOAA/JRWToolBox", show = FALSE)
-   try(SP.Results.Dpth <- YearlyResultsFigure_VAST3X(fit = fit, Graph.Dev = 'png'))  # This function looks for 'spShortName' (defined above)
+   try(YearlyResultsFigure_VAST3X(fit = fit, Graph.Dev = 'png'))  # This function looks for 'spShortName' (defined above)
    
    
    # Save it all in Image.RData [ When reloading, remember to dyn.load() the '.dll' e.g. dyn.load(paste0(DateFile, 'VAST_v9_2_0.dll')) ]
