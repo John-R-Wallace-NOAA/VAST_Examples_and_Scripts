@@ -354,6 +354,8 @@ West_Coast_Example_2020_V3X <- function(spFormalName = 'lingcod', spLongName = '
    # AIC
    cat("\nAIC =", fit$parameter_estimates$AIC, "\n\n")
    
+    # Early save in Image.RData [ When reloading, remember to dyn.load() the '.dll' e.g. dyn.load(paste0(DateFile, 'VAST_v9_2_0.dll')) ]
+   save(list = names(.GlobalEnv), file = paste0(DateFile, "Image.RData"))
    
    # Plot results
    
