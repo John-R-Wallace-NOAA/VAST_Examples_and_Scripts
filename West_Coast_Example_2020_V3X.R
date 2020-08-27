@@ -474,7 +474,7 @@ West_Coast_Example_2020_V3X <- function(spFormalName = 'lingcod', spLongName = '
      # [ The important thing is not using the formula argument, not what ObsModel was used. ]
      
     # On Tantalus - Default formula (~0) model
-     /opt/R/64-bit/R-4.0.1_MKL/bin/R
+     # /opt/R/64-bit/R-4.0.1_MKL/bin/R
      library(JRWToolBox)
      Linux.First()
      
