@@ -1,6 +1,6 @@
 
 West_Coast_Example_2020_V3X <- function(spFormalName = 'lingcod', spLongName = 'Lingcod', spShortName = 'LCOD', ObsModel. = c(2, 0), n_x. = 250, fine_scale. = TRUE, depthCov = TRUE,
-              formulaDepthSpline = TRUE, formulaDepth = FALSE, lastEdit = "2020-08-27 13:17:19 PDT") {
+              formulaDepthSpline = TRUE, formulaDepth = FALSE, lastEdit = "2020-08-27 14:49:56 PDT") {
   
    # # Download into your .GlobalEnv with:
    # repoPath <- "John-R-Wallace-NOAA/VAST_Examples_and_Scripts"
