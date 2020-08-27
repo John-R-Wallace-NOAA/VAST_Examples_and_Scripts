@@ -1,9 +1,7 @@
 
 West_Coast_Example_2020_V3X <- function(spFormalName = 'lingcod', spLongName = 'Lingcod', spShortName = 'LCOD', ObsModel. = c(2, 0), n_x. = 250, fine_scale. = TRUE, depthCov = TRUE,
               formulaDepthSpline = TRUE, formulaDepth = FALSE) {
-  
-   # "2020-08-26 21:01:10 PDT"
- 
+       
    # # Download into your .GlobalEnv with:
    # repoPath <- "John-R-Wallace-NOAA/VAST_Examples_and_Scripts"
    # rgit::S(West_Coast_Example_2020_V3X, subDir = NULL, show = FALSE)  # fix(West_Coast_Example_2020_V3X) could then be used to edit
@@ -26,7 +24,7 @@ West_Coast_Example_2020_V3X <- function(spFormalName = 'lingcod', spLongName = '
    # spFormalName = 'Pacific spiny dogfish'; spLongName = 'Spiny dogfish'; spShortName = 'DSRK'
 
    # Other arguments
-   #  ObsModel. = c(2, 0); n_x. = 250; fine_scale. = TRUE; depthCov = TRUE;  formulaDepthSpline = TRUE; formulaDepth = FALSE
+   # ObsModel. = c(2, 0); n_x. = 200; fine_scale. = TRUE; depthCov = TRUE;  formulaDepthSpline = TRUE; formulaDepth = FALSE
   
    
    # Test run of single species spatial delta glmm
@@ -151,14 +149,14 @@ West_Coast_Example_2020_V3X <- function(spFormalName = 'lingcod', spLongName = '
    if('RevoUtilsMath' %in% installed.packages()[, 'Package']) {
    
       RevoUtilsMath::setMKLthreads(Cores)
-      cat("\nMRO Cores =", RevoUtilsMath::getMKLthreads(), "\n\n")
+      RevoUtilsMath::getMKLthreads()
    }
    
    # R_MKL (Intel's Math Kernel library) thread control
    if('RhpcBLASctl' %in% installed.packages()[, 'Package']) {
    
       RhpcBLASctl::blas_set_num_threads(Cores)
-      cat("\nMKL Cores =", RhpcBLASctl::blas_get_num_procs(), "\n\n")
+      RhpcBLASctl::blas_get_num_procs()
    }
    
    require(TMB)
@@ -384,8 +382,10 @@ West_Coast_Example_2020_V3X <- function(spFormalName = 'lingcod', spLongName = '
    (Year_Set = seq(min(Data_Geostat[,'Year']),max(Data_Geostat[,'Year']))) # Default arg for YearlyResultsFigure_VAST3X
    (Years2Include = which( Year_Set %in% sort(unique(Data_Geostat[,'Year'])))) # Default arg for YearlyResultsFigure_VAST3X
    
-   # try(SP.Results.Dpth <- JRWToolBox::YearlyResultsFigure_VAST3X(fit = fit, map_list = plot_list$map_list, Graph.Dev = 'png', hex = TRUE))  # This function looks for 'spShortName' (defined above)
-   try(JRWToolBox::YearlyResultsFigure_VAST3X(fit = fit, map_list = plot_list$map_list, Graph.Dev = 'png'))  # This function looks for 'spShortName' (defined above)
+   # try(SP.Results.Dpth <- JRWToolBox::YearlyResultsFigure_VAST3X(fit = fit, map_list = plot_list$map_list, Graph.Dev = 'png'))  # This function looks for 'spShortName' (defined above)
+   # Git directly from GitHub (this avoids the need for the JRWToolBox package to be up-to-date within the R PC/Linux library)
+   rgit::S(YearlyResultsFigure_VAST3X, repoPath = "John-R-Wallace-NOAA/JRWToolBox", show = FALSE)
+   try(SP.Results.Dpth <- YearlyResultsFigure_VAST3X(fit = fit, map_list = plot_list$map_list, Graph.Dev = 'png'))  # This function looks for 'spShortName' (defined above)
    
    
    # Save it all in Image.RData [ When reloading, remember to dyn.load() the '.dll' e.g. dyn.load(paste0(DateFile, 'VAST_v9_2_0.dll')) ]
@@ -477,5 +477,6 @@ West_Coast_Example_2020_V3X <- function(spFormalName = 'lingcod', spLongName = '
 }
 
 
+ West_Coast_Example_2020_V3X(spFormalName = 'Pacific spiny dogfish', spLongName = 'Spiny dogfish', spShortName = 'DSRK', ObsModel = c(1, 1), depthCov = TRUE, formulaDepthSpline = FALSE, formulaDepth = FALSE)
 
 
