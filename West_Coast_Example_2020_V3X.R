@@ -469,7 +469,7 @@ West_Coast_Example_2020_V3X <- function(spFormalName = 'lingcod', spLongName = '
               depthCov = TRUE, formulaDepthSpline = FALSE, formulaDepth = FALSE )  # Lognormal with Thorson's Poisson-link
      
      # Setting formulaDepthSpline = TRUE or formulaDepth = TRUE will result in somewhat less smooth figures, but not as grainy as anything done with VAST 3.4 or VAST 3.5
-     # [ The important thing is not using the formula argument; not the ObsModel used was c(1, 1). ]
+     # [ The important thing is not using the formula argument; not that the ObsModel used was c(1, 1). ]
    }
 
 }
