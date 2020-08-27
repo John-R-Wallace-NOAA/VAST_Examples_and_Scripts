@@ -225,7 +225,7 @@ West_Coast_Example_2020_V3X <- function(spFormalName = 'lingcod', spLongName = '
    #save files setting
    
    # DateFile = paste0(getwd(),'/VAST_output/')  # Simple, but requires manually changing the directory to save different runs
-   (DateFile <- paste0(getwd(),'/VAST_output_', Sys.Date(), '_', spLongName, '_nx=', n_x, "_Obs=", paste(ObsModel, collapse = "."), '/')) # Change '_nx=' for different runs, e.g. '_Pass_nx=' for including pass
+   (DateFile <- paste0(getwd(),'/VAST_output_', Sys.Date(), '_', spLongName, '_nx=', n_x, "_Obs=", paste(ObsModel., collapse = "."), '/')) # Change '_nx=' for different runs, e.g. '_Pass_nx=' for including pass
    if(!dir.exists(DateFile)) dir.create(DateFile)
    
    #save all settings
