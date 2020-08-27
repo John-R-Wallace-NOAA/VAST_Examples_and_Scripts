@@ -149,14 +149,14 @@ West_Coast_Example_2020_V3X <- function(spFormalName = 'lingcod', spLongName = '
    if('RevoUtilsMath' %in% installed.packages()[, 'Package']) {
    
       RevoUtilsMath::setMKLthreads(Cores)
-      RevoUtilsMath::getMKLthreads()
+      cat("\nMRO Cores =", RevoUtilsMath::getMKLthreads(), "\n\n")
    }
    
    # R_MKL (Intel's Math Kernel library) thread control
    if('RhpcBLASctl' %in% installed.packages()[, 'Package']) {
    
       RhpcBLASctl::blas_set_num_threads(Cores)
-      RhpcBLASctl::blas_get_num_procs()
+      cat("\nMKL Cores =", RhpcBLASctl::blas_get_num_procs(), "\n\n")
    }
    
    require(TMB)
