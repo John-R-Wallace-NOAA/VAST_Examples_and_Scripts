@@ -5,7 +5,7 @@ West_Coast_Example_2020_V3X <- function(spFormalName = 'lingcod', spLongName = '
    # # Download this function into your current environment:
    # repoPath <- "John-R-Wallace-NOAA/VAST_Examples_and_Scripts"
    # rgit::S(West_Coast_Example_2020_V3X, subDir = NULL, show = FALSE)  # fix(West_Coast_Example_2020_V3X) could then be used to edit
-   # # Check timestamp:
+   # # Check timestamp in 'lastEdit' arg:
    # str(West_Coast_Example_2020_V3X)
    
    # # Put directly into Notepad++ for editing with:
