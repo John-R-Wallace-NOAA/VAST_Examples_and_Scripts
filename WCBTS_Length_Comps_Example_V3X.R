@@ -468,8 +468,11 @@ settings = FishStatsUtils::make_settings( n_x = 300, Region = "California_curren
 # Set max threads (or less if desired) if using R ver 4X with partially patched MRO on Windows (depending on the system, threads are often half the number of logical processors on a machine).        
 RhpcBLASctl::blas_set_num_threads(RhpcBLASctl::get_num_cores()); RhpcBLASctl::blas_get_num_procs()
     
-# Set max threads if using MRO on a Linux server running CentOS (e.g. Tantalus), using (for now) R ver 3.5.3 
-setMKLthreads(6); getMKLthreads() 
+# Set a resonable number of threads if using MRO on a Linux server running CentOS (e.g. Tantalus), using (for now) R ver 3.5.3 
+# setMKLthreads(6); getMKLthreads() 
+
+# Set a resonable number of threads if using R-MKL on a Linux server running CentOS (e.g. Tantalus), if using R ver 4.X
+# RhpcBLASctl::blas_set_num_threads(6); RhpcBLASctl::blas_get_num_procs()
 
 
 # Run model  
