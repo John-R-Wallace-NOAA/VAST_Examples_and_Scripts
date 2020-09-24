@@ -106,11 +106,11 @@ xyplot(cpue_kg_km2 ~ -Depth_m | factor(Year), groups = factor(sign(cpue_kg_km2))
 dev.new()
 xyplot(Weight ~ Length_cm | factor(Year), data = bio)  # Longnose weight data only in years 2012 & 2016
 dev.new()
-xyplot(Width_cm ~ Length_cm | factor(Year), data = bio) 
-dev.new()
 histogram(~ Length_cm | factor(Year), data = bio) 
 
-if(any(is.finite(bio$Width))) {
+if(any(is.finite(bio$Width_cm))) {
+  dev.new()
+  xyplot(Width_cm ~ Length_cm | factor(Year), data = bio) 
   dev.new()
   histogram(~ Width_cm | factor(Year), data = bio)
 } 
