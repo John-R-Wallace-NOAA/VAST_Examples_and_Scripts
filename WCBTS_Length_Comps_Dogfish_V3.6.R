@@ -682,7 +682,8 @@ save(list = names(.GlobalEnv), file = paste0(DateDir, "Image.RData"))
 # 3D wireframe figure of data from Table for SS3 
 require(lattice)
 SpinyDogSS3 <- read.csv(paste0(HomeDir, "Table_for_SS3.csv"))
-SpinyDogSS3$Len_Female_Male <- as.numeric(as.factor(SpinyDogSS3[,"Category"]))
+SpinyDogSS3$Len_Female_Male <- as.numeric(ordered(SpinyDogSS3$Category, levels = levels(factor(SpinyDogSS3$Category))[c(6:25, 1:5, 26:44)]))
+Table(SpinyDogSS3$Len_Female_Male, SpinyDogSS3$Category)  # Check ordering
 SpinyDogSS3$Catch_mt <- SpinyDogSS3$Estimate_metric_tons
 png(1000, 1000, file = paste0(FigDir, "3D Wireframe, Catch by Year and Length.png"))
 wireframe(Catch_mt ~ Year * Len_Female_Male | ordered(Fleet, c('Coastwide', 'CA', 'OR', 'WA')) , data = SpinyDogSS3, as.table = TRUE)
@@ -700,7 +701,6 @@ dev.off()
   
 
 # ---- "`summary.fit_model` not implemented for the version of `VAST` being used"  - this is ver 3.6 - does work for VAST ver 3.4 ---
-
     
 if(FALSE) {
     
