@@ -1,13 +1,11 @@
 
 West_Coast_Example_2020_V3X <- function(spFormalName = 'lingcod', spLongName = 'Lingcod', spShortName = 'LCOD', ObsModel. = c(2, 0), n_x. = 250, fine_scale. = TRUE, depthCov = TRUE,
-              formulaDepthSpline = TRUE, formulaDepth = FALSE, lastEdit = "2020-08-28 02:11:22 PDT") {
+              formulaDepthSpline = TRUE, formulaDepth = FALSE) {
   
    # # Download this function into your current environment:
    # repoPath <- "John-R-Wallace-NOAA/VAST_Examples_and_Scripts"
    # rgit::S(West_Coast_Example_2020_V3X, subDir = NULL, show = FALSE)  # fix(West_Coast_Example_2020_V3X) could then be used to edit
-   # # Check timestamp in 'lastEdit' arg:
-   # str(West_Coast_Example_2020_V3X)
-   
+     
    # # Put directly into Notepad++ for editing with:
    # repoPath <- "John-R-Wallace-NOAA/VAST_Examples_and_Scripts"
    # rgit::gitEdit(West_Coast_Example_2020_V3X, subDir = NULL)
