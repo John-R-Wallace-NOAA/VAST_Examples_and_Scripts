@@ -305,7 +305,7 @@ West_Coast_Example_2020_V3X <- function(spFormalName = 'lingcod', spLongName = '
    fit <- fit_model( settings = settings, Lat_i = Data_Geostat$Lat, Lon_i = Data_Geostat$Lon, t_i = Data_Geostat$Year, working_dir = DateFile, test_fit = FALSE,
                      c_i = rep(0, nrow(Data_Geostat)), b_i = Data_Geostat$Catch_KG, a_i = Data_Geostat$AreaSwept_km2, v_i = Data_Geostat$Vessel, 
                      Q_ik = matrix(Data_Geostat$Pass, ncol = 1), newtonsteps = 0, knot_method = 'samples', getsd = TRUE, getJointPrecision = TRUE, run_model = TRUE,
-                     X1_formula = formula, covariate_data = Covariate_Data)
+                     X1_formula = formula, X2_formula = formula, covariate_data = Covariate_Data)
    sink() # End sinking to Fit_Output.txt
    
    
