@@ -566,9 +566,6 @@ sink("Fit_Output.txt")
            t_i = LengthCompWithZero$Year, 
           c_iz = LengthCompWithZero$Length_bin_num,
            b_i = LengthCompWithZero$First_stage_expanded_numbers,
-   #      c_iz = matrix(rep(0, length(b_i)), ncol = 1),  # c_iz needs to be a matrix for VAST 3.6 or?? v_i needs to be back to its VAST 3.4 default
-   #      c_iz = rep(0, length(b_i)),                    # c_iz default for VAST 3.4
-   #       v_i = rep(0, length(b_i)),                    # v_i defalut for VAST 3.4
            a_i = LengthCompWithZero$AreaSwept_km2, 
     model_args = list(Npool = 200), 
    newtonsteps = c(0, 1)[1], 
