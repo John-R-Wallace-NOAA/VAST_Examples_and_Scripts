@@ -545,7 +545,7 @@ strataLimits <- data.frame(STRATA = c("Coastwide","CA","OR","WA"),
                 
 settings <- FishStatsUtils::make_settings( n_x = 300, Region = "California_current", purpose = "index2",  
            fine_scale = TRUE, 
-             ObsModel = c(2, 0), 
+             ObsModel = c(2, 0), # 1 = Lognormal; 2 = Gamma
           FieldConfig = c(Omega1 = 'IID', Epsilon1 = 'IID', Omega2 = 'IID', Epsilon2 = 'IID'), 
             RhoConfig = c(Beta1 = 0,  Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0), 
  OverdispersionConfig = c(Eta1 = 0, Eta2 = 0),
