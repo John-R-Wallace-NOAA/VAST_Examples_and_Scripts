@@ -75,22 +75,26 @@ if(!.Platform$OS.type == "windows" & version$major == 4) {
 
 # Package: VAST
 # Title: Vector-autoregressive spatio-temporal (VAST) model
-# Version: 3.4.0
+# Version: 3.4.0 & 3.6.0
 # Date: 2020-02-27
 # URL: http://github.com/James-Thorson/VAST
-# RemoteSha: 942c89d5837a0c9023c637ee3bd5700760115bd6
-SHA <- '942c89d5837a0c9023c637ee3bd5700760115bd6'
+# RemoteSha: 942c89d5837a0c9023c637ee3bd5700760115bd6 # 3.4.0
+# SHA <- '942c89d5837a0c9023c637ee3bd5700760115bd6' # 3.4.0
+# RemoteSha: 65d7b9a174d4caa3e9e42a50a11ce15d858b4b11 # 3.6.0
+SHA <- '65d7b9a174d4caa3e9e42a50a11ce15d858b4b11' # 3.6.0
 if(packageDescription('VAST')$RemoteSha != SHA)
    devtools::install_github('james-thorson-noaa/VAST', ref = SHA, INSTALL_opts = "--no-multiarch --no-test-load --no-staged-install") 
 
 
 # Package: FishStatsUtils
 # Title: Utilities (shared code and data) for FishStats spatio-temporal modeling toolbox
-# Version: 2.6.0
+# Version: 2.6.0 & 2.8.0
 # Date: 2020-04-11
 # URL: http://github.com/james-thorson/FishStatsUtils
-# RemoteSha: f5b7f29096165ee330652b3afdf76a7c60148a5a
-SHA <- 'f5b7f29096165ee330652b3afdf76a7c60148a5a'
+# RemoteSha: f5b7f29096165ee330652b3afdf76a7c60148a5a # 2.6.0
+# SHA <- 'f5b7f29096165ee330652b3afdf76a7c60148a5a'  # 2.6.0
+# RemoteSha: 82cd3b5e07baa92d182c0746558575e0be597e52 # 2.8.0
+SHA <- '82cd3b5e07baa92d182c0746558575e0be597e52'  # 2.8.0
 if(packageDescription('FishStatsUtils')$RemoteSha != SHA)
    devtools::install_github('james-thorson-noaa/FishStatsUtils', ref = SHA, INSTALL_opts="--no-multiarch --no-test-load") 
 
