@@ -682,7 +682,7 @@ save(list = names(.GlobalEnv), file = paste0(DateDir, "Image.RData"))
 
 # 3D wireframe figure of data from Table for SS3 
 require(lattice)
-SpinyDogSS3 <- read.csv(paste0(HomeDir, "Table_for_SS3.csv"))
+SpinyDogSS3 <- read.csv(paste0(FigDir, "Table_for_SS3.csv"))
 SpinyDogSS3$Len_Female_Male <- as.numeric(ordered(SpinyDogSS3$Category, levels = levels(factor(SpinyDogSS3$Category))[c(6:25, 1:5, 26:44)]))
 Table(SpinyDogSS3$Len_Female_Male, SpinyDogSS3$Category)  # Check ordering
 SpinyDogSS3$Catch_mt <- SpinyDogSS3$Estimate_metric_tons
