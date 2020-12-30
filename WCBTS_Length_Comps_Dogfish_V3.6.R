@@ -70,8 +70,8 @@ if(!.Platform$OS.type == "windows" & version$major == 4) {
 #         'ADMB'                                                                                                                                                
 # Version: 1.7.18                                                                                                                                               
 # Date: 2020-07-24                                                                                                                                              
-# RemoteSha: 9d2b772e6874ffa191cfce5f94fb959be0ba4f0f
-# 
+# RemoteSha: 9d2b772e6874ffa191cfce5f94fb959be0ba4f0f # OLD
+# RemoteSha: a81ff89f5e65fae801ce0d2634cde575d460ee70 # Appears to be a SHA change without the version and date changing
 
 # Package: VAST
 # Title: Vector-autoregressive spatio-temporal (VAST) model
@@ -243,13 +243,15 @@ if(any(is.finite(bio$Width_cm))) {
 #===============================================================================
 
 # The stratafication areas are calculated from the SA3 file which is attached to the package.
-
-(strata = nwfscSurvey::CreateStrataDF.fn(names=c("shallow_CA", "mid_CA", "deep_CA", "shallow_OR", "mid_OR", "deep_OR", "shallow_WA", "mid_WA", "deep_WA"), 
+# The 'stratum' column is not used below in this approach, where stage one is used as input into VAST, so the contents of 'strata' are not important.
+(strata <- nwfscSurvey::CreateStrataDF.fn(names=c("shallow_CA", "mid_CA", "deep_CA", "shallow_OR", "mid_OR", "deep_OR", "shallow_WA", "mid_WA", "deep_WA"), 
                                    depths.shallow = c(55,   183, 549,  55,   183, 549,  55,   183, 549),
                                    depths.deep    = c(183,  549, 1280, 183,  549, 1280, 183,  549, 1280),
-                                   lats.south     = c(32,   32,  32,   36,   36,  36,   42,   42,	 42),
-                                   lats.north     = c(36,   36,  36,   42,   42,  42,   49,   49,	 49)))
+                                   lats.south     = c(32,    32,   32,  42,   42,   42,  46,   46,	 46),
+                                   lats.north     = c(42,    42,   42,  46,   46,   46,  49,   49,	 49)))
 
+                                   
+                                   
 # Calculate the design based index
 biomass = nwfscSurvey::Biomass.fn(dir = getwd(), dat = catch,  strat.df = strata, printfolder = "forSS", outputMedian = TRUE) 
 
@@ -428,6 +430,49 @@ if(numSexInModel %in% 1)
 if(numSexInModel %in% 2)
    save(LengthCompWithZero, file = paste0(HomeDir, 'LengthCompWithZero_', yearRange[1], '_', yearRange[2], '_sexMF.RData'))
 
+ 
+# Bubble plot figure of LengthCompWithZero First_stage_expanded_numbers 
+JRWToolBox::lib("John-R-Wallace-NOAA/Imap")
+png(1000, 1000, file = paste0(FigDir, "LengthCompWithZero bubble Plot.png"))
+Imap::imap(longlat = list(world.h.land, world.h.borders), col = c("black", "cyan"), fill = TRUE, poly = c("grey40", NA), longrange = c(-131.3, -115.5), latrange = c(33, 50.3), zoom = FALSE)
+JRWToolBox::plot.bubble.zero.cross(LengthCompWithZero[LengthCompWithZero$First_stage_expanded_numbers > 0, c('Lon', 'Lat', 'First_stage_expanded_numbers')], add = TRUE, legUnits = "Numbers", Zeros = FALSE)
+dev.off()
+  
+ 
+ 
+# 3D wireframe figure of stage one length comp data with zeros (before VAST is used) - ### check sorting wrong for character number labels ###
+require(lattice)
+
+LengthCompWithZero$Fleet <- JRWToolBox::factor.f(LengthCompWithZero$Lat, breaks = c(32, 42, 46, 49), labels = c("CA", "OR", "WA")) 
+
+# Check the range and sums
+# range(LengthCompWithZero$Lat[LengthCompWithZero$Fleet %in% 'WA'])
+# range(LengthCompWithZero$Lat[LengthCompWithZero$Fleet %in% 'OR'])
+# range(LengthCompWithZero$Lat[LengthCompWithZero$Fleet %in% 'CA'])
+# aggregate(JRWToolBox::List(LengthCompWithZero$First_stage_expanded_numbers), JRWToolBox::List(LengthCompWithZero$Fleet), sum)
+# aggregate(JRWToolBox::List(First_stage_expanded_numbers), JRWToolBox::List(Length_bin, Fleet), sum)
+
+(FLEETS <- list(c("CA", "OR", "WA"), "CA", "OR", "WA"))
+
+SpinyDogRawNumByLen <- NULL
+for (i in 1:4) {
+
+  TF <- LengthCompWithZero$Fleet %in% FLEETS[[i]]
+  
+  SpinyDogRawNumByLen <- rbind(SpinyDogRawNumByLen, cbind(aggregate(list(Numbers = LengthCompWithZero$First_stage_expanded_numbers[TF]), 
+                          list(Length_bin = LengthCompWithZero$Length_bin[TF], Year = LengthCompWithZero$Year[TF]), sum, na.rm = TRUE), Fleet = ifelse(i == 1, "Coastwide", FLEETS[[i]])))
+}
+
+# Fix sorting for character number labels 
+SpinyDogRawNumByLen$Len_Female_Male <- as.numeric(ordered(SpinyDogRawNumByLen$Length_bin, levels = levels(factor(SpinyDogRawNumByLen$Length_bin))[c(6:25, 1:5, 26:44)]))
+
+# Check the ordering
+# Table(SpinyDogRawNumByLen$Len_Female_Male, SpinyDogRawNumByLen$Length_bin) 
+
+png(1000, 1000, file = paste0(FigDir, "3D Wireframe, Stage One Len Freq in Numbers by Year & Length, pre-VAST.png"))
+wireframe(Numbers ~ Year * Len_Female_Male | ordered(Fleet, c('Coastwide', 'CA', 'OR', 'WA')) , data = SpinyDogRawNumByLen, as.table = TRUE)
+dev.off()
+
 
 # Early save before VAST
 # Save it all in Image.RData 
@@ -549,7 +594,7 @@ strataLimits <- data.frame(STRATA = c("Coastwide","CA","OR","WA"),
                 
 settings <- FishStatsUtils::make_settings( n_x = 300, Region = "California_current", purpose = "index2",  
            fine_scale = TRUE, 
-             ObsModel = c(2, 0), # 1 = Lognormal; 2 = Gamma
+             ObsModel = c(1, 0),  # 1 = Lognormal; 2 = Gamma
           FieldConfig = c(Omega1 = 'IID', Epsilon1 = 'IID', Omega2 = 'IID', Epsilon2 = 'IID'), 
             RhoConfig = c(Beta1 = 0,  Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0), 
  OverdispersionConfig = c(Eta1 = 0, Eta2 = 0),
@@ -562,6 +607,7 @@ settings <- FishStatsUtils::make_settings( n_x = 300, Region = "California_curre
 RhpcBLASctl::blas_get_num_procs() 
 
 # Run model  - run with newtonsteps = 0 until good convergence is seen in all parameters
+# ################# Note, since the input into b_i is in numbers all the results and figures are in numbers, regardless of label given. ################# 
 sink("Fit_Output.txt")
   fit <- FishStatsUtils::fit_model( 
       settings = settings, 
@@ -570,6 +616,9 @@ sink("Fit_Output.txt")
            t_i = LengthCompWithZero$Year, 
           c_iz = LengthCompWithZero$Length_bin_num,
            b_i = LengthCompWithZero$First_stage_expanded_numbers,
+   #      c_iz = matrix(rep(0, length(b_i)), ncol = 1),  # c_iz needs to be a matrix for VAST 3.6 or?? v_i needs to be back to its VAST 3.4 default
+   #      c_iz = rep(0, length(b_i)),                    # c_iz default for VAST 3.4
+   #       v_i = rep(0, length(b_i)),                    # v_i defalut for VAST 3.4
            a_i = LengthCompWithZero$AreaSwept_km2, 
     model_args = list(Npool = 200), 
    newtonsteps = c(0, 1)[1], 
@@ -640,7 +689,7 @@ names(Proportions)
 #  [1] "Prop_ctl"     "Neff_tl"      "var_Prop_ctl" "Index_tl"     "Neff_ctl"     "Mean_tl"    "sd_Mean_tl"  
 
 dimnames(Proportions$Neff_tl) <- list(fit$year_labels, strataLimits$STRATA)
-# r(Proportions$Neff_tl, 3)
+r(Proportions$Neff_tl, 3)
 
 #      Coastwide      CA      OR       WA
 # 2003  1189.190 570.728 233.040 1192.198
@@ -680,26 +729,16 @@ save(Proportions, file = paste0(DateDir, "Proportions.RData"))
 save(list = names(.GlobalEnv), file = paste0(DateDir, "Image.RData"))
   
 
-# 3D wireframe figure of data from Table for SS3 
+# 3D wireframe figure of data from Table for SS3 - ### check sorting wrong for character number labels ###
 require(lattice)
 SpinyDogSS3 <- read.csv(paste0(FigDir, "Table_for_SS3.csv"))
-SpinyDogSS3$Len_Female_Male <- as.numeric(ordered(SpinyDogSS3$Category, levels = levels(factor(SpinyDogSS3$Category))[c(6:25, 1:5, 26:44)]))
+SpinyDogSS3$Len_Female_Male <- as.numeric(ordered(SpinyDogSS3$Category, levels = levels(factor(SpinyDogSS3$Category))[c(6:25, 1:5, 26:44)]))  # Fix sorting for character number labels
 Table(SpinyDogSS3$Len_Female_Male, SpinyDogSS3$Category)  # Check ordering
-SpinyDogSS3$Catch_mt <- SpinyDogSS3$Estimate_metric_tons
-png(1000, 1000, file = paste0(FigDir, "3D Wireframe, Catch by Year and Length.png"))
-wireframe(Catch_mt ~ Year * Len_Female_Male | ordered(Fleet, c('Coastwide', 'CA', 'OR', 'WA')) , data = SpinyDogSS3, as.table = TRUE)
+names(SpinyDogSS3)[grep('Estimate_metric_tons', names(SpinyDogSS3))] <- "Numbers"  #  b_i arg to FishStatsUtils::fit_model() is in numbers, so this is estimated numbers not biomass!!!
+png(1000, 1000, file = paste0(FigDir, "3D Wireframe, Len Freq in Numbers by Year & Length, VAST result.png"))
+wireframe(Numbers ~ Year * Len_Female_Male | ordered(Fleet, c('Coastwide', 'CA', 'OR', 'WA')) , data = SpinyDogSS3, as.table = TRUE)
 dev.off()
 
-
-# Bubble plot figure of LengthCompWithZero First_stage_expanded_numbers 
-JRWToolBox::lib("John-R-Wallace-NOAA/Imap")
-png(1000, 1000, file = paste0(FigDir, "LengthCompWithZero bubble Plot.png"))
-Imap::imap(longrange = c(-131.3, -115.5), latrange = c(33, 50.3), zoom = FALSE)
-JRWToolBox::plot.bubble.zero.cross(LengthCompWithZero[LengthCompWithZero$First_stage_expanded_numbers > 0, c('Lon', 'Lat', 'First_stage_expanded_numbers')], add = TRUE)
-dev.off()
-  
-  
-  
 
 # ---- "`summary.fit_model` not implemented for the version of `VAST` being used"  - this is ver 3.6 - does work for VAST ver 3.4 ---
     
