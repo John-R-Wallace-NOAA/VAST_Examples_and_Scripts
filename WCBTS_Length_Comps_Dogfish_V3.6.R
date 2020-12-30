@@ -243,7 +243,7 @@ if(any(is.finite(bio$Width_cm))) {
 #===============================================================================
 
 # The stratafication areas are calculated from the SA3 file which is attached to the package.
-# The 'stratum' column in 'stage_one' is not used below in this approach; where the stage one results are used as input into VAST, so the contents of 'strata' are not important.
+# The 'stratum' column in 'stage_one' is not used below in the approach taken here; where the stage one results are used as input into VAST, so the contents of 'strata' are not important.
 (strata <- nwfscSurvey::CreateStrataDF.fn(names=c("shallow_CA", "mid_CA", "deep_CA", "shallow_OR", "mid_OR", "deep_OR", "shallow_WA", "mid_WA", "deep_WA"), 
                                    depths.shallow = c(55,   183, 549,  55,   183, 549,  55,   183, 549),
                                    depths.deep    = c(183,  549, 1280, 183,  549, 1280, 183,  549, 1280),
