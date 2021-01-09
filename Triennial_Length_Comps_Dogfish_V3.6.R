@@ -496,20 +496,43 @@ SpinyDogRawNumByLen <- NULL
 for (i in 1:4) {  # 4 Fleets
 
   TF <- LengthCompWithZero$Fleet %in% FLEETS[[i]]
-  
   SpinyDogRawNumByLen <- rbind(SpinyDogRawNumByLen, cbind(aggregate(list(Numbers = LengthCompWithZero$First_stage_expanded_numbers[TF]), 
                           list(Length_bin = LengthCompWithZero$Length_bin[TF], Year = LengthCompWithZero$Year[TF]), sum, na.rm = TRUE), Fleet = ifelse(i == 1, "Coastwide", FLEETS[[i]])))
 }
 
+# Add in years without a survey
+Sp.2004 <- SpinyDogRawNumByLen[SpinyDogRawNumByLen$Year %in% 2004, ]
+Sp.2004$Numbers <- 0
+
+Sp.1999 <- Sp.2004
+Sp.1999$Year <- 1999
+
+Sp.2000 <- Sp.2004
+Sp.2000$Year <- 2000
+
+Sp.2002 <- Sp.2004
+Sp.2002$Year <- 2002
+
+Sp.2003 <- Sp.2004
+Sp.2003$Year <- 2003
+
+SpinyDogRawNumByLen <- rbind(SpinyDogRawNumByLen, Sp.1999, Sp.2000, Sp.2002, Sp.2003)
+SpinyDogRawNumByLen <- JRWToolBox::sort.f(SpinyDogRawNumByLen, c('Fleet', 'Year', 'Length_bin'))
+
 # Fix sorting for character number labels 
-SpinyDogRawNumByLen$Len_Female_Male <- as.numeric(ordered(SpinyDogRawNumByLen$Length_bin, levels = levels(factor(SpinyDogRawNumByLen$Length_bin))[c(6:25, 1:5, 26:44)]))
+SpinyDogRawNumByLen$Len_Female_Male <- as.numeric(ordered(SpinyDogRawNumByLen$Length_bin, levels = levels(factor(SpinyDogRawNumByLen$Length_bin))[c(5:24, 1:4, 25:43)]))
 
 # Check the ordering
-# Table(SpinyDogRawNumByLen$Len_Female_Male, SpinyDogRawNumByLen$Length_bin) 
+JRWToolBox::Table(SpinyDogSS3$Len_Female_Male, SpinyDogSS3$Category)  # Check ordering
 
 png(1000, 1000, file = paste0(FigDir, "3D Wireframe, Stage One Len Freq in Numbers by Year & Length, pre-VAST.png"))
 wireframe(Numbers ~ Year * Len_Female_Male | ordered(Fleet, c('Coastwide', 'CA', 'OR', 'WA')) , data = SpinyDogRawNumByLen, as.table = TRUE)
 dev.off()
+
+# Perspective #2
+# png(1000, 1000, file = paste0(FigDir, "3D Wireframe, Stage One Len Freq in Numbers by Year & Length, pre-VAST, Persp 2.png"))
+# wireframe(Numbers ~ Year * Len_Female_Male | ordered(Fleet, c('Coastwide', 'CA', 'OR', 'WA')), data = SpinyDogRawNumByLen, as.table = TRUE, screen = list(z = 80, x = -60))
+# dev.off()
 
 
 # Early save before VAST
@@ -727,14 +750,16 @@ names(Proportions)
 #  [1] "Prop_ctl"     "Neff_tl"      "var_Prop_ctl" "Index_tl"     "Neff_ctl"     "Mean_tl"    "sd_Mean_tl"  
 
 dimnames(Proportions$Neff_tl) <- list(fit$year_labels, strataLimits$STRATA)
-r(Proportions$Neff_tl, 3)
+JRWToolBox::r(Proportions$Neff_tl, 3)
 
-#      Coastwide      CA      OR       WA
-# 2003  1189.190 570.728 233.040 1192.198
-# 2004   839.696 420.530 221.559  695.710
-# 2005  1188.866 774.925 269.140  670.233
-# 2006   778.852 868.255 263.930  318.044
-...
+     Coastwide      CA     OR      WA
+1998    28.302  28.252  3.439   2.934
+1999        NA      NA     NA      NA
+2000        NA      NA     NA      NA
+2001   437.383 281.680 96.420 277.692
+2002        NA      NA     NA      NA
+2003        NA      NA     NA      NA
+2004   370.639 292.585 71.548 213.073
 
 
 dimnames(Proportions$Index_tl) <- list(fit$year_labels, strataLimits$STRATA)
@@ -744,7 +769,7 @@ dimnames(Proportions$sd_Mean_tl) <- list(fit$year_labels, strataLimits$STRATA)
 
 dim(Proportions$Neff_ctl)
 # n_c n_t n_l 
-#  44  17   4 
+#  43   7   4 
 
 dimnames(Proportions$Neff_ctl) <- list(ref_Table$Length_bin, fit$year_labels, strataLimits$STRATA)
 dimnames(Proportions$Prop_ctl) <- list(ref_Table$Length_bin, fit$year_labels, strataLimits$STRATA) 
@@ -752,13 +777,13 @@ dimnames(Proportions$var_Prop_ctl) <- list(ref_Table$Length_bin, fit$year_labels
 
 
 sink("Proportions.txt")
-  cat("\nNeff_tl\n\n"); r(Proportions$Neff_tl, 2)
-  cat("\n\nIndex_tl\n\n"); r(Proportions$Index_tl, 2)  
-  cat("\n\nMean_tl\n\n"); r(Proportions$Mean_tl, 3)
-  cat("\n\nsd_Mean_tl\n\n"); r(Proportions$sd_Mean_tl, 3)
-  cat("\n\nNeff_ctl\n\n"); r(Proportions$Neff_ctl, 2)
-  cat("\n\nProp_ctl\n\n"); r(Proportions$Prop_ctl, 5)
-  cat("\n\nvar_Prop_ctl\n\n"); r(Proportions$var_Prop_ctl, 6)
+  cat("\nNeff_tl\n\n"); JRWToolBox::r(Proportions$Neff_tl, 2)
+  cat("\n\nIndex_tl\n\n"); JRWToolBox::r(Proportions$Index_tl, 2)  
+  cat("\n\nMean_tl\n\n"); JRWToolBox::r(Proportions$Mean_tl, 3)
+  cat("\n\nsd_Mean_tl\n\n"); JRWToolBox::r(Proportions$sd_Mean_tl, 3)
+  cat("\n\nNeff_ctl\n\n"); JRWToolBox::r(Proportions$Neff_ctl, 2)
+  cat("\n\nProp_ctl\n\n"); JRWToolBox::r(Proportions$Prop_ctl, 5)
+  cat("\n\nvar_Prop_ctl\n\n"); JRWToolBox::r(Proportions$var_Prop_ctl, 6)
 sink()
 
 save(Proportions, file = paste0(DateDir, "Proportions.RData"))
@@ -770,8 +795,8 @@ save(list = names(.GlobalEnv), file = paste0(DateDir, "Image.RData"))
 # 3D wireframe figure of data from Table for SS3 - ### check sorting wrong for character number labels ###
 require(lattice)
 SpinyDogSS3 <- read.csv(paste0(FigDir, "Table_for_SS3.csv"))
-SpinyDogSS3$Len_Female_Male <- as.numeric(ordered(SpinyDogSS3$Category, levels = levels(factor(SpinyDogSS3$Category))[c(6:25, 1:5, 26:44)]))  # Fix sorting for character number labels
-Table(SpinyDogSS3$Len_Female_Male, SpinyDogSS3$Category)  # Check ordering
+SpinyDogSS3$Len_Female_Male <- as.numeric(ordered(SpinyDogSS3$Category, levels = levels(factor(SpinyDogSS3$Category))[c(5:24, 1:4, 25:43)]))  # Fix sorting for character number labels
+JRWToolBox::Table(SpinyDogSS3$Len_Female_Male, SpinyDogSS3$Category)  # Check ordering
 names(SpinyDogSS3)[grep('Estimate_metric_tons', names(SpinyDogSS3))] <- "Numbers"  #  b_i arg to FishStatsUtils::fit_model() is in numbers, so this is estimated numbers not biomass!!!
 png(1000, 1000, file = paste0(FigDir, "3D Wireframe, Len Freq in Numbers by Year & Length, VAST result.png"))
 wireframe(Numbers ~ Year * Len_Female_Male | ordered(Fleet, c('Coastwide', 'CA', 'OR', 'WA')) , data = SpinyDogSS3, as.table = TRUE)
