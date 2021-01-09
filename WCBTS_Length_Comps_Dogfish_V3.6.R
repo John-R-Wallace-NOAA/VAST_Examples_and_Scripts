@@ -179,7 +179,8 @@ names(bio)[grep('Weight_kg', names(bio))] <- 'Weight'  # I added the units to th
 
 
 head(catch)
-head(bio)
+head(bio$Lengths)
+head(bio$Ages)
 
 dev.new()
 xyplot(cpue_kg_km2/100 ~ -Depth_m | factor(Year), groups = factor(sign(cpue_kg_km2)), data = catch, col = c('dodgerblue', col.alpha('magenta', 0.3))) # kgs per hectare
