@@ -273,8 +273,8 @@ lapply(biomass$StrataEsts, print)
 
 # Plot the biomass index with confidence intervals
 dev.new()
-nwfscSurvey::PlotBio.fn(dir = getwd(), dat = biomass, main = "NWFSC shelf-slope bottom trawl survey", dopng = FALSE)
-nwfscSurvey::PlotBio.fn(dir = getwd(), dat = biomass, main = "NWFSC shelf-slope bottom trawl survey", dopng = TRUE)
+nwfscSurvey::PlotBio.fn(dir = getwd(), dat = biomass, main = paste(Survey, "bottom trawl survey"), dopng = FALSE)
+nwfscSurvey::PlotBio.fn(dir = getwd(), dat = biomass, main = paste(Survey, "bottom trawl survey"), dopng = TRUE)
 
 
 #============================================================================================
