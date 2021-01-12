@@ -468,17 +468,16 @@ if(numSexInModel %in% 2)
    save(LengthCompWithZero, file = print(paste0(HomeDir, 'LengthCompWithZero_', yearRange[1], '_', yearRange[2], '_sexMF.RData')))
 
  
-# Bubble plot figure of LengthCompWithZero First_stage_expanded_numbers 
+# --- Bubble plot figure of LengthCompWithZero First_stage_expanded_numbers ---
 JRWToolBox::lib("John-R-Wallace-NOAA/Imap")
-png(1000, 1000, file = paste0(FigDir, "LengthCompWithZero bubble Plot.png"))
+png(1000, 1000, file = paste0(FigDir, "LengthCompWithZero Bubble Plot.png"))
 Imap::imap(longlat = list(world.h.land, world.h.borders), col = c("black", "cyan"), fill = TRUE, poly = c("grey40", NA), longrange = c(-131.3, -115.5), latrange = c(33, 50.3), zoom = FALSE)
-JRWToolBox::plot.bubble.zero.cross(LengthCompWithZero[LengthCompWithZero$First_stage_expanded_numbers > 0, c('Lon', 'Lat', 'First_stage_expanded_numbers')], 
-                          group = as.character(LengthCompWithZero$Fleet), add = TRUE, legUnits = "Numbers", Zeros = FALSE)
+JRWToolBox::plot.bubble.zero.cross(LengthCompWithZero[, c('Lon', 'Lat', 'First_stage_expanded_numbers')], group = LengthCompWithZero$Year, add = TRUE, legUnits = "Numbers", 
+                    verbose = TRUE, xDelta = -2, cross.cex = 0)
 dev.off()
   
  
- 
-# 3D wireframe figure of stage one length comp data with zeros (before VAST is used) - ### check sorting wrong for character number labels ###
+# --- 3D wireframe figure of stage one length comp data with zeros (before VAST is used) - ### check sorting wrong for character number labels ---
 require(lattice)
 
 LengthCompWithZero$Fleet <- JRWToolBox::factor.f(LengthCompWithZero$Lat, breaks = c(32, 42, 46, 49), labels = c("CA", "OR", "WA")) 
@@ -503,17 +502,10 @@ for (i in 1:4) {  # 4 Fleets
 # Add in years without a survey
 Sp.2004 <- SpinyDogRawNumByLen[SpinyDogRawNumByLen$Year %in% 2004, ]
 Sp.2004$Numbers <- 0
-
-Sp.1999 <- Sp.2004
+Sp.1999 <- Sp.2000 <- Sp.2002 <- Sp.2003 <- Sp.2004
 Sp.1999$Year <- 1999
-
-Sp.2000 <- Sp.2004
 Sp.2000$Year <- 2000
-
-Sp.2002 <- Sp.2004
 Sp.2002$Year <- 2002
-
-Sp.2003 <- Sp.2004
 Sp.2003$Year <- 2003
 
 SpinyDogRawNumByLen <- rbind(SpinyDogRawNumByLen, Sp.1999, Sp.2000, Sp.2002, Sp.2003)
@@ -655,7 +647,7 @@ strataLimits <- data.frame(STRATA = c("Coastwide","CA","OR","WA"),
                 
 settings <- FishStatsUtils::make_settings( n_x = 300, Region = "California_current", purpose = "index2",  
            fine_scale = TRUE, 
-             ObsModel = c(1, 0),  # 1 = Lognormal; 2 = Gamma
+             ObsModel = c(1 0),  # 1 = Lognormal; 2 = Gamma
           FieldConfig = c(Omega1 = 'IID', Epsilon1 = 'IID', Omega2 = 'IID', Epsilon2 = 'IID'), 
             RhoConfig = c(Beta1 = 0,  Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0), 
  OverdispersionConfig = c(Eta1 = 0, Eta2 = 0),
@@ -665,12 +657,14 @@ settings <- FishStatsUtils::make_settings( n_x = 300, Region = "California_curre
         strata.limits = strataLimits)
  
 # Double check max threads
-RhpcBLASctl::blas_get_num_procs()  # Use 6 for Tantalus (a Linux server)
+# RhpcBLASctl::blas_set_num_threads(6)
+RhpcBLASctl::blas_get_num_procs()  # Use 6 for Tantalus (a Linux server) 
 
 # Run model  - run with newtonsteps = 0 until good convergence is seen in all parameters
+# ***** TMB and FishStatsUtils need to be in search path - or make_data() will not be found *****
 # ################# Note, since the input into b_i is in numbers all the results and figures are in numbers, regardless of label given. ################# 
 sink("Fit_Output.txt")
-  fit <- FishStatsUtils::fit_model(  # TMB and FishStatsUtils need to be in search path - or breaks code
+  fit <- FishStatsUtils::fit_model( 
       settings = settings, 
          Lat_i = LengthCompWithZero$Lat, 
          Lon_i = LengthCompWithZero$Lon,
@@ -762,14 +756,15 @@ JRWToolBox::r(Proportions$Neff_tl, 3)
 2004   370.639 292.585 71.548 213.073
 
 
+
 dimnames(Proportions$Index_tl) <- list(fit$year_labels, strataLimits$STRATA)
 dimnames(Proportions$Mean_tl) <- list(fit$year_labels, strataLimits$STRATA)
 dimnames(Proportions$sd_Mean_tl) <- list(fit$year_labels, strataLimits$STRATA)
 
 
 dim(Proportions$Neff_ctl)
-# n_c n_t n_l 
-#  43   7   4 
+n_c n_t n_l 
+ 43   7   4 
 
 dimnames(Proportions$Neff_ctl) <- list(ref_Table$Length_bin, fit$year_labels, strataLimits$STRATA)
 dimnames(Proportions$Prop_ctl) <- list(ref_Table$Length_bin, fit$year_labels, strataLimits$STRATA) 
@@ -785,6 +780,10 @@ sink("Proportions.txt")
   cat("\n\nProp_ctl\n\n"); JRWToolBox::r(Proportions$Prop_ctl, 5)
   cat("\n\nvar_Prop_ctl\n\n"); JRWToolBox::r(Proportions$var_Prop_ctl, 6)
 sink()
+
+# Look at Proportions.txt
+file.show('Proportions.txt')
+
 
 save(Proportions, file = paste0(DateDir, "Proportions.RData"))
   
