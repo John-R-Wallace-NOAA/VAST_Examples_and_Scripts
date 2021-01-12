@@ -46,7 +46,7 @@ if(.Platform$OS.type == "windows" & any(installed.packages()[, 1] %in% "RhpcBLAS
 # Set max threads if using MRO on a Linux server running CentOS (e.g. Tantalus), if using R ver 3.X (setting the max too high results in too much IO, which is slow).
 if(!.Platform$OS.type == "windows" & version$major == 3) {
    setMKLthreads(6)
-   getMKLthreads() 
+   getMKLthreads()
 }   
 
 # Set max threads if using R-MKL on a Linux server running CentOS (e.g. Tantalus), if using R ver 4.X (setting the max too high results in too much IO, which is slow).
@@ -151,16 +151,16 @@ numSexInModel <- c(1, 2)[2]
 if(numSexInModel %in% 1) {
     by_sex = "female"
     (sex = ifelse(by_sex == "female", "Nf", "Nm"))
-    DateDir <- paste0(HomeDir, 'VAST_', Sys.Date(), '_', spShortName, '_Comps_NWFSC_Combo_', yearRange[1], '_', yearRange[2], '_sex', casefold(substring(sex, 2, 2), upper = TRUE), '/')
+    DateDir <- paste0(HomeDir, 'VAST_', Sys.Date(), '_', spShortName, '_Comps_', Survey, '_', yearRange[1], '_', yearRange[2], '_sex', casefold(substring(sex, 2, 2), upper = TRUE), '/')
 }
 
 if(numSexInModel %in% 2)
-   DateDir <- paste0(HomeDir, 'VAST_', Sys.Date(), '_', spShortName, '_Comps_NWFSC_Combo_', yearRange[1], '_', yearRange[2], '_sexMF/')
+   DateDir <- paste0(HomeDir, 'VAST_', Sys.Date(), '_', spShortName, '_Comps_', Survey, '_', yearRange[1], '_', yearRange[2], '_sexMF/')
 
 dir.create(DateDir, showWarnings = FALSE)
 setwd(DateDir); getwd()
 
-FigDir <- paste0(DateDir, 'Figs/')
+(FigDir <- paste0(DateDir, 'Figs/'))
 dir.create(FigDir, showWarnings = FALSE) 
      
 
@@ -174,13 +174,22 @@ catch$cpue_kg_km2 <- catch$Total_sp_wt_kg/(catch$Area_Swept_ha/100)
 names(catch)[grep('Total_sp_numbers', names(catch))] <- 'total_catch_numbers'
 
 # bio = PullBio.fn(SciName = spSciName, SurveyName = Survey, YearRange = c(2012, 2016), SaveFile = TRUE, Dir = getwd())
-bio <- JRWToolBox::dataWareHouseTrawlBio(spFormalName, yearRange = yearRange, project = Survey)
+LenAge <- JRWToolBox::dataWareHouseTrawlBio(spFormalName, yearRange = yearRange, project = Survey)
+                                                                                                                            
+
+if(any(Survey %in% c('AFSC.Shelf', 'AFSC.Slope'))) {
+    bio <- LenAge$Lengths
+    bio$Weight <- 1 
+    Ages <- LenAge$Ages
+} else
+   bio <- LenAge
+
 names(bio)[grep('Weight_kg', names(bio))] <- 'Weight'  # I added the units to the 'Weight_kg' and the PullBio.fn() is behind
 
-
 head(catch)
-head(bio$Lengths)
-head(bio$Ages)
+head(bio)
+if(any(Survey %in% c('AFSC.Shelf', 'AFSC.Slope')))
+    head(Ages)
 
 dev.new()
 xyplot(cpue_kg_km2/100 ~ -Depth_m | factor(Year), groups = factor(sign(cpue_kg_km2)), data = catch, col = c('dodgerblue', col.alpha('magenta', 0.3))) # kgs per hectare
@@ -188,6 +197,8 @@ xyplot(cpue_kg_km2/100 ~ -Depth_m | factor(Year), groups = factor(sign(cpue_kg_k
 dev.new()
 xyplot(log(cpue_kg_km2/100 + min(cpue_kg_km2/100, na.rm= TRUE)/2) ~ -Depth_m | factor(Year), data = catch, col = col.alpha('magenta', 0.3)) # kgs per hectare
 
+dev.new()
+xyplot(Length_cm ~ -Depth_m | factor(Year), data = bio)         
 
 if(any(is.finite(bio$Width_cm))) {
    dev.new()
@@ -254,9 +265,11 @@ if(any(is.finite(bio$Width_cm))) {
                                    
                                    
 # Calculate the design based index
-biomass = nwfscSurvey::Biomass.fn(dir = getwd(), dat = catch,  strat.df = strata, printfolder = "forSS", outputMedian = TRUE) 
+# Creates a csv file within the "printfolder" that will be saved within the directory location (dir).biomass = nwfscSurvey::Biomass.fn(dir = getwd(), dat = catch,  strat.df = strata, printfolder = "forSS", outputMedian = TRUE) 
 
-# Creates a csv file within the "printfolder" that will be saved within the directory location (dir).
+
+# Look at strata estimate tables - shows number of tows by year and strata
+lapply(biomass$StrataEsts, print)
 
 # Plot the biomass index with confidence intervals
 dev.new()
@@ -290,13 +303,14 @@ bin_size = 4
 # #                    nSamps = n)
 # #       
              
+# Added fake weight column above for AK Surveys to make SurveyLFs.fn() happy (weight is not used in the function)                                                                                                  
 stage_one <- nwfscSurvey::SurveyLFs.fn(dir = getwd(), datL = bio, datTows = catch,  
                     strat.df = strata, lgthBins = len.bins,
                     sexRatioStage = 2, sexRatioUnsexed = 0.5, maxSizeUnsexed = 20, outputStage1 = TRUE,
                     nSamps = n)
                     
 # The below conversion is just done to put the area fished on the same scale as the lingcod example, kg per hectare to kg per square kilometer
-stage_one$areaFished = stage_one$areaFished / 10000   # areaFished is dropped below - it could be used as a check                  
+stage_one$areaFished = stage_one$areaFished / 10000   # areaFished is dropped below - however, it could be used as a check
                     
 # Create the length bins names
 lo = len.bins[findInterval(stage_one$Length_cm, len.bins, left.open = TRUE)]
@@ -304,7 +318,7 @@ hi = lo + bin_size
 stage_one$Length_bin = paste0(lo, "-", hi, "cm")
 
 
-# The comps are calculated seperately by sex:
+# The comps are calculated seperately by sex
 head(stage_one)
 
 
@@ -345,32 +359,32 @@ if(numSexInModel %in% 2)
 # Percent reduction of rows
 round(100 * (1 - nrow(LenCompNoZero)/numRowsOld), 4)
 
-# Check bin reduced LenCompNoZero
+# Check LenCompNoZero has the correct bins removed
 JRWToolBox::r(JRWToolBox::agg.table(aggregate(list(Num = LenCompNoZero$First_stage_expanded_numbers), list(Length_bin = LenCompNoZero$Length_bin, 
                  Year = LenCompNoZero$Year), sum)), 2)
 
 
-#Add length bin from LenCompNoZero file to hauls with zero catches from catch file (switching cols after indexing avoids sorting)
+# Add length bin from LenCompNoZero file to hauls with zero catches from catch file (switching cols after indexing avoids sorting)
 LengthCompWithZero <- expand.grid(Length_bin = unique(LenCompNoZero$Length_bin), Trawl_id = catch$Trawl_id, stringsAsFactors = FALSE)[, c("Trawl_id", "Length_bin")] 
 
-#Match each length bin in each haul to lat, long and area_swept_ha
+# Match each length bin in each haul to lat, long and area_swept_ha
 LengthCompWithZero <- JRWToolBox::match.f(LengthCompWithZero, catch, "Trawl_id", "Trawl_id", c("Year", "Longitude_dd", "Latitude_dd", "Depth_m", "Area_Swept_ha"))
 
-#Add column First_stage_expanded_numbers to file with zero and positive catches
+# Add column First_stage_expanded_numbers to file with zero and positive catches
 LengthCompWithZero <- JRWToolBox::match.f(LengthCompWithZero, LenCompNoZero, c("Trawl_id", "Length_bin"), c("Trawl_id", "Length_bin"), "First_stage_expanded_numbers")
 
-#Change NA First_stage_expanded_numbers for zero catch hauls to 0
+# Change NA First_stage_expanded_numbers for zero catch hauls to 0
 LengthCompWithZero$First_stage_expanded_numbers[is.na(LengthCompWithZero$First_stage_expanded_numbers)] <- 0
 
-#Create column AreaSwept_km2 and remove column Area_Swept_ha
+# Create column AreaSwept_km2 and remove column Area_Swept_ha
 LengthCompWithZero$AreaSwept_km2 <- LengthCompWithZero$Area_Swept_ha/100
 LengthCompWithZero$Area_Swept_ha <- NULL
 
-#Change location of columns
+# Change location of columns
 LengthCompWithZero <- renum(LengthCompWithZero[, c("Trawl_id", "Year", "Latitude_dd", "Longitude_dd", "Depth_m", "AreaSwept_km2", "First_stage_expanded_numbers", "Length_bin")])
 LengthCompWithZero[1:10,]
 
-#Change names of columns
+# Change names of columns
 names(LengthCompWithZero)[grep("Latitude_dd", names(LengthCompWithZero))] <- "Lat"
 names(LengthCompWithZero)[grep("Longitude_dd", names(LengthCompWithZero))] <- "Lon"
 
@@ -384,14 +398,20 @@ JRWToolBox::agg.table(aggregate(list(Num = LengthCompWithZero$First_stage_expand
 length(unique(LengthCompWithZero$Length_bin))
 nrow(LengthCompWithZero)/nrow(catch)
 
+# Number of First_stage_expanded_numbers that are not equal to zero by year
+Table(!LengthCompWithZero$First_stage_expanded_numbers %in% 0, LengthCompWithZero$Year)
+
+# Histogram of log of First_stage_expanded_numbers by year
+dev.new()       
+histogram( ~ log(First_stage_expanded_numbers) | factor(Year), data = LengthCompWithZero)                                                                               
 # Figure of latitude by depth by year
 dev.new()
-xyplot(Lat ~ -Depth_m | factor(Year), groups = as.logical(First_stage_expanded_numbers), data = LengthCompWithZero, 
+xyplot(jitter(Lat, 100) ~ -Depth_m | factor(Year), groups = as.logical(First_stage_expanded_numbers), data = LengthCompWithZero, 
        panel = function(...) { panel.xyplot(...); panel.abline(v = -unique(c(strata$Depth_m.1, strata$Depth_m.2)), h = unique(c(strata$Latitude_dd.1, strata$Latitude_dd.2)))})
 
 # Save above xyplot() to the 'Figs' directory as a png
 png(1000, 1000, file = paste0(FigDir, file = 'Raw_data_Lat_by_Depth_by_Year_by_Presence.png')) # Presence is First_stage_expanded_numbers != 0 (i.e. a length taken, not just a catch)
-xyplot(Lat ~ -Depth_m | factor(Year), groups = as.logical(First_stage_expanded_numbers), data = LengthCompWithZero, 
+xyplot(jitter(Lat, 100) ~ -Depth_m | factor(Year), groups = as.logical(First_stage_expanded_numbers), data = LengthCompWithZero, 
        panel = function(...) { panel.xyplot(...); panel.abline(v = -unique(c(strata$Depth_m.1, strata$Depth_m.2)), h = unique(c(strata$Latitude_dd.1, strata$Latitude_dd.2)))})
 dev.off()
        
@@ -404,6 +424,7 @@ dev.off()
 # Using JRWToolBox::recode.simple() to re-code correctly via 'Length_bin_num' (hacked together the 'ref_Table' using 'charSort' above, but 'ref_Table' could be created in anyway desired)
    
    # Change this 'Order' vector correctly so that 'Length_bin' goes from smallest to largest and Length_bin_num starts at zero and monotonically increases with ordinal numbers within sex
+   # 'Order' below is also used in the pre-VAST and VAST results 3D perspective plots below
    if(numSexInModel %in% 1)
       Order <- c(7:23, 1:6)
    if(numSexInModel %in% 2)
@@ -418,7 +439,7 @@ dev.off()
    lapply(LengthCompWithZero, function(x) sum(!is.finite(x)))
    
    # !!!!! Make sure there are no NA's in Length_bin_num !!!!!
-   any(is.na(LengthCompWithZero.SAVE$Length_bin_num))
+   all(!is.na(LengthCompWithZero.SAVE$Length_bin_num))
 
    
 # --- Save LengthCompWithZero in HomeDir ---
@@ -429,51 +450,56 @@ if(numSexInModel %in% 1)
    save(LengthCompWithZero, file = paste0(HomeDir, 'LengthCompWithZero_', yearRange[1], '_', yearRange[2], '_sex', casefold(substring(sex, 2, 2), upper = TRUE), '.RData'))
 
 if(numSexInModel %in% 2)
-   save(LengthCompWithZero, file = paste0(HomeDir, 'LengthCompWithZero_', yearRange[1], '_', yearRange[2], '_sexMF.RData'))
+   save(LengthCompWithZero, file = print(paste0(HomeDir, 'LengthCompWithZero_', yearRange[1], '_', yearRange[2], '_sexMF.RData')))
 
  
-# Bubble plot figure of LengthCompWithZero First_stage_expanded_numbers 
+# --- Bubble plot figure of LengthCompWithZero First_stage_expanded_numbers ---
 JRWToolBox::lib("John-R-Wallace-NOAA/Imap")
-png(1000, 1000, file = paste0(FigDir, "LengthCompWithZero bubble Plot.png"))
+png(1000, 1000, file = paste0(FigDir, "LengthCompWithZero Bubble Plot.png"))
 Imap::imap(longlat = list(world.h.land, world.h.borders), col = c("black", "cyan"), fill = TRUE, poly = c("grey40", NA), longrange = c(-131.3, -115.5), latrange = c(33, 50.3), zoom = FALSE)
-JRWToolBox::plot.bubble.zero.cross(LengthCompWithZero[LengthCompWithZero$First_stage_expanded_numbers > 0, c('Lon', 'Lat', 'First_stage_expanded_numbers')], add = TRUE, legUnits = "Numbers", Zeros = FALSE)
+JRWToolBox::plot.bubble.zero.cross(LengthCompWithZero[, c('Lon', 'Lat', 'First_stage_expanded_numbers')], group = LengthCompWithZero$Year, add = TRUE, legUnits = "Numbers", 
+                    verbose = TRUE, xDelta = -2, cross.cex = 0)                                                           
 dev.off()
   
  
  
-# 3D wireframe figure of stage one length comp data with zeros (before VAST is used) - ### check sorting wrong for character number labels ###
-require(lattice)
-
-LengthCompWithZero$Fleet <- JRWToolBox::factor.f(LengthCompWithZero$Lat, breaks = c(32, 42, 46, 49), labels = c("CA", "OR", "WA")) 
-
-# Check the range and sums
-# range(LengthCompWithZero$Lat[LengthCompWithZero$Fleet %in% 'WA'])
-# range(LengthCompWithZero$Lat[LengthCompWithZero$Fleet %in% 'OR'])
-# range(LengthCompWithZero$Lat[LengthCompWithZero$Fleet %in% 'CA'])
-# aggregate(JRWToolBox::List(LengthCompWithZero$First_stage_expanded_numbers), JRWToolBox::List(LengthCompWithZero$Fleet), sum)
-# aggregate(JRWToolBox::List(First_stage_expanded_numbers), JRWToolBox::List(Length_bin, Fleet), sum)
-
-(FLEETS <- list(c("CA", "OR", "WA"), "CA", "OR", "WA"))
-
-SpinyDogRawNumByLen <- NULL
-for (i in 1:4) {
-
-  TF <- LengthCompWithZero$Fleet %in% FLEETS[[i]]
-  
-  SpinyDogRawNumByLen <- rbind(SpinyDogRawNumByLen, cbind(aggregate(list(Numbers = LengthCompWithZero$First_stage_expanded_numbers[TF]), 
-                          list(Length_bin = LengthCompWithZero$Length_bin[TF], Year = LengthCompWithZero$Year[TF]), sum, na.rm = TRUE), Fleet = ifelse(i == 1, "Coastwide", FLEETS[[i]])))
-}
-
-# Fix sorting for character number labels 
-SpinyDogRawNumByLen$Len_Female_Male <- as.numeric(ordered(SpinyDogRawNumByLen$Length_bin, levels = levels(factor(SpinyDogRawNumByLen$Length_bin))[c(6:25, 1:5, 26:44)]))
-
-# Check the ordering
-# Table(SpinyDogRawNumByLen$Len_Female_Male, SpinyDogRawNumByLen$Length_bin) 
-
-png(1000, 1000, file = paste0(FigDir, "3D Wireframe, Stage One Len Freq in Numbers by Year & Length, pre-VAST.png"))
-wireframe(Numbers ~ Year * Len_Female_Male | ordered(Fleet, c('Coastwide', 'CA', 'OR', 'WA')) , data = SpinyDogRawNumByLen, as.table = TRUE)
-dev.off()
-
+# ------ 3D wireframe figure of stage one length comp data with zeros (before VAST is used) - ### check sorting wrong for character number labels ------
+   require(lattice)
+   
+   LengthCompWithZero$Fleet <- JRWToolBox::factor.f(LengthCompWithZero$Lat, breaks = c(32, 42, 46, 49), labels = c("CA", "OR", "WA")) 
+   
+   # Check the range and sums
+   # range(LengthCompWithZero$Lat[LengthCompWithZero$Fleet %in% 'WA'])
+   # range(LengthCompWithZero$Lat[LengthCompWithZero$Fleet %in% 'OR'])
+   # range(LengthCompWithZero$Lat[LengthCompWithZero$Fleet %in% 'CA'])
+   # aggregate(JRWToolBox::List(LengthCompWithZero$First_stage_expanded_numbers), JRWToolBox::List(LengthCompWithZero$Fleet), sum)
+   # aggregate(JRWToolBox::List(First_stage_expanded_numbers), JRWToolBox::List(Length_bin, Fleet), sum)
+   
+   (FLEETS <- list(c("CA", "OR", "WA"), "CA", "OR", "WA"))
+   
+   SpinyDogRawNumByLen <- NULL
+   for (i in 1:4) { # 4 "Fleets"
+   
+     TF <- LengthCompWithZero$Fleet %in% FLEETS[[i]]
+     SpinyDogRawNumByLen <- rbind(SpinyDogRawNumByLen, cbind(aggregate(list(Numbers = LengthCompWithZero$First_stage_expanded_numbers[TF]), 
+                             list(Length_bin = LengthCompWithZero$Length_bin[TF], Year = LengthCompWithZero$Year[TF]), sum, na.rm = TRUE), Fleet = ifelse(i == 1, "Coastwide", FLEETS[[i]])))
+   }
+   
+   # Fix sorting for character number labels 
+   SpinyDogRawNumByLen$Len_Female_Male <- as.numeric(ordered(SpinyDogRawNumByLen$Length_bin, levels = levels(factor(SpinyDogRawNumByLen$Length_bin))[Order]))
+   
+   # Check the ordering
+   JRWToolBox::Table(SpinyDogSS3$Len_Female_Male, SpinyDogSS3$Category)  # Check ordering
+   
+   png(1000, 1000, file = paste0(FigDir, "3D Wireframe, Stage One Len Freq in Numbers by Year & Length, pre-VAST.png"))
+   wireframe(Numbers ~ Year * Len_Female_Male | ordered(Fleet, c('Coastwide', 'CA', 'OR', 'WA')) , data = SpinyDogRawNumByLen, as.table = TRUE) # Use screen = list(z = 80, x = -60) for a different perspective
+   dev.off()
+   
+   # Perspective #2
+   # png(1000, 1000, file = paste0(FigDir, "3D Wireframe, Stage One Len Freq in Numbers by Year & Length, pre-VAST, Persp 2.png"))
+   # wireframe(Numbers ~ Year * Len_Female_Male | ordered(Fleet, c('Coastwide', 'CA', 'OR', 'WA')), data = SpinyDogRawNumByLen, as.table = TRUE, screen = list(z = 80, x = -60))
+   # dev.off()
+   
 
 # Early save before VAST
 # Save it all in Image.RData 
@@ -605,9 +631,11 @@ settings <- FishStatsUtils::make_settings( n_x = 300, Region = "California_curre
         strata.limits = strataLimits)
  
 # Double check max threads
-RhpcBLASctl::blas_get_num_procs() 
+# RhpcBLASctl::blas_set_num_threads(6)
+RhpcBLASctl::blas_get_num_procs()  # Use 6 for Tantalus (a Linux server) 
 
 # Run model  - run with newtonsteps = 0 until good convergence is seen in all parameters
+# ***** TMB and FishStatsUtils need to be in search path - or make_data() will not be found *****                                                                                                 
 # ################# Note, since the input into b_i is in numbers all the results and figures are in numbers, regardless of label given. ################# 
 sink("Fit_Output.txt")
   fit <- FishStatsUtils::fit_model( 
@@ -690,14 +718,14 @@ names(Proportions)
 #  [1] "Prop_ctl"     "Neff_tl"      "var_Prop_ctl" "Index_tl"     "Neff_ctl"     "Mean_tl"    "sd_Mean_tl"  
 
 dimnames(Proportions$Neff_tl) <- list(fit$year_labels, strataLimits$STRATA)
-r(Proportions$Neff_tl, 3)
+JRWToolBox::r(Proportions$Neff_tl, 3)
 
-#      Coastwide      CA      OR       WA
-# 2003  1189.190 570.728 233.040 1192.198
-# 2004   839.696 420.530 221.559  695.710
-# 2005  1188.866 774.925 269.140  670.233
-# 2006   778.852 868.255 263.930  318.044
-...
+# #      Coastwide      CA      OR       WA
+# # 2003  1189.190 570.728 233.040 1192.198
+# # 2004   839.696 420.530 221.559  695.710
+# # 2005  1188.866 774.925 269.140  670.233
+# # 2006   778.852 868.255 263.930  318.044
+# # ...
 
 
 dimnames(Proportions$Index_tl) <- list(fit$year_labels, strataLimits$STRATA)
@@ -706,8 +734,8 @@ dimnames(Proportions$sd_Mean_tl) <- list(fit$year_labels, strataLimits$STRATA)
 
 
 dim(Proportions$Neff_ctl)
-# n_c n_t n_l 
-#  44  17   4 
+# # n_c n_t n_l 
+# #  44  17   4 
 
 dimnames(Proportions$Neff_ctl) <- list(ref_Table$Length_bin, fit$year_labels, strataLimits$STRATA)
 dimnames(Proportions$Prop_ctl) <- list(ref_Table$Length_bin, fit$year_labels, strataLimits$STRATA) 
@@ -724,6 +752,8 @@ sink("Proportions.txt")
   cat("\n\nvar_Prop_ctl\n\n"); r(Proportions$var_Prop_ctl, 6)
 sink()
 
+# Look at Proportions.txt
+file.show('Proportions.txt')
 save(Proportions, file = paste0(DateDir, "Proportions.RData"))
   
 # Save it all in Image.RData [ When reloading, remember to dyn.load() the '.dll', e.g. dyn.load(paste0(DateDir, 'VAST_v9_2_0.dll')), if needed. ]
@@ -733,8 +763,8 @@ save(list = names(.GlobalEnv), file = paste0(DateDir, "Image.RData"))
 # 3D wireframe figure of data from Table for SS3 - ### check sorting wrong for character number labels ###
 require(lattice)
 SpinyDogSS3 <- read.csv(paste0(FigDir, "Table_for_SS3.csv"))
-SpinyDogSS3$Len_Female_Male <- as.numeric(ordered(SpinyDogSS3$Category, levels = levels(factor(SpinyDogSS3$Category))[c(6:25, 1:5, 26:44)]))  # Fix sorting for character number labels
-Table(SpinyDogSS3$Len_Female_Male, SpinyDogSS3$Category)  # Check ordering
+SpinyDogSS3$Len_Female_Male <- as.numeric(ordered(SpinyDogSS3$Category, levels = levels(factor(SpinyDogSS3$Category))[Order]))  # Fix sorting for character number labels
+JRWToolBox::Table(SpinyDogSS3$Len_Female_Male, SpinyDogSS3$Category)  # Check ordering
 names(SpinyDogSS3)[grep('Estimate_metric_tons', names(SpinyDogSS3))] <- "Numbers"  #  b_i arg to FishStatsUtils::fit_model() is in numbers, so this is estimated numbers not biomass!!!
 png(1000, 1000, file = paste0(FigDir, "3D Wireframe, Len Freq in Numbers by Year & Length, VAST result.png"))
 wireframe(Numbers ~ Year * Len_Female_Male | ordered(Fleet, c('Coastwide', 'CA', 'OR', 'WA')) , data = SpinyDogSS3, as.table = TRUE)
@@ -820,21 +850,21 @@ age.bins = 1:24
 n = GetN.fn(dir = getwd(), dat = age, type = "age", species = "shelfrock", printfolder = "forSS")
 
 # Exand and format the marginal age composition data for SS
-Ages <- SurveyAFs.fn(dir = getwd(), datA = age, datTows = catch,  
+agesAgeFreg <- SurveyAFs.fn(dir = getwd(), datA = Ages, datTows = catch,  
                      strat.df = strata, ageBins = age.bins, 
                      sexRatioStage = 2, sexRatioUnsexed = 0.50, maxSizeUnsexed = 5, 
                      gender = 3, nSamps = n)
 
 
 
-PlotFreqData.fn(dir = getwd(), dat = Ages, survey = "NWFSCBT", ylim=c(0, max(age.bins) + 2), yaxs="i", ylab="Age (yr)", dopng=TRUE)
-PlotVarLengthAtAge.fn(dir = getwd(), dat = age, survey ="NWFSCBT", dopng = TRUE) 
-PlotSexRatio.fn(dir = getwd(), dat = age, data.type = "age", survey = "NWFSCBT", dopng = TRUE, main = "NWFSCBT")
+PlotFreqData.fn(dir = getwd(), dat = agesAgeFreg, survey = "NWFSCBT", ylim=c(0, max(age.bins) + 2), yaxs="i", ylab="Age (yr)", dopng=TRUE)
+PlotVarLengthAtAge.fn(dir = getwd(), dat = Ages, survey ="NWFSCBT", dopng = TRUE) 
+PlotSexRatio.fn(dir = getwd(), dat = Ages, data.type = "age", survey = "NWFSCBT", dopng = TRUE, main = "NWFSCBT")
 
 #============================================================================================
 # Conditional Ages
 #============================================================================================
-Ages <- SurveyAgeAtLen.fn (dir = getwd(), datAL = age, datTows = catch, 
+agesAgeAtLen <- SurveyAgeAtLen.fn (dir = getwd(), datAL = Ages, datTows = catch, 
                           strat.df = strata, lgthBins = len.bins, ageBins = age.bins, partition = 0)
 
  
@@ -850,6 +880,7 @@ if(FALSE) {
  
 
 }
+
 
 
 
