@@ -741,6 +741,17 @@ names(Proportions)
 dimnames(Proportions$Neff_tl) <- list(fit$year_labels, strataLimits$STRATA)
 JRWToolBox::r(Proportions$Neff_tl, 3)
 
+# Gamma
+# #      Coastwide      CA     OR      WA
+# # 1998    34.246  34.142  3.294   2.762
+# # 1999        NA      NA     NA      NA
+# # 2000        NA      NA     NA      NA
+# # 2001   616.356 482.221 64.470 287.933
+# # 2002        NA      NA     NA      NA
+# # 2003        NA      NA     NA      NA
+# # 2004   421.336 266.494 58.078 221.196
+
+# Log-normal
 # #      Coastwide      CA     OR      WA
 # # 1998    28.302  28.252  3.439   2.934
 # # 1999        NA      NA     NA      NA
@@ -749,7 +760,6 @@ JRWToolBox::r(Proportions$Neff_tl, 3)
 # # 2002        NA      NA     NA      NA
 # # 2003        NA      NA     NA      NA
 # # 2004   370.639 292.585 71.548 213.073
-# # ...
 
 
 dimnames(Proportions$Index_tl) <- list(fit$year_labels, strataLimits$STRATA)
