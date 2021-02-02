@@ -20,7 +20,7 @@ JRWToolBox::gitEdit(West_Coast_Annual_example_2020, "John-R-Wallace-NOAA/VAST_Ex
 # VAST will often leave you in the subdirectory of the current run. Using HomeDir helps get you back where you started.
 # Only do this once per R session, after you are in the your main working directory:
 
-HomeDir <- getwd()
+(HomeDir <- getwd())
 
 # =============================================
 
@@ -96,43 +96,44 @@ list_parameters <- function (Obj, verbose = TRUE) {
 # the short name goes into the file name of the Yearly Results Figure.
 
 # Canary rockfish
-  # spFormalName <- 'canary rockfish' 
-  # spLongName <- 'Canary rockfish'
-  # spShortName <- 'CNRY'
+   spFormalName <- 'canary rockfish' 
+   spLongName <- 'Canary rockfish'
+   spShortName <- 'CNRY'
 
-# Lingcod
-spFormalName <- 'lingcod' 
-spLongName <- 'Lingcod'
-spShortName <- 'LCOD'
-
- if (!any(installed.packages()[, 1] %in% "devtools")) 
+# Sablefish
+# spFormalName <- 'sablefish' 
+# spLongName <- 'Sablefish'
+# spShortName <- 'SABL'
+# 
+if (!any(installed.packages()[, 1] %in% "devtools")) 
         install.packages("devtools")
 
 if (!any(installed.packages()[, 1] %in% "JRWToolBox"))
-     devtools::install_github("John-R-Wallace/R-ToolBox")
+     remotes::install_github("John-R-Wallace/R-ToolBox")
 
+     
 # ***** To get years added to the residual plot do this until pulled to Kelli's verion ***    
 # JRWToolBox::lib("John-R-Wallace-NOAA/FishStatsUtils")
 
 # ***** Once Kelly accepts my fork, do this until pulled to Thorson's verion ***          
 # JRWToolBox::lib("kellijohnson-NOAA/FishStatsUtils")
  
-# With the INSTALL_opts argument, warning messasges given when SHA number has not changed since last install.
-if (!any(installed.packages()[, 1] %in% "FishStatsUtils"))
-    devtools::install_github("james-thorson-noaa/FishStatsUtils", INSTALL_opts = "--no-multiarch --no-test-load")   
-       
-if (!any(installed.packages()[, 1] %in% "VAST"))
-    devtools::install_github("james-thorson-noaa/VAST", INSTALL_opts = "--no-multiarch --no-test-load --no-staged-install")
-
-if (!any(installed.packages()[, 1] %in% "pander"))
-     install.packages("pander")
-
-if (!any(installed.packages()[, 1] %in% "rnaturalearthdata"))
-    install.packages("rnaturalearthdata")
+#  A warning messasge will be given when SHA number has not changed since last install.
+#  For CRAN packages, use 'updateCRAN = TRUE' to attempt an update of the package from CRAN.
 
 
-require(TMB)
-require(VAST)
+JRWToolBox::lib("pander")
+
+JRWToolBox::lib("rnaturalearthdata")
+
+JRWToolBox::lib("kaskr/TMB_contrib_R/TMBhelper") 
+
+JRWToolBox::lib("kaskr/adcomp/TMB")   
+
+JRWToolBox::lib("james-thorson-noaa/FishStatsUtils", INSTALL_opts = "--no-multiarch --no-test-load")   
+ 
+JRWToolBox::lib("james-thorson-noaa/VAST", INSTALL_opts = "--no-multiarch --no-test-load --no-staged-install")
+
 
 # Extract species data from the Warehouse
 Data_Set <- JRWToolBox::dataWareHouseTrawlCatch(spFormalName, yearRange = c(1900, 5000), project = 'WCGBTS.Combo')
@@ -140,20 +141,19 @@ Data_Set <- JRWToolBox::dataWareHouseTrawlCatch(spFormalName, yearRange = c(1900
 # Look at the data by year and pass - showing 'NA's if any via JRWToolBox::Table function.
 JRWToolBox::Table(Data_Set$Year, Data_Set$Pass)
 
-# Versions of VAST you can use:
-list.files(R.home(file.path("library", "VAST", "executables")))
-# This gives the latest version available. (Up to v10_0_0 - then broken.)
-# (Version <- substr(list.files(R.home(file.path("library", "VAST", "executables")))[length(list.files(R.home(file.path("library", "VAST", "executables"))))], 1, 11))
+# Versions of VAST available:
+vastVer <- list.files(R.home(file.path("library", "VAST", "executables")))
+print(vastVer[order(as.numeric(substring(JRWToolBox::get.subs(vastVer, sep = '_')[2, ], 2)))], quote = FALSE)
 # Version 5+ gives a internal compiler error: Segmentation fault as of 21 Nov 2018
-Version <- "VAST_v8_5_0"  
+Version <- "VAST_v12_0_0"  
 
 #define the spatial resolution for the model, and whether to use a grid or mesh approximation
 #mesh is default recommendation, number of knots need to be specified
 #do not modify Kmeans setup
 Method = c("Grid", "Mesh", "Spherical_mesh")[2]
 grid_size_km = 25     # Value only matters if Method="Grid"
-n_x = 250  # Number of "knots" used when Method="Mesh"
-Kmeans_Config = list( "randomseed"=1, "nstart"=100, "iter.max"=1e3 )   # Controls K-means algorithm to define location of knots when Method="Mesh"
+n_x = 500  # Number of "knots" used when Method="Mesh"
+Kmeans_Config = list( randomseed = 1,  nstart = 100, iter.max = 1e3 )   # Controls K-means algorithm to define location of knots when Method="Mesh"
 
 # Model settings
 
@@ -170,7 +170,7 @@ Kmeans_Config = list( "randomseed"=1, "nstart"=100, "iter.max"=1e3 )   # Control
 FieldConfig = c(Omega1 = 1, Epsilon1 = 1, Omega2 = 1, Epsilon2 = 1)
 RhoConfig = c(Beta1 = 0,  Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0)
 OverdispersionConfig = c(Delta1 = 1, Delta2 = 1)  # Turn on vessel-year effects for both components if using WCGBTS
-ObsModel = c(2,0)
+ObsModel = c(2,0)  # Gamma Errors
 
 # outputs calculated after model runs, essentially reports to create
 Options = c(SD_site_density = 0, SD_site_logdensity = 0, Calculate_Range = 0, Calculate_evenness = 0, Calculate_effective_area = 0,  Calculate_Cov_SE = 0,
@@ -187,7 +187,7 @@ Options = c(SD_site_density = 0, SD_site_logdensity = 0, Calculate_Range = 0, Ca
     deep_border = c(1280, 1280, 1280, 1280)
     ))
 
-setwd(HomeDir)  # Make sure that the working directory is back where it started
+setwd(HomeDir); getwd()  # Make sure that the working directory is back where it started
 
 #region that tells software which grid to use
 Region = "California_current"
@@ -227,28 +227,45 @@ Spatial_List = FishStatsUtils::make_spatial_info(grid_size_km = grid_size_km, n_
                          DirPath = DateFile, Save_Results = FALSE)
 
 # Add knots to Data_Geostat
-Data_Geostat = cbind(Data_Geostat, knot_i = Spatial_List$knot_i)
+Data_Geostat$knot_i <- Spatial_List$knot_i
 head(Data_Geostat)
 
-#build model, this is where you could specify new covariates using Data_Fn...read more on this
-# No Pass included
-TmbData = VAST::make_data(Version = Version, FieldConfig = FieldConfig, spatial_list = Spatial_List, OverdispersionConfig = OverdispersionConfig, RhoConfig = RhoConfig, ObsModel = ObsModel,
+# Build the model, this is where you could specify new covariates using Data_Fn...read more on this
+# No Pass included 
+if(TRUE){
+  TmbData = VAST::make_data(Version = Version, FieldConfig = FieldConfig, spatial_list = Spatial_List, OverdispersionConfig = OverdispersionConfig, RhoConfig = RhoConfig, ObsModel = ObsModel,
                    c_i = rep(0,nrow(Data_Geostat)), b_i = Data_Geostat[,'Catch_KG'], a_i = Data_Geostat[,'AreaSwept_km2'], v_i = Data_Geostat$Vessel,
                    s_i = Data_Geostat[,'knot_i']-1, t_i = Data_Geostat[,'Year'], a_xl = Spatial_List$a_xl, MeshList = Spatial_List$MeshList, GridList = Spatial_List$GridList,
                    Method = Spatial_List$Method, Options = Options)
+}
 
-# Rerun using this link if you want to include pass as a catchability covariate
-if(FALSE){
-  Q_ik <- as.matrix(Data_Geostat[, 'Pass', drop=F])
-  TmbData = VAST::make_data(Version = Version, FieldConfig = FieldConfig, spatial_list = Spatial_List, OverdispersionConfig = OverdispersionConfig, RhoConfig = RhoConfig, ObsModel = ObsModel,
+# Include pass as a catchability covariate
+if(FALSE) {  
+Q_ik <- as.matrix(Data_Geostat[, 'Pass', drop=F])
+TmbData = VAST::make_data(Version = Version, FieldConfig = FieldConfig, spatial_list = Spatial_List, OverdispersionConfig = OverdispersionConfig, RhoConfig = RhoConfig, ObsModel = ObsModel,
                     c_i = rep(0,nrow(Data_Geostat)), b_i = Data_Geostat[,'Catch_KG'], a_i = Data_Geostat[,'AreaSwept_km2'], v_i = Data_Geostat$Vessel,
                     s_i = Data_Geostat[,'knot_i']-1, t_i = Data_Geostat[,'Year'], a_xl = Spatial_List$a_xl, Q_ik = Q_ik, MeshList = Spatial_List$MeshList, GridList = Spatial_List$GridList,
-                    Method = Spatial_List$Method, Options = Options )
+                    Method = Spatial_List$Method, Options = Options)
 }
+
 
 ###################
 # Do the estimation
 ###################
+
+# Create a local 'Makevars' file without the '-Wall' flag that gives all warnings 
+Ri <- file.path(paste0(R.home(), '/include'))
+Ti <- file.path(paste0(R.home(), '/library/TMB/include'))
+x64 <- file.path(paste0(R.home(), '/bin/x64'))
+V <- Version
+
+sink(paste0(DateFile, "Makevars"))
+  cat(paste0('\n\n', V, '.o: ', V, '.cpp\n'))
+  cat(paste0('\tC:/rtools40/mingw64/bin/g++ -std=gnu++11 -I"', Ri, '" -DNDEBUG -I"', Ti, '" -DTMB_SAFEBOUNDS -DLIB_UNLOAD=R_unload_', V, 
+             ' -DTMB_LIB_INIT=R_init_', V, ' -O2 -mfpmath=sse -msse2 -mstackrealign -c ', V, '.cpp -o ', V, '.o\n'))
+  cat(paste0('\tC:/rtools40/mingw64/bin/g++ -std=gnu++11 -shared -s -static-libgcc -o ', V, '.dll ',  V, '.o -L', x64,' -lR\n')) # File 'tmp.def' removed from call (c.f. tools:::.shlib_internal)
+sink()
+
 
 # Build tmb object
 TmbList = VAST::make_model(TmbData = TmbData, RunDir = DateFile, Version = Version, RhoConfig = RhoConfig, loc_x = Spatial_List$loc_x, Method = Method)
@@ -375,5 +392,6 @@ if(FALSE) {
      table(names(get('par', env = Obj$env)[get('random', env = Obj$env)])) # Same as table(row.names(TMB::summary.sdreport(Opt$SD, "random")))
 
 }
+
 
 
