@@ -145,7 +145,7 @@ JRWToolBox::Table(Data_Set$Year, Data_Set$Pass)
 vastVer <- list.files(R.home(file.path("library", "VAST", "executables")))
 print(vastVer[order(as.numeric(substring(JRWToolBox::get.subs(vastVer, sep = '_')[2, ], 2)))], quote = FALSE)
 # Version 5+ gives a internal compiler error: Segmentation fault as of 21 Nov 2018
-Version <- "VAST_v12_0_0"  
+Version <- "VAST_v8_5_0"  
 
 #define the spatial resolution for the model, and whether to use a grid or mesh approximation
 #mesh is default recommendation, number of knots need to be specified
