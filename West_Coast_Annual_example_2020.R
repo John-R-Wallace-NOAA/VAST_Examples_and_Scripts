@@ -253,19 +253,22 @@ TmbData = VAST::make_data(Version = Version, FieldConfig = FieldConfig, spatial_
 # Do the estimation
 ###################
 
-# Create a local 'Makevars' file without the '-Wall' flag that gives all warnings 
-Ri <- file.path(paste0(R.home(), '/include'))
-Ti <- file.path(paste0(R.home(), '/library/TMB/include'))
-x64 <- file.path(paste0(R.home(), '/bin/x64'))
-V <- Version
+if(.Platform$OS.type == "windows" ) { 
 
-sink(paste0(DateFile, "Makevars"))
-  cat(paste0('\n\n', V, '.o: ', V, '.cpp\n'))
-  cat(paste0('\tC:/rtools40/mingw64/bin/g++ -std=gnu++11 -I"', Ri, '" -DNDEBUG -I"', Ti, '" -DTMB_SAFEBOUNDS -DLIB_UNLOAD=R_unload_', V, 
-             ' -DTMB_LIB_INIT=R_init_', V, ' -O2 -mfpmath=sse -msse2 -mstackrealign -c ', V, '.cpp -o ', V, '.o\n'))
-  cat(paste0('\tC:/rtools40/mingw64/bin/g++ -std=gnu++11 -shared -s -static-libgcc -o ', V, '.dll ',  V, '.o -L', x64,' -lR\n')) # File 'tmp.def' removed from call (c.f. tools:::.shlib_internal)
-sink()
-
+   # Create a local 'Makevars' file without the all warnings, '-Wall', flag  
+   V <- Version
+   Ri <- file.path(paste0(R.home(), '/include'))
+   Ti <- file.path(paste0(R.home(), '/library/TMB/include'))
+   x64 <- file.path(paste0(R.home(), '/bin/x64'))
+        
+   sink("Makevars")
+     cat(paste0('\n\n', V, '.o: ', V, '.cpp\n'))
+     cat(paste0('\tC:/rtools40/mingw64/bin/g++ -std=gnu++11 -I"', Ri, '" -DNDEBUG -I"', Ti, '" -DTMB_SAFEBOUNDS -DLIB_UNLOAD=R_unload_', V, 
+                ' -DTMB_LIB_INIT=R_init_', V, ' -O2 -mfpmath=sse -msse2 -mstackrealign -c ', V, '.cpp -o ', V, '.o\n'))
+     cat(paste0('\tC:/rtools40/mingw64/bin/g++ -std=gnu++11 -shared -s -static-libgcc -o ', V, '.dll ',  V, '.o -L', x64,' -lR\n')) 
+   sink()
+}
+  
 
 # Build tmb object
 TmbList = VAST::make_model(TmbData = TmbData, RunDir = DateFile, Version = Version, RhoConfig = RhoConfig, loc_x = Spatial_List$loc_x, Method = Method)
