@@ -291,9 +291,9 @@ TmbData = VAST::make_data(Version = Version, FieldConfig = FieldConfig, spatial_
 
 if(.Platform$OS.type == "windows" ) { 
 
-   # Create a local 'Makevars' file without the all warnings, '-Wall', flag  
+   # Create a local 'Makevars' file without the all warnings, '-Wall', flag. This fixes the RcppEigen excess warnings issue. 
    V <- Version
-   xF <- ""
+   xF <- ""  # Add additional flags
    Ri <- paste0(R.home(), '/include')
    Ti <- system.file("include", package = "TMB")
    Arch <- paste0(R.home(), '/bin', Sys.getenv("R_ARCH"))
