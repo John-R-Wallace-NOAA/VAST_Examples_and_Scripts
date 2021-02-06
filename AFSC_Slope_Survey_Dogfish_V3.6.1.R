@@ -369,7 +369,6 @@ pander::pandoc.table( Index$Table[,c("Year","Fleet","Estimate_metric_tons","SD_l
 # Make diagnostic plots
 ################
 
-JRWToolBox:plotnull.f()  As of 5 Feb 2021 below gives the error: 'plot.new has not been called yet'. So I added the plotnull.f() to make it happy.
 FishStatsUtils::plot_data(Extrapolation_List=Extrapolation_List, Spatial_List=Spatial_List, Data_Geostat=Data_Geostat, PlotDir=DateFile )
 
 #convergence
@@ -379,6 +378,7 @@ pander::pandoc.table( Opt$diagnostics[,c('Param','Lower','MLE','Upper','final_gr
 Enc_prob <- FishStatsUtils::plot_encounter_diagnostic( Report=Report, Data_Geostat=Data_Geostat, DirName=DateFile)
 
 # QQ plot
+JRWToolBox:plotnull.f()  As of 5 Feb 2021 below gives the error: 'plot.new has not been called yet'. So I added the plotnull.f() to make it happy.
 Q <- FishStatsUtils::plot_quantile_diagnostic( TmbData=TmbData, Report=Report, DateFile = DateFile, FileName_PP="Posterior_Predictive.jpg", 
                         FileName_Phist = "Posterior_Predictive-Histogram.jpg", FileName_QQ = "Q-Q_plot.jpg", FileName_Qhist = "Q-Q_hist.jpg")
 
