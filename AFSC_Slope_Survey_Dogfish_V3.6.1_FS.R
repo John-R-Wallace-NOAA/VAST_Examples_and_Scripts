@@ -19,7 +19,7 @@ sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/VAST_Ex
        south_border = c(34.0, 34.0, 42.0, 46.0),
        shallow_border = c(55, 55, 55, 55),
        deep_border = c(1280, 1280, 1280, 1280)
-       ))
+))
    
 West_Coast_2021_V3.6.1(spFormalName = 'Pacific spiny dogfish', spLongName = 'Spiny dogfish', spShortName = 'DSRK', Survey = 'AFSC.Slope', 
                  yearRange = c(1997, 2001), ObsModel = c(1, 0)) 
