@@ -302,7 +302,7 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
                Version = Version, 
                    n_x = n_x, 
                 Region = Region, 
-            surveyname = VAST_surveyName
+            surveyname = VAST_surveyName,
                purpose = if(as.numeric(substr(packageVersion('VAST'), 1, 3)) <= 3.3)  'index' else 'index2', 
             fine_scale = fine_scale., 
          strata.limits = strata.limits,
