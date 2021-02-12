@@ -1,6 +1,6 @@
 
 West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingcod', spShortName = 'LCOD', Survey = 'WCGBTS.Combo', VAST_surveyName = NULL, yearRange = c(1000, 5000), 
-              Pass = grepl('WCGBTS', Survey), overDispersion = if(grepl('WCGBTS', Survey)) c(eta1 = 0, eta2 = "AR1") else c(eta1 = 0, eta2 = 0), 
+              strata.limits = NULL, Pass = grepl('WCGBTS', Survey), overDispersion = if(grepl('WCGBTS', Survey)) c(eta1 = 0, eta2 = "AR1") else c(eta1 = 0, eta2 = 0), 
               ObsModel. = c(2, 0), n_x. = 250, fine_scale. = TRUE, depthCov = TRUE, formulaDepthSpline = TRUE, formulaDepth = FALSE, test_fit = TRUE) {
   
    # # Download this function into your current environment:
@@ -233,13 +233,15 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
    #             Calculate_Synchrony = 0, Calculate_Coherence = 0, Calculate_Range = 1, Calculate_effective_area = 1)
    
    # strata limits, run model but then calculate area specific indices
-     (strata.limits <- data.frame(
+   
+   if(is.null(strata.limits)) 
+     print(strata.limits <- data.frame(
        STRATA = c("Coastwide","CA","OR","WA"),
        north_border = c(49.0, 42.0, 46.0, 49.0),
        south_border = c(32.0, 32.0, 42.0, 46.0),
        shallow_border = c(55, 55, 55, 55),
        deep_border = c(1280, 1280, 1280, 1280)
-       ))
+     ))
    
    setwd(HomeDir)  # Make sure that the working directory is back where it started
    
@@ -301,7 +303,7 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
    Settings <- make_settings(
                Version = Version, 
                    n_x = n_x, 
-                Region = Region,
+                Region = Region,             
                purpose = if(as.numeric(substr(packageVersion('VAST'), 1, 3)) <= 3.3)  'index' else 'index2', 
             fine_scale = fine_scale., 
          strata.limits = strata.limits,
@@ -447,8 +449,8 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
    # Yearly results figure [ using YearlyResultsFigure_VAST3X() ]
        # 1. SpResults <spShortName>.png: Yearly results in a single plot; hexagon shapes (not circles) are used. The biomass index is also included.
    
-   (Year_Set = unique(Data_Geostat[,'Year'])) # Default arg for YearlyResultsFigure_VAST3X
-   (Years2Include = which( Year_Set %in% sort(unique(Data_Geostat[,'Year'])))) # Default arg for YearlyResultsFigure_VAST3X
+   (Year_Set = unique(Data_Geostat$Year)) # Default arg for YearlyResultsFigure_VAST3X
+   (Years2Include = which(min(Data_Geostat$Year, na.rm = TRUE):max(Data_Geostat$Year, na.rm = TRUE) %in% sort(unique(Data_Geostat$Year)))) # Default arg for YearlyResultsFigure_VAST3X
    
    # This function looks for 'spShortName' (defined above)
    try(YearlyResultsFigure_VAST3X(spShortName = spShortName, spLongName = spLongName, fit = fit, DateFile = DateFile, Region = Region, 
@@ -502,7 +504,7 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
       points(Lon - 20, Lat, col = 'purple')
       points(Data_Set$Longitude_dd - 20, Data_Set$Latitude_dd)
 
-
+     abline( h = 34)
 
 
 
