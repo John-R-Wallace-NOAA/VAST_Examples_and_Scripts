@@ -301,8 +301,7 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
    Settings <- make_settings(
                Version = Version, 
                    n_x = n_x, 
-                Region = Region, 
-            surveyname = VAST_surveyName,
+                Region = Region,
                purpose = if(as.numeric(substr(packageVersion('VAST'), 1, 3)) <= 3.3)  'index' else 'index2', 
             fine_scale = fine_scale., 
          strata.limits = strata.limits,
@@ -359,7 +358,7 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
       
    
    if(Pass)
-      fit <- fit_model(settings = Settings, Lat_i = Data_Geostat$Lat, Lon_i = Data_Geostat$Lon, t_i = Data_Geostat$Year, working_dir = DateFile,
+      fit <- fit_model(settings = Settings, surveyname = VAST_surveyName, Lat_i = Data_Geostat$Lat, Lon_i = Data_Geostat$Lon, t_i = Data_Geostat$Year, working_dir = DateFile,
                      b_i = Data_Geostat$Catch_KG, a_i = Data_Geostat$AreaSwept_km2, c_iz = rep(0, nrow(Data_Geostat)), v_i = Data_Geostat$Vessel,
                      
                      Q_ik = matrix(Data_Geostat$Pass, ncol = 1), 
@@ -368,7 +367,7 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
                      covariate_data = Covariate_Data, X1_formula = formula, X2_formula = formula,
                      newtonsteps = 0, getsd = TRUE, getJointPrecision = TRUE, run_model = TRUE, test_fit = test_fit)
    else
-     fit <- fit_model(settings = Settings, Lat_i = Data_Geostat$Lat, Lon_i = Data_Geostat$Lon, t_i = Data_Geostat$Year, working_dir = DateFile,
+     fit <- fit_model(settings = Settings, surveyname = VAST_surveyName, Lat_i = Data_Geostat$Lat, Lon_i = Data_Geostat$Lon, t_i = Data_Geostat$Year, working_dir = DateFile,
                      b_i = Data_Geostat$Catch_KG, a_i = Data_Geostat$AreaSwept_km2, c_iz = rep(0, nrow(Data_Geostat)), v_i = Data_Geostat$Vessel, 
                      covariate_data = Covariate_Data, X1_formula = formula, X2_formula = formula,
                      newtonsteps = 0, getsd = TRUE, getJointPrecision = TRUE, run_model = TRUE, test_fit = test_fit)
