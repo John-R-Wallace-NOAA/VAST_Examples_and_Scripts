@@ -476,13 +476,12 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
 
    if(FALSE) {
    
-   
-      # Example run
+     # Example run
       
-      West_Coast_2021_V3.6.1(spFormalName = 'Pacific spiny dogfish', spLongName = 'Spiny dogfish', spShortName = 'DSRK', ObsModel = c(1, 0), yearRange = c(1997, 2001)) 
+     West_Coast_2021_V3.6.1(spFormalName = 'Pacific spiny dogfish', spLongName = 'Spiny dogfish', spShortName = 'DSRK', ObsModel = c(1, 0), yearRange = c(1997, 2001)) 
        
    
-      # Figure for comparing VAST's 'surveyname's areas to catch data (in Data_Set above).
+     # Figure for comparing VAST's 'surveyname's areas to catch data (in Data_Set above).
      
      
      sourceFunctionURL <- function (URL) 
