@@ -120,8 +120,7 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
       File.ASCII <- tempfile()
       on.exit(file.remove(File.ASCII))
       getTMP <- httr::GET(URL)
-      write(paste(readLines(textConnection(httr::content(getTMP))), 
-          collapse = "\n"), File.ASCII)
+      write(paste(readLines(textConnection(httr::content(getTMP))), collapse = "\n"), File.ASCII)
       source(File.ASCII)
    }
    
