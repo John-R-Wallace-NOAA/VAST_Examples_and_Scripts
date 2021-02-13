@@ -721,7 +721,7 @@ results = FishStatsUtils::plot_results(fit = fit, settings = fit$settings, plot_
 FishStatsUtils::plot_range_index(Report = fit$Report, TmbData = fit$data_list, 
             Sdreport = fit$parameter_estimates$SD, Znames = colnames(fit$data_list$Z_xm), 
             PlotDir = FigDir, Year_Set = fit$year_labels, Years2Include = fit$years_to_plot, 
-            use_biascorr = FALSE, category_names = ref_Table$Length_bin, strata_names = strataLimits$STRATA)
+            use_biascorr = settings$bias.correct, category_names = ref_Table$Length_bin, strata_names = strataLimits$STRATA)
 
             
 #  # If plot_biomass_index() fails, try setting 'treat_nonencounter_as_zero' to FALSE and re-try
