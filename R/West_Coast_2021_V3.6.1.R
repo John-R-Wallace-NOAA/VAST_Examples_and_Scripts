@@ -439,8 +439,17 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
    png(paste0(DateFile, 'Extrapolation_grid.png'), width = 500, height = 750)
    plot( fit, what = c('results', 'extrapolation_grid', 'inla_mesh')[2], working_dir = DateFile)  # Calls FishStatsUtils:::plot.make_extrapolation_info
    
-   png(paste0(DateFile, 'Inla_mesh.png'), width = 500, height = 750)
+   png(paste0(DateFile, 'INLA_mesh.png'), width = 500, height = 750)
    plot( fit, what = c('results', 'extrapolation_grid', 'inla_mesh')[3], working_dir = DateFile)  # Calls FishStatsUtils:::plot.make_spatial_info
+  
+   # Do plot_results() again by itself so strata_names are included [ doesn't get added properly in plot() ] 
+   FishStatsUtils::plot_results(fit = fit, settings = fit$settings, plot_set = 3, strata_names = Settings$strata.limits$STRATA, check_residuals = FALSE, working_dir = DateFile)
+   
+   # Likewise, do plot_range_index() (for Effective_Area.png) again by itself so strata_names are included [ doesn't get added properly in plot_results() ] 
+   #      plot_range_index() also recreates 'center_of_gravity.png' with no change but the 'Date modified' on the file properties
+   FishStatsUtils::plot_range_index(Report = fit$Report, TmbData = fit$data_list, Sdreport = fit$parameter_estimates$SD, Znames = colnames(fit$data_list$Z_xm), PlotDir = DateFile, 
+                     Year_Set = fit$year_labels, Years2Include = fit$years_to_plot, use_biascorr = Settings$bias.correct, strata_names = Settings$strata.limits$STRATA)
+   
    
    graphics.off()
    
