@@ -120,7 +120,8 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
       File.ASCII <- tempfile()
       on.exit(file.remove(File.ASCII))
       getTMP <- httr::GET(URL)
-      write(paste(readLines(textConnection(httr::content(getTMP))), collapse = "\n"), File.ASCII)
+      write(paste(readLines(textConnection(httr::content(getTMP))), 
+          collapse = "\n"), File.ASCII)
       source(File.ASCII)
    }
    
@@ -207,7 +208,7 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
    # # do not modify Kmeans setup
    # Method = c("Grid", "Mesh", "Spherical_mesh")[2]
    # grid_size_km = 25     # Value only matters if Method="Grid"
-   n_x <- n_x. # Number of "knots" used when Method="Mesh"
+   # n_x is the number of "knots" used when Method="Mesh"
    # Kmeans_Config = list( "randomseed"=1, "nstart"=100, "iter.max"=1e3 )   # Controls K-means algorithm to define location of knots when Method="Mesh"
    # 
    # Model settings
@@ -257,19 +258,40 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
      if(Survey == 'WCGBTS.Combo') VAST_surveyName <- 'propInWCGBTS'
      if(Survey == 'WCGBTS.Shelf') VAST_surveyName <- 'propInSlope98_00'  # Assumed correct - not tested
    }   
- 
-   #extrapolation grid
    
-   #save files setting
+   # https://docs.google.com/document/d/1pl3-q8zlSBqTmPNaSHJU67S_hwN5nok_I9LAr-Klyrw/edit
+   
+   # FieldConfig = c(Omega1 = 1, Epsilon1 = 1, Omega2 = 1, Epsilon2 = 1) #  where Omega refers to spatial variation, Epsilon refers to spatio-temporal variation, Omega1 refers to variation in encounter probability, 
+   #    and Omega2 refers to variation in positive catch rates, where 0 is off, "AR1" is an AR1 process, and >0 is the number of elements in a factor-analysis covariance. 
+   
+   # RhoConfig = c(Beta1 = 0,  Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0)  # autocorrelation across time: defaults to zero, both annual intercepts (beta) and spatio-temporal (epsilon)
+   
+   # OverdispersionConfig = c(Delta1 = 1, Delta2 = 1) # Turn on vessel-year effects for both components if using WCGBTS
+   
+   if(is.null(Settings)) {
+       Settings <- make_settings(
+                     Version = Version, 
+                         n_x = n_x., 
+                      Region = Region,             
+                     purpose = if(as.numeric(substr(packageVersion('VAST'), 1, 3)) <= 3.3)  'index' else 'index2', 
+                  fine_scale = fine_scale., 
+               strata.limits = strata.limits,
+                 FieldConfig = c(Omega1 = 'IID', Epsilon1 = 'IID', Omega2 = 'IID', Epsilon2 = 'IID'), 
+                   RhoConfig = c(Beta1 = 0,  Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0), 
+        OverdispersionConfig = overDispersion,
+              use_anisotropy = FALSE,
+                    ObsModel = ObsModel.,
+                bias.correct = FALSE, 
+                   max_cells = 3000,
+                 knot_method = 'samples'
+       )          
+   }       
    
    # DateFile
-   print(DateFile <- paste0(getwd(),'/VAST_output_', Sys.Date(), '_', spLongName, ifelse(Pass, '_Pass', ''), '_nx=', n_x, "_Obs=", paste(ObsModel., collapse = "."), '/')) # Change '_nx=' for different runs, e.g. '_Pass_nx=' for including pass
+   print(DateFile <- paste0(getwd(),'/VAST_output_', Sys.Date(), '_', spLongName, ifelse(Pass, '_Pass', ''), '_nx=', Settings$n_x, "_Obs=", 
+             paste(Settings$ObsModel, collapse = "."), '/')) # Change '_nx=' for different runs, e.g. '_Pass_nx=' for including pass
    if(!dir.exists(DateFile)) dir.create(DateFile)
    
-   #save all settings
-   # Record = ThorsonUtilities::bundlelist( c("Data_Set","Version","Method","grid_size_km","n_x","FieldConfig","RhoConfig","OverdispersionConfig","ObsModel","Kmeans_Config") )
-   # save( Record, file=file.path(DateFile,"Record.RData"))
-   # capture.output( Record, file=paste0(DateFile,"Record.txt"))
    
    #set up data frame from data set
    #creates data geostat...need this data format
@@ -287,38 +309,10 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
    # Remove rows with missing values
    Data_Geostat = na.omit(Data_Geostat)
    
-   
    # shows data being used, read this document
    pander::pandoc.table(Data_Geostat[1:6,], digits=3)
    
    
-   # https://docs.google.com/document/d/1pl3-q8zlSBqTmPNaSHJU67S_hwN5nok_I9LAr-Klyrw/edit
-   
-   # FieldConfig = c(Omega1 = 1, Epsilon1 = 1, Omega2 = 1, Epsilon2 = 1) #  where Omega refers to spatial variation, Epsilon refers to spatio-temporal variation, Omega1 refers to variation in encounter probability, 
-   #    and Omega2 refers to variation in positive catch rates, where 0 is off, "AR1" is an AR1 process, and >0 is the number of elements in a factor-analysis covariance. 
-   
-   # RhoConfig = c(Beta1 = 0,  Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0)  # autocorrelation across time: defaults to zero, both annual intercepts (beta) and spatio-temporal (epsilon)
-   
-   # OverdispersionConfig = c(Delta1 = 1, Delta2 = 1) # Turn on vessel-year effects for both components if using WCGBTS
-   
-   if(is.null(Settings)) {
-       Settings <- make_settings(
-                     Version = Version, 
-                         n_x = n_x, 
-                      Region = Region,             
-                     purpose = if(as.numeric(substr(packageVersion('VAST'), 1, 3)) <= 3.3)  'index' else 'index2', 
-                  fine_scale = fine_scale., 
-               strata.limits = strata.limits,
-                 FieldConfig = c(Omega1 = 'IID', Epsilon1 = 'IID', Omega2 = 'IID', Epsilon2 = 'IID'), 
-                   RhoConfig = c(Beta1 = 0,  Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0), 
-        OverdispersionConfig = overDispersion,
-              use_anisotropy = FALSE,
-                    ObsModel = ObsModel.,
-                bias.correct = FALSE, 
-                   max_cells = 3000,
-                 knot_method = 'samples'
-       )          
-   }       
    # Run model
    
    # c_i = category
@@ -349,7 +343,7 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
    
    if(depthCov) {
      Covariate_Data <- Data_Geostat[, c("Year", "Lon", "Lat", "Depth_km")] 
-     Covariate_Data$Year <- NA
+     Covariate_Data$Year <- NA # A Year column with all NA's - not removed via NULL
      formula = ~0
      if(formulaDepthSpline)   
         formula = ~splines::bs( log(Depth_km), knots = 3, intercept = FALSE)
@@ -465,7 +459,7 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
    
    # This function looks for 'spShortName' (defined above)
    try(YearlyResultsFigure_VAST3X(spShortName = spShortName, spLongName = spLongName, fit = fit, DateFile = DateFile, Region = Region, 
-         Year_Set = Year_Set, Years2Include = Years2Include, strata.limits = strata.limits, Graph.Dev = 'png')) 
+         Year_Set = Year_Set, Years2Include = Years2Include, strata.limits = Settings$strata.limits, Graph.Dev = 'png')) 
   
    # Save it all in Image.RData [ When reloading, remember to dyn.load() the '.dll' e.g. dyn.load(paste0(DateFile, 'VAST_v9_2_0.dll')) ]
    save(list = c(ls(), names(.GlobalEnv)), file = paste0(DateFile, "Image.RData")) # Save files inside the function also!!!!!!
@@ -475,68 +469,54 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
 
    if(FALSE) {
    
-     # Example run
+   
+      # Example run
       
-     West_Coast_2021_V3.6.1(spFormalName = 'Pacific spiny dogfish', spLongName = 'Spiny dogfish', spShortName = 'DSRK', ObsModel = c(1, 0), yearRange = c(1997, 2001)) 
+      West_Coast_2021_V3.6.1(spFormalName = 'Pacific spiny dogfish', spLongName = 'Spiny dogfish', spShortName = 'DSRK', Survey = 'AFSC.Slope', 
+                       yearRange = c(1997, 2001), ObsModel = c(1, 0))  # Lognormal with standard delta model, Region = "California_current", Domain = "WCGBTS"
+                 
        
    
-     # Figure for comparing VAST's 'surveyname's areas to catch data (in Data_Set above).
-     
-     
-     sourceFunctionURL <- function (URL) 
-        {
-           " # For more functionality, see gitAFile() in the rgit package ( https://github.com/John-R-Wallace-NOAA/rgit ) which includes gitPush() and git() "
-           require(httr)
-           File.ASCII <- tempfile()
-           on.exit(file.remove(File.ASCII))
-           getTMP <- httr::GET(URL)
-           write(paste(readLines(textConnection(httr::content(getTMP))), collapse = "\n"), File.ASCII)
-           source(File.ASCII)
-        }
-   
-      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/dataWareHouseTrawlCatch.R")
-
-      #  remotes::install_github("John-R-Wallace-NOAA/Imap")
-      require(Imap)
-  
+      # Figure for comparing VAST's 'surveyname's areas to catch data (in Data_Set above).
       
       WC <- FishStatsUtils:::Prepare_WCGBTS_Extrapolation_Data_Fn()
       
       WC$Data_Extrap[1:3,]
       
-      Data_Set <- dataWareHouseTrawlCatch('Pacific spiny dogfish', yearRange =  c(1997, 2001), project = 'AFSC.Slope') 
-           
-      Imap::imap(longlat = list(world.h.land, world.h.borders), col = c("black", "cyan"), poly = c("grey40", NA), longrange = c(-146, -115), latrange = c(32, 49), zoom = FALSE)
+      Imap::imap(longrange = c(-146, -115), latrange = c(32, 49), zoom = FALSE)
       
       change(WC$Data_Extrap[as.logical(WC$Data_Extrap$propInWCGBTS), ])
-      points(Lon, Lat, col = 'red', pch = '.')
-      text(-124.3, 36.67, "propInWCGBTS", cex = 0.6)
+      points(Lon, Lat, col = 'red')
       
       change(WC$Data_Extrap[as.logical(WC$Data_Extrap$propInCCA), ])
-      points(Lon, Lat, col = 'yellow', pch = '.')
-      points(Data_Set$Longitude_dd, Data_Set$Latitude_dd, pch = '.', cex = 2)
+      points(Lon, Lat, col = 'yellow')
+      points(Data_Set$Longitude_dd, Data_Set$Latitude_dd)
       
        
       change(WC$Data_Extrap[as.logical(WC$Data_Extrap$propInTriennial), ])
-      points(Lon - 5, Lat, col = 'blue', pch = '.')
-      points(Data_Set$Longitude_dd - 5, Data_Set$Latitude_dd, pch = '.', cex = 2)
-      text(-129.2, 36.67, "propInTriennial", cex = 0.6)
+      points(Lon - 5, Lat, col = 'blue')
+      points(Data_Set$Longitude_dd - 5, Data_Set$Latitude_dd)
       
       change(WC$Data_Extrap[as.logical(WC$Data_Extrap$propInSlope98_00), ])
-      points(Lon - 10, Lat, col = 'green', pch = '.')
-      points(Data_Set$Longitude_dd - 10, Data_Set$Latitude_dd, pch = '.', cex = 2)
-      text(-134.37, 36.67, "propInSlope98_00", cex = 0.6)
+      points(Lon - 10, Lat, col = 'green')
+      points(Data_Set$Longitude_dd - 10, Data_Set$Latitude_dd)
       
       change(WC$Data_Extrap[as.logical(WC$Data_Extrap$propInSlope01), ])
-      points(Lon - 15, Lat, col = 'cyan', pch = '.')
-      points(Data_Set$Longitude_dd - 15, Data_Set$Latitude_dd, pch = '.', cex = 2)
-      text(-139.0, 36.67, "propInSlope01", cex = 0.6)
+      points(Lon - 15, Lat, col = 'cyan')
+      points(Data_Set$Longitude_dd - 15, Data_Set$Latitude_dd)
       
       change(WC$Data_Extrap[as.logical(WC$Data_Extrap$propInSlope02), ])
-      points(Lon - 20, Lat, col = 'purple', pch = '.')
-      points(Data_Set$Longitude_dd - 20, Data_Set$Latitude_dd, pch = '.', cex = 2)
-      text(-144.3, 36.67, "propInSlope02", cex = 0.6)
-            
+      points(Lon - 20, Lat, col = 'purple')
+      points(Data_Set$Longitude_dd - 20, Data_Set$Latitude_dd)
+
+     abline( h = 34)
+
+
+
+
+             
+             
+             
    }
 
 }
