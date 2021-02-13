@@ -1,7 +1,8 @@
 
-West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingcod', spShortName = 'LCOD', Survey = 'WCGBTS.Combo', VAST_surveyName = NULL, yearRange = c(1000, 5000), 
-              strata.limits = NULL, Pass = grepl('WCGBTS', Survey), overDispersion = if(grepl('WCGBTS', Survey)) c(eta1 = 0, eta2 = "AR1") else c(eta1 = 0, eta2 = 0), 
-              ObsModel. = c(2, 0), n_x. = 250, fine_scale. = TRUE, depthCov = TRUE, formulaDepthSpline = TRUE, formulaDepth = FALSE, test_fit = TRUE) {
+West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingcod', spShortName = 'LCOD', Survey = 'WCGBTS.Combo', Settings = NULL, 
+              VAST_surveyName = NULL, yearRange = c(1000, 5000), strata.limits = NULL, Pass = grepl('WCGBTS', Survey), 
+              overDispersion = if(grepl('WCGBTS', Survey)) c(eta1 = 0, eta2 = "AR1") else c(eta1 = 0, eta2 = 0), ObsModel. = c(2, 0), n_x. = 250, 
+              fine_scale. = TRUE, depthCov = TRUE, formulaDepthSpline = TRUE, formulaDepth = FALSE, test_fit = TRUE) {
   
    # # Download this function into your current environment:
    # repoPath <- "John-R-Wallace-NOAA/VAST_Examples_and_Scripts"
@@ -61,7 +62,7 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
        TableA[2,] <- c("Maximum gradient", formatC(f(max(abs( obj$gr(TMB::summary.sdreport(sdreport,"fixed")[,'Estimate'])))),format="f",digits=6) )
        TableA[3,] <- c("Is hessian positive definite?", switch(as.character(sdreport$pdHess),"FALSE"="No","TRUE"="Yes") )
        TableA[4,] <- c("Was bias correction used?", ifelse("Est. (bias.correct)"%in%colnames(TMB::summary.sdreport(sdreport)),"Yes","No") )
-       TableA[5,] <- c("Distribution for measurement errors", switch(as.character(obj$env$data$ObsModel[1]),"1"="Lognormal","2"="Gamma") )
+       TableA[5,] <- c("Distribution for measurement errors", switch(as.character(obj$env$data$ObsModel[1]),"1" = "Lognormal", "2" = "Gamma") )
        
        FieldConfig <- fit.$data_list$FieldConfig
        comment(FieldConfig) <- "\nExplanation of the above figure:\n\n                                Encounter Probability(1), Positive Catch Rates(2)\nSpatial Random Effects\nSpatiotemporal\n# of Factors for Intercepts\n\n0 = Off, 1 = On, +2 = additionl factors up to maximum number of categories in factor analysis covariance, IID = independent for each category\n\n"
@@ -233,15 +234,15 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
    #             Calculate_Synchrony = 0, Calculate_Coherence = 0, Calculate_Range = 1, Calculate_effective_area = 1)
    
    # strata limits, run model but then calculate area specific indices
-   
-   if(is.null(strata.limits)) 
-     print(strata.limits <- data.frame(
-       STRATA = c("Coastwide","CA","OR","WA"),
-       north_border = c(49.0, 42.0, 46.0, 49.0),
-       south_border = c(32.0, 32.0, 42.0, 46.0),
-       shallow_border = c(55, 55, 55, 55),
-       deep_border = c(1280, 1280, 1280, 1280)
-     ))
+    
+   if(is.null(Settings)) 
+       print(strata.limits <- data.frame(
+         STRATA = c("Coastwide","CA","OR","WA"),
+         north_border = c(49.0, 42.0, 46.0, 49.0),
+         south_border = c(32.0, 32.0, 42.0, 46.0),
+         shallow_border = c(55, 55, 55, 55),
+         deep_border = c(1280, 1280, 1280, 1280)
+       ))
    
    setwd(HomeDir)  # Make sure that the working directory is back where it started
    
@@ -300,23 +301,25 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
    # RhoConfig = c(Beta1 = 0,  Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0)  # autocorrelation across time: defaults to zero, both annual intercepts (beta) and spatio-temporal (epsilon)
    
    # OverdispersionConfig = c(Delta1 = 1, Delta2 = 1) # Turn on vessel-year effects for both components if using WCGBTS
-   Settings <- make_settings(
-               Version = Version, 
-                   n_x = n_x, 
-                Region = Region,             
-               purpose = if(as.numeric(substr(packageVersion('VAST'), 1, 3)) <= 3.3)  'index' else 'index2', 
-            fine_scale = fine_scale., 
-         strata.limits = strata.limits,
-           FieldConfig = c(Omega1 = 'IID', Epsilon1 = 'IID', Omega2 = 'IID', Epsilon2 = 'IID'), 
-             RhoConfig = c(Beta1 = 0,  Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0), 
-  OverdispersionConfig = overDispersion,
-        use_anisotropy = FALSE,
-              ObsModel = ObsModel.,
-          bias.correct = FALSE, 
-             max_cells = 3000,
-           knot_method = 'samples'
-    )          
-       
+   
+   if(is.null(Settings)) {
+       Settings <- make_settings(
+                     Version = Version, 
+                         n_x = n_x, 
+                      Region = Region,             
+                     purpose = if(as.numeric(substr(packageVersion('VAST'), 1, 3)) <= 3.3)  'index' else 'index2', 
+                  fine_scale = fine_scale., 
+               strata.limits = strata.limits,
+                 FieldConfig = c(Omega1 = 'IID', Epsilon1 = 'IID', Omega2 = 'IID', Epsilon2 = 'IID'), 
+                   RhoConfig = c(Beta1 = 0,  Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0), 
+        OverdispersionConfig = overDispersion,
+              use_anisotropy = FALSE,
+                    ObsModel = ObsModel.,
+                bias.correct = FALSE, 
+                   max_cells = 3000,
+                 knot_method = 'samples'
+       )          
+   }       
    # Run model
    
    # c_i = category
