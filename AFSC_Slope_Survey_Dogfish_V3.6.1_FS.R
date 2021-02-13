@@ -84,7 +84,7 @@ Settings <- FishStatsUtils::make_settings(
              RhoConfig = c(Beta1 = 0,  Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0), 
   OverdispersionConfig = c(eta1 = 0, eta2 = 0), # Default: if(grepl('WCGBTS', Survey)) c(eta1 = 0, eta2 = "AR1") else c(eta1 = 0, eta2 = 0)
         use_anisotropy = FALSE,
-              ObsModel = c(2, 0), # 1 = Lognormal, 2 = Gamma
+              ObsModel = c(1, 0), # 1 = Lognormal, 2 = Gamma
           bias.correct = FALSE, 
              max_cells = 3000,
            knot_method = 'samples'
