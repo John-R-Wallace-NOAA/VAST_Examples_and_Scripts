@@ -31,7 +31,7 @@ Uses fine_scale = TRUE in VAST ver. 3X and JRWToolBox::YearlyResultsFigure_VAST3
     With Pass  (FS; Gamma errors)                                           29,828.5
     Lognormal errors  (FS; Pass)                                            29,316.6
     Depth covariate, on data not grid (FS; Pass; LN errors)                 27,832.2
-    Depth covariate, on data not grid, bs() spline (FS; Pass; LN errors)     27,459.2
+    Depth covariate, on data not grid, bs() spline (FS; Pass; LN errors)    27,459.2
 
 -----------------------------------------------------------------------------------------
 
