@@ -82,7 +82,7 @@ Settings <- FishStatsUtils::make_settings(
          strata.limits = strata.limits,
            FieldConfig = c(Omega1 = 'IID', Epsilon1 = 'IID', Omega2 = 'IID', Epsilon2 = 'IID'), 
              RhoConfig = c(Beta1 = 0,  Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0), 
-  OverdispersionConfig = c(eta1 = 0, eta2 = 0), # Default: if(grepl('WCGBTS', Survey)) c(eta1 = 0, eta2 = "AR1") else c(eta1 = 0, eta2 = 0)
+  OverdispersionConfig = c(eta1 = 0, eta2 = 0), # Default: if(grepl('WCGBTS', Survey)) c(Delta1 = 1, Delta2 = 1) else c(eta1 = 0, eta2 = 0)
         use_anisotropy = FALSE,
               ObsModel = c(1, 0), # 1 = Lognormal, 2 = Gamma
           bias.correct = FALSE, 
