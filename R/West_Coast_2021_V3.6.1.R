@@ -2,7 +2,7 @@
 West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingcod', spShortName = 'LCOD', Survey = 'WCGBTS.Combo', Settings = NULL, 
               VAST_surveyName = NULL, yearRange = c(1000, 5000), strata.limits = NULL, Pass = grepl('WCGBTS', Survey), 
               overDispersion = if(grepl('WCGBTS', Survey)) c(eta1 = 0, eta2 = "AR1") else c(eta1 = 0, eta2 = 0), ObsModel. = c(2, 0), n_x. = 250, 
-              fine_scale. = TRUE, depthCov = TRUE, formulaDepthSpline = TRUE, formulaDepth = FALSE, test_fit = TRUE) {
+              fine_scale. = TRUE, depthCov = TRUE, formulaDepthSpline = TRUE, formulaDepth = FALSE, test_fit = TRUE, folderSuffix = NULL) {
   
    # # Download this function into your current environment:
    # repoPath <- "John-R-Wallace-NOAA/VAST_Examples_and_Scripts"
@@ -180,6 +180,10 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
    require(VAST)
    # require(JRWToolBox)  # This code should work without the need to attach the JRWToolBox package.
    
+   # assign('Survey', Survey)
+   assign('Survey', Survey, pos = 1)
+   
+   
    # Extract species data from the Warehouse
    Data_Set <- JRWToolBox::dataWareHouseTrawlCatch(spFormalName, yearRange = yearRange, project = Survey)
    
@@ -289,7 +293,7 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
    
    # DateFile
    print(DateFile <- paste0(getwd(),'/VAST_output_', Sys.Date(), '_', spLongName, ifelse(Pass, '_Pass', ''), '_nx=', Settings$n_x, "_Obs=", 
-             paste(Settings$ObsModel, collapse = "."), '/')) # Change '_nx=' for different runs, e.g. '_Pass_nx=' for including pass
+             paste(Settings$ObsModel, collapse = "."), ifelse(is.null(folderSuffix), NULL, '_'), folderSuffix, '/')) # Change '_nx=' for different runs, e.g. '_Pass_nx=' for including pass
    if(!dir.exists(DateFile)) dir.create(DateFile)
    
    
