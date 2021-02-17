@@ -357,11 +357,11 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
    } else {
      Covariate_Data <- NULL
      formula = ~0
-  }   
+   }   
    
-  # Suppress RcppEigen warnings
+   # Suppress RcppEigen warnings
    sink(paste0(DateFile, 'suppressMakeVars.txt'))
-      cat(paste0('CXXFLAGS = -Wno-ignored-attributes\n'))
+      cat(paste0('FLAGS = -Wno-ignored-attributes\n'))
    sink()
    on.exit(file.remove(paste0(DateFile, 'suppressMakeVars.txt')))
    Sys.setenv(R_MAKEVARS_USER = "suppressMakeVars.txt")
