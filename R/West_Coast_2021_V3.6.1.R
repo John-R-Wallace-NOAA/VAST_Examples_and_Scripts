@@ -358,8 +358,15 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
      Covariate_Data <- NULL
      formula = ~0
   }   
-      
    
+  # Suppress RcppEigen warnings
+   sink(paste0(DateFile, 'suppressMakeVars.txt'))
+      cat(paste0('CXXFLAGS = -Wno-ignored-attributes\n'))
+   sink()
+   on.exit(file.remove(paste0(DateFile, 'suppressMakeVars.txt')))
+   Sys.setenv(R_MAKEVARS_USER = "suppressMakeVars.txt")
+   on.exit(Sys.setenv(R_MAKEVARS_USER = ""), add = TRUE)
+                
    if(Pass)
       fit <- fit_model(settings = Settings, surveyname = VAST_surveyName, Lat_i = Data_Geostat$Lat, Lon_i = Data_Geostat$Lon, t_i = Data_Geostat$Year, working_dir = DateFile,
                      b_i = Data_Geostat$Catch_KG, a_i = Data_Geostat$AreaSwept_km2, c_iz = rep(0, nrow(Data_Geostat)), v_i = Data_Geostat$Vessel,
