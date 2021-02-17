@@ -293,7 +293,7 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
    
    # DateFile
    print(DateFile <- paste0(getwd(), '/VAST_', packageDescription('VAST')$Version, '_', Sys.Date(), '_', spLongName, ifelse(Pass, '_Pass', ''), '_nx=', Settings$n_x, "_Obs=", 
-             paste(Settings$ObsModel, collapse = "."), ifelse(is.null(folderSuffix), NULL, '_'), folderSuffix, '/')) # Change '_nx=' for different runs, e.g. '_Pass_nx=' for including pass
+             paste(Settings$ObsModel, collapse = "."), ifelse(is.null(folderSuffix), "", '_'), folderSuffix, '/')) # Change '_nx=' for different runs, e.g. '_Pass_nx=' for including pass
    if(!dir.exists(DateFile)) dir.create(DateFile)
    
    
