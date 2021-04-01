@@ -1,8 +1,8 @@
 
 West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingcod', spShortName = 'LCOD', Survey = 'WCGBTS.Combo', Settings = NULL, 
-              VAST_surveyName = NULL, yearRange = c(1000, 5000), strata.limits = NULL, Pass = grepl('WCGBTS', Survey), 
+              VAST_surveyName = NULL, yearRange = c(1000, 5000), strata.limits = NULL, Pass = grepl('WCGBTS', Survey), Old_QQ_and_Resid_Figures = TRUE, 
               overDispersion = if(grepl('WCGBTS', Survey)) c(eta1 = 0, eta2 = "AR1") else c(eta1 = 0, eta2 = 0), ObsModel. = c(2, 0), n_x. = 250, 
-              fine_scale. = TRUE, depthCov = TRUE, formulaDepthSpline = TRUE, formulaDepth = FALSE, test_fit = TRUE, folderSuffix = NULL) {
+              fine_scale. = TRUE, depthCov = TRUE, formulaDepthSpline = TRUE, formulaDepth = FALSE, test_fit = TRUE, folderSuffix = NULL, Cores = 6) {
   
    # # Download this function into your current environment:
    # repoPath <- "John-R-Wallace-NOAA/VAST_Examples_and_Scripts"
@@ -39,6 +39,7 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
    # Revised by J. Wallace Dec 2018
    # Revised by J. Wallace Feb 2020: uses fine_scale = TRUE in VAST ver. 3X and JRWToolBox::YearlyResultsFigure_VAST3X(), following the upper level functions (wrappers) approach.
    # Revised by J. Wallace Aug 2020: made into a function with various arguments
+   # Revised by J. Wallace Apr 2021: added the 'Old_QQ_and_Resid_Figures' argument and code (now called by the 'VAST_3.6.1_Survey_Indexes.R' script)
    
    # =============================================
    
@@ -72,7 +73,7 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
        TableB <- list_parameters( obj, verbose = FALSE )
        
        # Print table of MLE of fixed effects
-       TableC <- JRWToolBox::r(JRWToolBox::renum(cbind(Param = Opt$diagnostics[, 1], TMB::summary.sdreport( Opt$SD, "fixed" ), Opt$diagnostics[, -1])))
+       TableC <- r(renum(cbind(Param = Opt$diagnostics[, 1], TMB::summary.sdreport( Opt$SD, "fixed" ), Opt$diagnostics[, -1])))
            
        # Return
        # Return <- list(TableA = TableA, TableB = TableB, TableC =TableC)
@@ -125,6 +126,10 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
       source(File.ASCII)
    }
    
+   sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/dataWareHouseTrawlCatch.R")
+   sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/Table.R")
+   sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/r.R")
+   sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/renum.R")
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/YearlyResultsFigure_VAST3X.R")
    
    
@@ -139,10 +144,6 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
    if (!any(installed.packages()[, 1] %in% "devtools")) 
            install.packages("devtools")
    
-   # If needed, re-install for the new YearlyResultsFigure_VAST3X()
-   if (!any(installed.packages()[, 1] %in% "JRWToolBox"))
-        devtools::install_github("John-R-Wallace/R-ToolBox")
-    
    # With the INSTALL_opts argument, warning messasges given when SHA number has not changed since last install.
    if (!any(installed.packages()[, 1] %in% "FishStatsUtils"))
        devtools::install_github("james-thorson-noaa/FishStatsUtils", INSTALL_opts = "--no-multiarch --no-test-load")   
@@ -160,38 +161,33 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
        install.packages("splines")	
    
    # Multi-threading
-   Cores <- 6
-   
-   # R_OPEN (Microsoft's MRO/MRAN) thread control
-   if('RevoUtilsMath' %in% installed.packages()[, 'Package']) {
-   
-      RevoUtilsMath::setMKLthreads(Cores)
-      RevoUtilsMath::getMKLthreads()
-   }
-   
-   # R_MKL (Intel's Math Kernel library) thread control
-   if('RhpcBLASctl' %in% installed.packages()[, 'Package']) {
-   
-      RhpcBLASctl::blas_set_num_threads(Cores)
-      RhpcBLASctl::blas_get_num_procs()
-   }
+      # R_OPEN (Microsoft's MRO/MRAN) thread control
+      if('RevoUtilsMath' %in% installed.packages()[, 'Package']) {
+         RevoUtilsMath::setMKLthreads(Cores)
+         cat("\nNumber of R_OPEN cores set to:", RevoUtilsMath::getMKLthreads(), "\n\n")
+      }
+      
+      # R_MKL (Intel's Math Kernel library) thread control
+      if('RhpcBLASctl' %in% installed.packages()[, 'Package']) {
+         RhpcBLASctl::blas_set_num_threads(Cores)
+         cat("\nNumber of R_MKL cores set to:", RhpcBLASctl::blas_get_num_procs(), "\n\n")
+      }
    
    require(TMB)
    require(VAST)
-   # require(JRWToolBox)  # This code should work without the need to attach the JRWToolBox package.
    
    # assign('Survey', Survey)
    assign('Survey', Survey, pos = 1)
    
    
    # Extract species data from the Warehouse
-   Data_Set <- JRWToolBox::dataWareHouseTrawlCatch(spFormalName, yearRange = yearRange, project = Survey)
+   Data_Set <- dataWareHouseTrawlCatch(spFormalName, yearRange = yearRange, project = Survey)
    
    # Look at the data by year and pass - showing 'NA's if any via JRWToolBox::Table function.
    if(Pass) {
-     JRWToolBox::Table(Data_Set$Year, Data_Set$Pass)
+     Table(Data_Set$Year, Data_Set$Pass)
    } else {
-     JRWToolBox::Table(Data_Set$Year)
+     Table(Data_Set$Year)
      Data_Set$Pass <- NULL
    }  
   
@@ -253,7 +249,7 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
    # Region that tells software which grid to use
    Region = "California_current"
    
-   # VAST's surveyname's in the 'California_current' region: propInCCA, propInWCGBTS, propInTriennial, propInSlope98_00,  propInSlope01, propInSlope02
+   # VAST's surveyname's in the 'California_current' region: propInCCA, propInWCGBTS, propInTriennial, propInSlope98_00, propInSlope01, propInSlope02
    # [ See the table: head(FishStatsUtils:::Prepare_WCGBTS_Extrapolation_Data_Fn()$Data_Extrap) ]
    if(is.null(VAST_surveyName)) {
      
@@ -381,18 +377,16 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
                      b_i = Data_Geostat$Catch_KG, a_i = Data_Geostat$AreaSwept_km2, c_iz = rep(0, nrow(Data_Geostat)), v_i = Data_Geostat$Vessel, 
                      covariate_data = Covariate_Data, X1_formula = formula, X2_formula = formula,
                      newtonsteps = 0, getsd = TRUE, getJointPrecision = TRUE, run_model = TRUE, test_fit = test_fit)
-   
-   
-   
+                     
    sink() # End sinking to Fit_Output.txt
    
    
    # Create 'parameter_estimates.txt' without scientific notation
    Opt <- fit$parameter_estimates
    OptRnd <- list()
-   OptRnd$par <- JRWToolBox::r(Opt$par)
-   OptRnd$diagnostics <- JRWToolBox::r(Opt$diagnostics)
-   OptRnd$SD <- JRWToolBox::r(summary(Opt$SD, "fixed"), 6) 
+   OptRnd$par <- r(Opt$par)
+   OptRnd$diagnostics <- r(Opt$diagnostics)
+   OptRnd$SD <- r(summary(Opt$SD, "fixed"), 6) 
    OptRnd$Maximum_gradient_component <- Opt$max_gradient
    OptRnd$pdHess <- Opt$SD$pdHess
    OptRnd$Convergence_check <- ifelse(Opt$SD$pdHess,  { ifelse(Opt$max_gradient < 0.0001, "There is no evidence that the model is not converged", 
@@ -408,7 +402,7 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
       cat("\n\nMaximum_gradient_component:", Opt$max_gradient, "\n\nnlminb() convergence:", OptRnd$Convergence_check, "\n\nnlminb() pdHess:", Opt$SD$pdHess, "\n\nAIC:", Opt$AIC, "\n\n")
       cat("\nRange Raw1 and Raw2 should be inside of min and max distance of between knot locations\n\n")
       # Range Raw1 and Raw2 should be inside of min and max distance of between knot locations (J. Thorson, pers. comm.)
-      print(JRWToolBox::r(sort(c(Range_raw1 = fit$Report$Range_raw1, Range_raw2 = fit$Report$Range_raw2, minDist = min(dist(fit$spatial_list$loc_x )), maxDist = max(dist(fit$spatial_list$loc_x ))))))
+      print(r(sort(c(Range_raw1 = fit$Report$Range_raw1, Range_raw2 = fit$Report$Range_raw2, minDist = min(dist(fit$spatial_list$loc_x )), maxDist = max(dist(fit$spatial_list$loc_x ))))))
    sink() 
    
    #  Extra looks at convergence
@@ -472,6 +466,41 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
    # This function looks for 'spShortName' (defined above)
    try(YearlyResultsFigure_VAST3X(spShortName = spShortName, spLongName = spLongName, fit = fit, DateFile = DateFile, Region = Region, 
          Year_Set = Year_Set, Years2Include = Years2Include, strata.limits = Settings$strata.limits, Graph.Dev = 'png')) 
+   
+   if(Old_QQ_and_Resid_Figures) { 
+   
+        # --- Create old style QQ plot - not the DHARMa version ---
+        Method = c("Grid", "Mesh", "Spherical_mesh")[2]
+        grid_size_km = 25     # Value only matters if Method="Grid"
+        Kmeans_Config = list(randomseed = 1,  nstart = 100, iter.max = 1e3) 
+        
+        Extrapolation_List = FishStatsUtils::Prepare_WCGBTS_Extrapolation_Data_Fn(strata.limits = strata.limits)
+        
+        Options = c(SD_site_density = 0, SD_site_logdensity = 0, Calculate_Range = 0, Calculate_evenness = 0, Calculate_effective_area = 0,  Calculate_Cov_SE = 0,
+                  Calculate_Synchrony = 0, Calculate_Coherence = 0, Calculate_Range = 1, Calculate_effective_area = 1)
+        
+        Spatial_List = FishStatsUtils::make_spatial_info(grid_size_km = grid_size_km, n_x = n_x., Method = Method, Lon = Data_Geostat$Lon, Lat = Data_Geostat$Lat,
+                              Extrapolation_List = Extrapolation_List, randomseed = Kmeans_Config[["randomseed"]], nstart = Kmeans_Config[["nstart"]], iter.max = Kmeans_Config[["iter.max"]],
+                              DirPath = DateFile, Save_Results = FALSE)
+        
+        # Hack here - tell make_data() this is version 12 C++ code even if it is not
+        TmbData <- VAST::make_data(Version = "VAST_v12_0_0", FieldConfig = c(Omega1 = 1, Epsilon1 = 1, Omega2 = 1, Epsilon2 = 1), spatial_list = Spatial_List, OverdispersionConfig = c(Delta1 = 1, Delta2 = 1), 
+                        RhoConfig = c(Beta1 = 0,  Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0), ObsModel = ObsModel.,
+                        c_i = rep(0, nrow(Data_Geostat)), b_i = Data_Geostat$Catch_KG, a_i = Data_Geostat$AreaSwept_km2, v_i = Data_Geostat$Vessel,
+                        s_i = Data_Geostat$knot_i - 1, t_i = Data_Geostat$Year, a_xl = Spatial_List$a_xl, MeshList = Spatial_List$MeshList, GridList = Spatial_List$GridList,
+                        Method = Spatial_List$Method, Options = Options)
+                        
+        plot.new() # Strangeness here - but it works to get out the old style QQ plot, also the 'FileName_Phist' argument name is applied to the Q-Q plot.
+        Q <- FishStatsUtils::plot_quantile_diagnostic( TmbData = TmbData, Report = fit$Report, DateFile = DateFile, save_dir = DateFile, FileName_PP = "Posterior_Predictive", 
+                    FileName_Phist = "Q-Q_plot", FileName_QQ = "Q-Q_plot", FileName_Qhist = "Q-Q_hist")
+                                  
+        # --- Old style residuals with little data visible - look closely at the figures ---
+        MapDetails_List = FishStatsUtils::make_map_info( Region = Region, NN_Extrap = Spatial_List$PolygonList$NN_Extrap, spatial_list = Spatial_List, Extrapolation_List = Extrapolation_List )
+        
+        FishStatsUtils::plot_residuals(Lat_i = Data_Geostat[,'Lat'], Lon_i = Data_Geostat[,'Lon'], TmbData = TmbData, Report = fit$Report, spatial_list = Spatial_List, Q = Q, 
+                extrapolation_list = Extrapolation_List, working_dir = DateFile, Year_Set = Year_Set, Years2Include = Years2Include, ) 
+                
+   } 
   
    # Save it all in Image.RData [ When reloading, remember to dyn.load() the '.dll' e.g. dyn.load(paste0(DateFile, 'VAST_v9_2_0.dll')) ]
    save(list = c(ls(), names(.GlobalEnv)), file = paste0(DateFile, "Image.RData")) # Save files inside the function also!!!!!!
@@ -481,57 +510,33 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
 
    if(FALSE) {
    
-   
       # Example run
       
+      # Lognormal GLMM error on the positive catch with standard delta model, Region = "California_current", and VAST_surveyName = 'propInSlope98_00' (i.e. Domain area)
       West_Coast_2021_V3.6.1(spFormalName = 'Pacific spiny dogfish', spLongName = 'Spiny dogfish', spShortName = 'DSRK', Survey = 'AFSC.Slope', 
-                       yearRange = c(1997, 2001), ObsModel = c(1, 0))  # Lognormal with standard delta model, Region = "California_current", Domain = "WCGBTS"
+                       yearRange = c(1997, 2001), ObsModel = c(1, 0))  
                  
        
    
-      # Figure for comparing VAST's 'surveyname's areas to catch data (in Data_Set above).
+      # See 'VAST_3.6.1_Survey_Indexes.R' for a figure to view VAST's 'surveyname' grids (i.e. Domains) for CA Current region and plot the raw data (black points) on top of each one ====
       
-      WC <- FishStatsUtils:::Prepare_WCGBTS_Extrapolation_Data_Fn()
-      
-      WC$Data_Extrap[1:3,]
-      
-      Imap::imap(longrange = c(-146, -115), latrange = c(32, 49), zoom = FALSE)
-      
-      change(WC$Data_Extrap[as.logical(WC$Data_Extrap$propInWCGBTS), ])
-      points(Lon, Lat, col = 'red')
-      
-      change(WC$Data_Extrap[as.logical(WC$Data_Extrap$propInCCA), ])
-      points(Lon, Lat, col = 'yellow')
-      points(Data_Set$Longitude_dd, Data_Set$Latitude_dd)
-      
-       
-      change(WC$Data_Extrap[as.logical(WC$Data_Extrap$propInTriennial), ])
-      points(Lon - 5, Lat, col = 'blue')
-      points(Data_Set$Longitude_dd - 5, Data_Set$Latitude_dd)
-      
-      change(WC$Data_Extrap[as.logical(WC$Data_Extrap$propInSlope98_00), ])
-      points(Lon - 10, Lat, col = 'green')
-      points(Data_Set$Longitude_dd - 10, Data_Set$Latitude_dd)
-      
-      change(WC$Data_Extrap[as.logical(WC$Data_Extrap$propInSlope01), ])
-      points(Lon - 15, Lat, col = 'cyan')
-      points(Data_Set$Longitude_dd - 15, Data_Set$Latitude_dd)
-      
-      change(WC$Data_Extrap[as.logical(WC$Data_Extrap$propInSlope02), ])
-      points(Lon - 20, Lat, col = 'purple')
-      points(Data_Set$Longitude_dd - 20, Data_Set$Latitude_dd)
+      sourceFunctionURL <- function (URL) 
+         {
+            " # For more functionality, see gitAFile() in the rgit package ( https://github.com/John-R-Wallace-NOAA/rgit ) which includes gitPush() and git() "
+            require(httr)
+            File.ASCII <- tempfile()
+            on.exit(file.remove(File.ASCII))
+            getTMP <- httr::GET(URL)
+            write(paste(readLines(textConnection(httr::content(getTMP))), collapse = "\n"), File.ASCII)
+            source(File.ASCII)
+        }
+    
+      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/VAST_Examples_and_Scripts/master//VAST_3.6.1_Survey_Indexes.R")
 
-     abline( h = 34)
-
-
-
-
-             
-             
-             
    }
 
 }
+
 
 
 
