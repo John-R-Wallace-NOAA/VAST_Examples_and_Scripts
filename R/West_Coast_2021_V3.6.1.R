@@ -428,27 +428,31 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
    #    However, looking at the code, that option needs to be one of ("spatial_info", "inla_mesh").  ****
    # As of 25 Aug 2020, need to set "Calculate_Range" to FALSE for VAST ver 3.5 and above since '"ln_Index_ctl" %in% rownames(TMB::summary.sdreport(fit$parameter_estimates$SD))' is TRUE which breaks plot_range_edge()
    (fit$data_list$Options_list$Options["Calculate_Range"] <- if(as.numeric(substr(packageVersion('VAST'), 1, 3)) <= 3.4) TRUE else FALSE)
-   try(plotOut <- plot( fit, what = c('results', 'extrapolation_grid', 'inla_mesh')[1], working_dir = DateFile)) # Calls FishStatsUtils:::plot.fit_model() which calls FishStatsUtils::plot_results()
    
-   png(paste0(DateFile, 'DHARMa_Q-Q_plot.png'), width = 1000, height = 1000)
-   DHARMa::plotQQunif(plotOut$dharmaRes, testUniformity = FALSE, testOutliers = FALSE, testDispersion = FALSE)
-   dev.off()
+   try({
    
-   png(paste0(DateFile, 'Extrapolation_grid.png'), width = 500, height = 750)
-   try(plot( fit, what = c('results', 'extrapolation_grid', 'inla_mesh')[2], working_dir = DateFile))  # Calls FishStatsUtils:::plot.make_extrapolation_info
-   
-   png(paste0(DateFile, 'INLA_mesh.png'), width = 500, height = 750)
-   try(plot( fit, what = c('results', 'extrapolation_grid', 'inla_mesh')[3], working_dir = DateFile, check_residuals = FALSE))  # Calls FishStatsUtils:::plot.make_spatial_info
-  
-   # Do plot_results() again by itself so strata_names are included [ doesn't get added properly in plot() ] 
-   try(FishStatsUtils::plot_results(fit = fit, settings = fit$settings, plot_set = 3, strata_names = Settings$strata.limits$STRATA, working_dir = DateFile))
+     plotOut <- plot( fit, what = c('results', 'extrapolation_grid', 'inla_mesh')[1], working_dir = DateFile) # Calls FishStatsUtils:::plot.fit_model() which calls FishStatsUtils::plot_results()
      
-   
-   # Likewise, do plot_range_index() (for Effective_Area.png) again by itself so strata_names are included [ doesn't get added properly in plot_results() ] 
-   #      plot_range_index() also recreates 'center_of_gravity.png' with no change but the 'Date modified' on the file properties
-   try(FishStatsUtils::plot_range_index(Report = fit$Report, TmbData = fit$data_list, Sdreport = fit$parameter_estimates$SD, Znames = colnames(fit$data_list$Z_xm), PlotDir = DateFile, 
-                     Year_Set = fit$year_labels, Years2Include = fit$years_to_plot, use_biascorr = Settings$bias.correct, strata_names = Settings$strata.limits$STRATA))
-   
+     png(paste0(DateFile, 'DHARMa_Q-Q_plot.png'), width = 1000, height = 1000)
+     DHARMa::plotQQunif(plotOut$dharmaRes, testUniformity = FALSE, testOutliers = FALSE, testDispersion = FALSE)
+     dev.off()
+     
+     png(paste0(DateFile, 'Extrapolation_grid.png'), width = 500, height = 750)
+     plot( fit, what = c('results', 'extrapolation_grid', 'inla_mesh')[2], working_dir = DateFile)  # Calls FishStatsUtils:::plot.make_extrapolation_info
+     
+     png(paste0(DateFile, 'INLA_mesh.png'), width = 500, height = 750)
+     plot( fit, what = c('results', 'extrapolation_grid', 'inla_mesh')[3], working_dir = DateFile, check_residuals = FALSE)  # Calls FishStatsUtils:::plot.make_spatial_info
+     
+     # Do plot_results() again by itself so strata_names are included [ doesn't get added properly in plot() ] 
+     FishStatsUtils::plot_results(fit = fit, settings = fit$settings, plot_set = 3, strata_names = Settings$strata.limits$STRATA, working_dir = DateFile)
+       
+     
+     # Likewise, do plot_range_index() (for Effective_Area.png) again by itself so strata_names are included [ doesn't get added properly in plot_results() ] 
+     #      plot_range_index() also recreates 'center_of_gravity.png' with no change but the 'Date modified' on the file properties
+     FishStatsUtils::plot_range_index(Report = fit$Report, TmbData = fit$data_list, Sdreport = fit$parameter_estimates$SD, Znames = colnames(fit$data_list$Z_xm), PlotDir = DateFile, 
+                     Year_Set = fit$year_labels, Years2Include = fit$years_to_plot, use_biascorr = Settings$bias.correct, strata_names = Settings$strata.limits$STRATA)
+                     
+   })
    
    graphics.off()
    
