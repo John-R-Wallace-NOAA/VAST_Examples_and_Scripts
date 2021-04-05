@@ -2,7 +2,7 @@
 West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingcod', spShortName = 'LCOD', Survey = 'WCGBTS.Combo', Settings = NULL, 
               VAST_surveyName = NULL, yearRange = c(1000, 5000), strata.limits = NULL, Pass = grepl('WCGBTS', Survey), Old_QQ_and_Resid_Figures = TRUE, 
               overDispersion = if(grepl('WCGBTS', Survey)) c(eta1 = 0, eta2 = "AR1") else c(eta1 = 0, eta2 = 0), ObsModel. = c(2, 0), n_x. = 250, 
-              fine_scale. = TRUE, depthCov = TRUE, formulaDepthSpline = TRUE, formulaDepth = FALSE, test_fit = TRUE, folderSuffix = NULL, Cores = 6) {
+              fine_scale. = TRUE, bias.correct. = FALSE, depthCov = TRUE, formulaDepthSpline = TRUE, formulaDepth = FALSE, test_fit = TRUE, folderSuffix = NULL, Cores = 6, ...) {
   
    # # Download this function into your current environment:
    # repoPath <- "John-R-Wallace-NOAA/VAST_Examples_and_Scripts"
@@ -176,9 +176,7 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
    require(TMB)
    require(VAST)
    
-   # assign('Survey', Survey)
    assign('Survey', Survey, pos = 1)
-   
    
    # Extract species data from the Warehouse
    Data_Set <- dataWareHouseTrawlCatch(spFormalName, yearRange = yearRange, project = Survey)
@@ -191,7 +189,6 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
      Data_Set$Pass <- NULL
    }  
   
-
    
    # Versions of VAST you can use
    # VAST ver 3.6.1 does not work with any C++ code earlier then VAST_v12_0_0.cpp
@@ -199,9 +196,6 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
    print(Version <- FishStatsUtils::get_latest_version(package="VAST"))
    # if(as.numeric(substr(packageVersion('VAST'), 1, 3)) == 3.3)  Version <- "VAST_v8_5_0.cpp"  # Do this for a lower cpp version with a VAST package version
    # if(as.numeric(substr(packageVersion('VAST'), 1, 3)) == 3.5)  Version <- "VAST_v9_4_0.cpp"
-   
-   
-   
    
    # # define the spatial resolution for the model, and whether to use a grid or mesh approximation
    # # mesh is default recommendation, number of knots need to be specified
@@ -278,10 +272,11 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
                strata.limits = strata.limits,
                  FieldConfig = c(Omega1 = 'IID', Epsilon1 = 'IID', Omega2 = 'IID', Epsilon2 = 'IID'), 
                    RhoConfig = c(Beta1 = 0,  Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0), 
-        OverdispersionConfig = overDispersion,
-              use_anisotropy = FALSE,
-                    ObsModel = ObsModel.,
-                bias.correct = FALSE, 
+        OverdispersionConfig = overDispersion,  # Default: if(grepl('WCGBTS', Survey)) c(Delta1 = 1, Delta2 = 1) else c(eta1 = 0, eta2 = 0)
+                     Options = c(SD_site_logdensity=FALSE, Calculate_Range=TRUE, Calculate_effective_area=TRUE, Calculate_Cov_SE=TRUE, Calculate_Synchrony=TRUE, Calculate_proportion=TRUE, treat_nonencounter_as_zero = TRUE),
+              use_anisotropy = TRUE,
+                    ObsModel = ObsModel., # 1 = Lognormal, 2 = Gamma
+                bias.correct = bias.correct., 
                    max_cells = 3000,
                  knot_method = 'samples'
        )          
@@ -364,19 +359,19 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
    # on.exit(Sys.setenv(R_MAKEVARS_USER = ""), add = TRUE)
                 
    if(Pass)
-      fit <- fit_model(settings = Settings, surveyname = VAST_surveyName, Lat_i = Data_Geostat$Lat, Lon_i = Data_Geostat$Lon, t_i = Data_Geostat$Year, working_dir = DateFile,
+      fit <- FishStatsUtils::fit_model(settings = Settings, surveyname = VAST_surveyName, Lat_i = Data_Geostat$Lat, Lon_i = Data_Geostat$Lon, t_i = Data_Geostat$Year, working_dir = DateFile,
                      b_i = Data_Geostat$Catch_KG, a_i = Data_Geostat$AreaSwept_km2, c_iz = rep(0, nrow(Data_Geostat)), v_i = Data_Geostat$Vessel,
                      
                      Q_ik = matrix(Data_Geostat$Pass, ncol = 1), 
     #                catchability_data = matrix(Data_Geostat$Pass, ncol = 1), Q1_formula = ~Pass, Q2_formula = ~Pass,
     
                      covariate_data = Covariate_Data, X1_formula = formula, X2_formula = formula,
-                     newtonsteps = 0, getsd = TRUE, getJointPrecision = TRUE, run_model = TRUE, test_fit = test_fit)
+                     newtonsteps = 0, getsd = TRUE, getJointPrecision = TRUE, run_model = TRUE, test_fit = test_fit, ...)
    else
-     fit <- fit_model(settings = Settings, surveyname = VAST_surveyName, Lat_i = Data_Geostat$Lat, Lon_i = Data_Geostat$Lon, t_i = Data_Geostat$Year, working_dir = DateFile,
+     fit <- FishStatsUtils::fit_model(settings = Settings, surveyname = VAST_surveyName, Lat_i = Data_Geostat$Lat, Lon_i = Data_Geostat$Lon, t_i = Data_Geostat$Year, working_dir = DateFile,
                      b_i = Data_Geostat$Catch_KG, a_i = Data_Geostat$AreaSwept_km2, c_iz = rep(0, nrow(Data_Geostat)), v_i = Data_Geostat$Vessel, 
                      covariate_data = Covariate_Data, X1_formula = formula, X2_formula = formula,
-                     newtonsteps = 0, getsd = TRUE, getJointPrecision = TRUE, run_model = TRUE, test_fit = test_fit)
+                     newtonsteps = 0, getsd = TRUE, getJointPrecision = TRUE, run_model = TRUE, test_fit = test_fit, ...)
                      
    sink() # End sinking to Fit_Output.txt
    
@@ -433,21 +428,26 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
    #    However, looking at the code, that option needs to be one of ("spatial_info", "inla_mesh").  ****
    # As of 25 Aug 2020, need to set "Calculate_Range" to FALSE for VAST ver 3.5 and above since '"ln_Index_ctl" %in% rownames(TMB::summary.sdreport(fit$parameter_estimates$SD))' is TRUE which breaks plot_range_edge()
    (fit$data_list$Options_list$Options["Calculate_Range"] <- if(as.numeric(substr(packageVersion('VAST'), 1, 3)) <= 3.4) TRUE else FALSE)
-   try(plot( fit, what = c('results', 'extrapolation_grid', 'inla_mesh')[1], working_dir = DateFile)) # Calls FishStatsUtils:::plot.fit_model() which calls FishStatsUtils::plot_results()
+   try(plotOut <- plot( fit, what = c('results', 'extrapolation_grid', 'inla_mesh')[1], working_dir = DateFile)) # Calls FishStatsUtils:::plot.fit_model() which calls FishStatsUtils::plot_results()
+   
+   png(paste0(DateFile, 'DHARMa_Q-Q_plot.png'), width = 1000, height = 1000)
+   plotQQunif(plotOut$dharmaRes, testUniformity = FALSE, testOutliers = FALSE, testDispersion = FALSE)
+   dev.off()
    
    png(paste0(DateFile, 'Extrapolation_grid.png'), width = 500, height = 750)
-   plot( fit, what = c('results', 'extrapolation_grid', 'inla_mesh')[2], working_dir = DateFile)  # Calls FishStatsUtils:::plot.make_extrapolation_info
+   try(plot( fit, what = c('results', 'extrapolation_grid', 'inla_mesh')[2], working_dir = DateFile))  # Calls FishStatsUtils:::plot.make_extrapolation_info
    
    png(paste0(DateFile, 'INLA_mesh.png'), width = 500, height = 750)
-   plot( fit, what = c('results', 'extrapolation_grid', 'inla_mesh')[3], working_dir = DateFile)  # Calls FishStatsUtils:::plot.make_spatial_info
+   try(plot( fit, what = c('results', 'extrapolation_grid', 'inla_mesh')[3], working_dir = DateFile, check_residuals = FALSE))  # Calls FishStatsUtils:::plot.make_spatial_info
   
    # Do plot_results() again by itself so strata_names are included [ doesn't get added properly in plot() ] 
-   FishStatsUtils::plot_results(fit = fit, settings = fit$settings, plot_set = 3, strata_names = Settings$strata.limits$STRATA, check_residuals = FALSE, working_dir = DateFile)
+   try(FishStatsUtils::plot_results(fit = fit, settings = fit$settings, plot_set = 3, strata_names = Settings$strata.limits$STRATA, working_dir = DateFile))
+     
    
    # Likewise, do plot_range_index() (for Effective_Area.png) again by itself so strata_names are included [ doesn't get added properly in plot_results() ] 
    #      plot_range_index() also recreates 'center_of_gravity.png' with no change but the 'Date modified' on the file properties
-   FishStatsUtils::plot_range_index(Report = fit$Report, TmbData = fit$data_list, Sdreport = fit$parameter_estimates$SD, Znames = colnames(fit$data_list$Z_xm), PlotDir = DateFile, 
-                     Year_Set = fit$year_labels, Years2Include = fit$years_to_plot, use_biascorr = Settings$bias.correct, strata_names = Settings$strata.limits$STRATA)
+   try(FishStatsUtils::plot_range_index(Report = fit$Report, TmbData = fit$data_list, Sdreport = fit$parameter_estimates$SD, Znames = colnames(fit$data_list$Z_xm), PlotDir = DateFile, 
+                     Year_Set = fit$year_labels, Years2Include = fit$years_to_plot, use_biascorr = Settings$bias.correct, strata_names = Settings$strata.limits$STRATA))
    
    
    graphics.off()
@@ -467,19 +467,21 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
    try(YearlyResultsFigure_VAST3X(spShortName = spShortName, spLongName = spLongName, fit = fit, DateFile = DateFile, Region = Region, 
          Year_Set = Year_Set, Years2Include = Years2Include, strata.limits = Settings$strata.limits, Graph.Dev = 'png')) 
    
-   if(Old_QQ_and_Resid_Figures) { 
+   if(Old_QQ_and_Resid_Figures) { try({
    
         # --- Create old style QQ plot - not the DHARMa version ---
-        Method = c("Grid", "Mesh", "Spherical_mesh")[2]
-        grid_size_km = 25     # Value only matters if Method="Grid"
-        Kmeans_Config = list(randomseed = 1,  nstart = 100, iter.max = 1e3) 
+        Method <- c("Grid", "Mesh", "Spherical_mesh")[2]
+        grid_size_km <- 25     # Value only matters if Method="Grid"
+        Kmeans_Config <- list(randomseed = 1,  nstart = 100, iter.max = 1e3) 
         
-        Extrapolation_List = FishStatsUtils::Prepare_WCGBTS_Extrapolation_Data_Fn(strata.limits = strata.limits)
+        Extrapolation_List <- FishStatsUtils::Prepare_WCGBTS_Extrapolation_Data_Fn(strata.limits = strata.limits)
         
-        Options = c(SD_site_density = 0, SD_site_logdensity = 0, Calculate_Range = 0, Calculate_evenness = 0, Calculate_effective_area = 0,  Calculate_Cov_SE = 0,
-                  Calculate_Synchrony = 0, Calculate_Coherence = 0, Calculate_Range = 1, Calculate_effective_area = 1)
+        #  Options = c(SD_site_density = 0, SD_site_logdensity = 0, Calculate_Range = 0, Calculate_evenness = 0, Calculate_effective_area = 1,  Calculate_Cov_SE = 0,
+        #           Calculate_Synchrony = 0, Calculate_Coherence = 0, Calculate_Range = 1)
         
-        Spatial_List = FishStatsUtils::make_spatial_info(grid_size_km = grid_size_km, n_x = n_x., Method = Method, Lon = Data_Geostat$Lon, Lat = Data_Geostat$Lat,
+        Options <- Settings$Options
+        
+        Spatial_List <- FishStatsUtils::make_spatial_info(grid_size_km = grid_size_km, n_x = n_x., Method = Method, Lon = Data_Geostat$Lon, Lat = Data_Geostat$Lat,
                               Extrapolation_List = Extrapolation_List, randomseed = Kmeans_Config[["randomseed"]], nstart = Kmeans_Config[["nstart"]], iter.max = Kmeans_Config[["iter.max"]],
                               DirPath = DateFile, Save_Results = FALSE)
         
@@ -495,12 +497,11 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
                     FileName_Phist = "Q-Q_plot", FileName_QQ = "Q-Q_plot", FileName_Qhist = "Q-Q_hist")
                                   
         # --- Old style residuals with little data visible - look closely at the figures ---
-        MapDetails_List = FishStatsUtils::make_map_info( Region = Region, NN_Extrap = Spatial_List$PolygonList$NN_Extrap, spatial_list = Spatial_List, Extrapolation_List = Extrapolation_List )
+        MapDetails_List <- FishStatsUtils::make_map_info( Region = Region, NN_Extrap = Spatial_List$PolygonList$NN_Extrap, spatial_list = Spatial_List, Extrapolation_List = Extrapolation_List )
         
         FishStatsUtils::plot_residuals(Lat_i = Data_Geostat[,'Lat'], Lon_i = Data_Geostat[,'Lon'], TmbData = TmbData, Report = fit$Report, spatial_list = Spatial_List, Q = Q, 
                 extrapolation_list = Extrapolation_List, working_dir = DateFile, Year_Set = Year_Set, Years2Include = Years2Include, ) 
-                
-   } 
+   })} 
   
    # Save it all in Image.RData [ When reloading, remember to dyn.load() the '.dll' e.g. dyn.load(paste0(DateFile, 'VAST_v9_2_0.dll')) ]
    save(list = c(ls(), names(.GlobalEnv)), file = paste0(DateFile, "Image.RData")) # Save files inside the function also!!!!!!
