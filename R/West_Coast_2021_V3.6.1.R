@@ -431,7 +431,7 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
    try(plotOut <- plot( fit, what = c('results', 'extrapolation_grid', 'inla_mesh')[1], working_dir = DateFile)) # Calls FishStatsUtils:::plot.fit_model() which calls FishStatsUtils::plot_results()
    
    png(paste0(DateFile, 'DHARMa_Q-Q_plot.png'), width = 1000, height = 1000)
-   plotQQunif(plotOut$dharmaRes, testUniformity = FALSE, testOutliers = FALSE, testDispersion = FALSE)
+   DHARMa::plotQQunif(plotOut$dharmaRes, testUniformity = FALSE, testOutliers = FALSE, testDispersion = FALSE)
    dev.off()
    
    png(paste0(DateFile, 'Extrapolation_grid.png'), width = 500, height = 750)
