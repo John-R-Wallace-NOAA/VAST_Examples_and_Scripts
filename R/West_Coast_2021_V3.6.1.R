@@ -250,7 +250,7 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
      if(Survey == 'AFSC.Shelf') VAST_surveyName <- 'propInTriennial' # Triennial
      if(Survey == 'AFSC.Slope') VAST_surveyName <- 'propInSlope98_00'  # Tested as best by looking at AFSC.Slope data overlayed over all 'surveyname's.
      if(Survey == 'WCGBTS.Combo') VAST_surveyName <- 'propInWCGBTS'
-     if(Survey == 'WCGBTS.Shelf') VAST_surveyName <- 'propInSlope98_00'  # Assumed correct - not tested
+     if(Survey == 'WCGBTS.Slope') VAST_surveyName <- 'propInSlope02'  # Only WCGBTS slope option that covers all the data 
    }   
    
    cat("\nVAST's surveyName (Domain) set to:", VAST_surveyName, "for Survey:", Survey, "\n\n")
@@ -543,6 +543,7 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
    }
 
 }
+
 
 
 
