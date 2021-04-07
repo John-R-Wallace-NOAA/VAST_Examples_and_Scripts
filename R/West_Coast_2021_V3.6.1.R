@@ -253,6 +253,8 @@ West_Coast_2021_V3.6.1 <- function(spFormalName = 'lingcod', spLongName = 'Lingc
      if(Survey == 'WCGBTS.Shelf') VAST_surveyName <- 'propInSlope98_00'  # Assumed correct - not tested
    }   
    
+   cat("\nVAST's surveyName (Domain) set to:", VAST_surveyName, "for Survey:", Survey, "\n\n")
+   
    # https://docs.google.com/document/d/1pl3-q8zlSBqTmPNaSHJU67S_hwN5nok_I9LAr-Klyrw/edit
    
    # FieldConfig = c(Omega1 = 1, Epsilon1 = 1, Omega2 = 1, Epsilon2 = 1) #  where Omega refers to spatial variation, Epsilon refers to spatio-temporal variation, Omega1 refers to variation in encounter probability, 
